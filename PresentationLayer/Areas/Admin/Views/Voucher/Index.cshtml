@@ -1,0 +1,205 @@
+﻿@using System.Globalization
+@using static DataAccessLayer.Entity.Voucher
+@using static DataAccessLayer.Entity.Base.EnumBase
+ @model IEnumerable<BusinessLogicLayer.Viewmodels.VoucherM.GetAllVoucherVM>
+ @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Areas/Admin/Views/Shared/_layoutAdmin.cshtml";
+}
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+<h2>Quản lí voucher</h2>
+<div class="row element-button">
+    <div class="col-md-2">
+        <a class="btn btn-add btn-sm" asp-area="Admin" asp-controller="Voucher" asp-action="Create" title="Thêm">
+            <i class="fas fa-plus"></i>
+            Tạo mới voucher
+        </a>
+        
+    </div>
+    <div class="col-sm-4">
+        <form id="searchForm" method="get" action="@Url.Action("SearchVouchers", "Voucher", new { area = "Admin" })">
+            <div class="input-group">
+                <input type="text" name="input" class="form-control" placeholder="Tìm kiếm theo mã hoặc tên" />
+                <div class="input-group-append">
+                    <button class="btn btn-primary" type="submit">Tìm kiếm</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<table class="table">
+    <thead>
+        <tr>
+
+            <th>
+               STT 
+            </th>
+            <th>
+                Mã voucher
+            </th>
+            <th>
+                Tên voucher
+            </th>
+            <th>
+                Ngày bắt đầu
+            </th>
+            <th>
+                Ngày kết thúc
+            </th>
+            <th>
+                Số lượng
+            </th>
+            <th>
+                Loại giảm giá
+            </th>
+            <th>
+                Gỉam tối thiểu
+            </th>
+            <th>
+                Gỉam tối đa
+            </th>
+            <th>
+                Số tiền giảm
+            </th>
+            <th>
+                Trạng thái hoạt động
+            </th>
+            
+           @*  <th>
+                Trạng thái hoạt động
+            </th> *@
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            int count = 1;
+        }
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @count
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Code)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.StartDate)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.EndDate)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Quantity)
+                </td>
+                <td>
+                    @if (item.Type == Types.Percent)
+                    {
+                        <text>Phần trăm</text>
+                    }
+                    else if (item.Type == Types.Cash)
+                    {
+                        <text>Tiền mặt</text>
+                    }
+                    else
+                    {
+                        <text>Không xác định</text>
+                    }
+                </td>
+                <td>
+                    @item.MinimumAmount.ToString("N0", new CultureInfo("vi-VN")) . " VNĐ"
+                </td>
+                <td>
+                    @item.MaximumAmount.ToString("N0", new CultureInfo("vi-VN")) . " VNĐ"
+                </td>
+                <td>
+                    @if (item.Type == Types.Percent)
+                    {
+                        @Html.Raw(item.ReducedValue.ToString("N0") + " %")
+                    }
+                    else if (item.Type == Types.Cash)
+                    {
+                        @Html.Raw(item.ReducedValue.ToString("N0", new CultureInfo("vi-VN")) + " VNĐ")
+                    }
+                    else
+                    {
+                        <text>Không xác định</text>
+                    }
+                </td>
+                <td>
+                    @if (item.IsActive.HasValue)
+                    {
+                        switch (item.IsActive.Value)
+                        {
+                            case StatusVoucher.HasntStartedYet:
+                                <span>Chưa bắt đầu</span>
+                                break;
+                            case StatusVoucher.IsBeginning:
+                                <span>Đang diễn ra</span>
+                                break;
+                            case StatusVoucher.Finished:
+                                <span>Đã kết thúc</span>
+                                break;
+                        }
+                    }
+                </td>
+                @* <td>
+                    @if (item.Status == 0)
+                    {
+                        <text>Không hoạt động</text>
+                    }
+                    else if (item.Status == 1)
+                    {
+                        <text>Đang hoạt động</text>
+                    }
+                    else
+                    {
+                        <text>Không xác định</text>
+                    }
+                </td> *@
+                <td>
+                    @if (item.IsActive != StatusVoucher.Finished)
+                    {
+                        <a asp-action="UpdateVoucherUser" asp-controller="Voucher" asp-route-id="@item.ID" class="btn btn-primary btn-sm edit" title="Sửa">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                    }
+                    <form asp-action="Delete" asp-controller="Voucher" method="post" id="deleteForm-@item.ID" style="display:inline;">
+                        <input type="hidden" name="id" value="@item.ID" />
+                        <button type="submit" class="btn btn-primary btn-sm trash" title="Ẩn bán" onclick="return confirmDelete();">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </form>
+                    @* <a asp-action="Update" asp-controller="Voucher" asp-route-id="@item.ID" class="btn btn-primary btn-sm edit" title="Sửa">
+                        <i class="fas fa-edit"></i>
+                    </a> *@
+                    <a asp-action="Detail" asp-controller="Voucher" asp-route-id="@item.ID" class="btn btn-primary btn-sm view" type="button" title="Xem chi tiết">
+                        <i class="fas fa-eye"></i>
+                    </a>
+                </td>
+                
+            </tr>
+            count++;
+        }
+    </tbody>
+</table>
+<script type="text/javascript">
+    function confirmDelete() {
+        return confirm("Bạn có chắc chắn muốn xóa không?");
+    }
+</script>

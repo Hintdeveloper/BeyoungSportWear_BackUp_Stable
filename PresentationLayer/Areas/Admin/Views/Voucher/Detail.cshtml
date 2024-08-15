@@ -1,0 +1,98 @@
+﻿@using static DataAccessLayer.Entity.Base.EnumBase
+@using static DataAccessLayer.Entity.Voucher
+@model BusinessLogicLayer.Viewmodels.VoucherM.GetAllVoucherVM
+ @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    ViewData["Title"] = "Detail";
+    Layout = "~/Areas/Admin/Views/Shared/_layoutAdmin.cshtml";
+}
+
+<h2>Chi tiết voucher</h2>
+
+<div>
+    <hr />
+    <table class="table">
+        <tbody>
+            <tr>
+                <th scope="row">Mã voucher</th>
+                <td>@Html.DisplayFor(model => model.Code)</td>
+            </tr>
+            <tr>
+                <th scope="row">Tên voucher</th>
+                <td>@Html.DisplayFor(model => model.Name)</td>
+            </tr>
+            <tr>
+                <th scope="row">Ngày bắt đầu</th>
+                <td>@Html.DisplayFor(model => model.StartDate)</td>
+            </tr>
+            <tr>
+                <th scope="row">Ngày kết thúc</th>
+                <td>@Html.DisplayFor(model => model.EndDate)</td>
+            </tr>
+            <tr>
+                <th scope="row">Số lượng</th>
+                <td>@Html.DisplayFor(model => model.Quantity)</td>
+            </tr>
+            <tr>
+                <th scope="row">Kiểu giảm giá</th>
+                <td>
+                    @if (Model.Type == Types.Percent)
+                    {
+                        <text>Phần trăm</text>
+                    }
+                    else if (Model.Type == Types.Cash)
+                    {
+                        <text>Tiền mặt</text>
+                    }
+                    else
+                    {
+                        <text>Không xác định</text>
+                    }
+                </td>
+            </tr>
+            <tr>
+                <th scope="row">Tiền giảm tối thiểu</th>
+                <td>@Html.DisplayFor(model => model.MinimumAmount)</td>
+            </tr>
+            <tr>
+                <th scope="row">Tiền giảm tối đa</th>
+                <td>@Html.DisplayFor(model => model.MaximumAmount)</td>
+            </tr>
+            <tr>
+                <th scope="row">Số tiền giảm</th>
+                <td>@Html.DisplayFor(model => model.ReducedValue)</td>
+            </tr>
+            <tr>
+                <th scope="row">Trạng thái</th>
+                <td>
+                    @if (Model.IsActive == StatusVoucher.HasntStartedYet)
+                    {
+                        <text>Chưa bắt đầu</text>
+                    }
+                    else if (Model.IsActive == StatusVoucher.IsBeginning)
+                    {
+                        <text>Đang diễn ra</text>
+                    }
+                    else if (Model.IsActive == StatusVoucher.Finished)
+                    {
+                        <text>Đã kết thúc</text>
+                    }
+                    else
+                    {
+                        <text>Không xác định</text>
+                    }
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div>
+    @if (Model.IsActive != StatusVoucher.Finished)
+    {
+        <a asp-action="UpdateVoucherUser" asp-controller="Voucher" asp-route-id="@Model.ID" class="btn btn-primary btn-sm edit" title="Sửa">
+            <i class="fas fa-edit"></i>
+        </a>
+    }
+    <a asp-action="Index">Trở về</a>
+</div>

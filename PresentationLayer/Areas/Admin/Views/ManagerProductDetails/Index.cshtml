@@ -1,0 +1,239 @@
+﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Areas/Admin/Views/Shared/_layoutAdmin.cshtml";
+}
+<style>
+    .custom-modal-auto {
+        max-width: 70%; /* Thiết lập chiều rộng tối đa */
+        margin: auto; /* Để canh giữa */
+        overflow-y: auto; /* Cho phép thanh cuộn nếu nội dung quá dài */
+    }
+
+        .custom-modal-auto .modal-dialog {
+            max-width: 80%;
+        }
+
+    .modal-body {
+        padding: 50px;
+    }
+
+    .modal-header {
+        background-color: #007bff; /* Màu nền */
+        color: #fff; /* Màu chữ */
+        border-bottom: none; /* Loại bỏ viền dưới */
+    }
+
+    .close {
+        color: #fff;
+        opacity: 1;
+    }
+
+    .modal-xl {
+        max-width: 70% !important;
+    }
+
+    .modal-body {
+        overflow-y: auto; /* Hiển thị thanh cuộn nếu nội dung quá dài */
+    }
+
+    /* Hình ảnh sản phẩm */
+    .img-fluid {
+        max-width: 80%; /* Hình ảnh sẽ không vượt quá phần tử chứa */
+        height: auto; /* Đảm bảo tỷ lệ khung hình không bị biến dạng */
+    }
+    /* Phần bảng thông tin chi tiết sản phẩm */
+    .product-details-table {
+        margin-top: 20px; /* Khoảng cách giữa phần thông tin và bảng */
+    }
+
+        /* Định dạng phần tiêu đề của bảng */
+        .product-details-table thead th {
+            background-color: #007bff; /* Màu nền */
+            color: #fff; /* Màu chữ */
+            font-weight: bold; /* Đậm */
+        }
+
+        /* Định dạng các ô dữ liệu của bảng */
+        .product-details-table tbody td {
+            vertical-align: middle; /* Căn giữa dọc */
+        }
+
+        /* Định dạng các dòng trong bảng */
+        .product-details-table tbody tr:nth-child(even) {
+            background-color: #f2f2f2; /* Màu nền xen kẽ */
+        }
+
+    .btn-details {
+        color: #007bff; /* Màu chữ */
+        background-color: transparent; /* Màu nền trong suốt */
+        border: none; /* Loại bỏ đường viền */
+        cursor: pointer; /* Con trỏ chuột chỉ */
+    }
+
+        .btn-details:hover {
+            text-decoration: underline;
+        }
+
+
+    .app-title {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .app-breadcrumb {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .breadcrumb-item.active {
+        font-weight: bold;
+    }
+
+    #clock {
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    .element-search {
+        margin-bottom: 20px;
+    }
+
+        .element-search .form-control {
+            width: 100%;
+        }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+        .form-group label {
+            font-weight: bold;
+        }
+
+        .form-group input[type="text"] {
+            width: 100%;
+        }
+
+    #sampleTable_wrapper {
+        margin-top: 20px;
+    }
+</style>
+<div class="app-title">
+    <ul class="app-breadcrumb breadcrumb side">
+        <li class="breadcrumb-item active"><a href="#"><b>Danh sách sản phẩm</b></a></li>
+    </ul>
+    <div id="clock"></div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="tile">
+            <div class="tile-body">
+                <div class="row element-button">
+                   <div class="col-sm-2">
+                        <a class="btn btn-add btn-sm" asp-area="Admin" asp-controller="ManagerProductDetails" asp-action="Create" title="Thêm">
+                            <i class="fas fa-plus"></i>
+                            Tạo mới sản phẩm
+                        </a>
+                    </div>                 
+                </div>
+
+                <table class="table table-hover table-bordered" id="sampleTable">
+                    <thead>
+                        <tr>
+                            <th width="10"><input type="checkbox" id="all"></th>
+                            <th>Mã sản phẩm</th>
+                            <th>Tên sản phẩm</th>
+                            <th>Ảnh</th>
+                            <th>Số lượng</th>
+                            <th>Tình trạng</th>
+                            <th>Giá tiền</th>
+                            <th>Danh mục</th>
+                            <th>Trạng thái bán</th>
+                            <th>Chức năng</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table_productdetails">
+                        <tr id="loading-spinner" style="display: none;">
+                            <td colspan="9" style="text-align: center;">
+                                <i class="fas fa-spinner fa-spin"></i> Loading...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="productModal" tabindex="-1" role="dialog" aria-labelledby="productModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="productModalLabel">Chi tiết sản phẩm</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
+                                    <ol class="carousel-indicators"></ol>
+                                    <div class="carousel-inner"></div>
+                                    <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+                                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                        <span class="sr-only">Previous</span>
+                                    </a>
+                                    <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+                                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                        <span class="sr-only">Next</span>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <p><strong>Mã sản phẩm:</strong> <span id="modalKeyCode"></span></p>
+                                <p><strong>Tên sản phẩm:</strong> <span id="modalProductName"></span></p>
+                                <p><strong>Nhà sản xuất:</strong> <span id="modalManufacturers"></span></p>
+                                <p><strong>Chất liệu:</strong> <span id="modalMaterial"></span></p>
+                                <p><strong>Thương hiệu:</strong> <span id="modalBrand"></span></p>
+                                <p><strong>Danh mục:</strong> <span id="modalCategory"></span></p>
+                                <p><strong>Mô tả:</strong></p>
+                                <div id="modalDescriptionContainer" style="max-height: 100px; overflow: hidden; transition: max-height 0.3s ease; position: relative;">
+                                    <span id="modalDescription"></span>
+                                </div>
+                                <button id="toggleDescription" style="display: block; margin-top: 10px;">Xem thêm</button>
+                                <p><strong>Kiểu dáng:</strong> <span id="modalStyle"></span></p>
+                                <p><strong>Xuất xứ:</strong> <span id="modalOrigin"></span></p>
+                                <p><strong>Tổng số lượng:</strong> <span id="modalTotalQuantity"></span></p>
+                                <p><strong>Trạng thái:</strong> <span id="modalStatus"></span></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Ảnh</th>
+                                        <th>Size</th>
+                                        <th>Color</th>
+                                        <th>Số lượng</th>
+                                        <th>Giá bán lẻ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="productDetailsBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="~/ajax/admin_staff/product/productdetails_index.js"></script>

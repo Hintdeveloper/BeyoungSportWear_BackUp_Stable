@@ -1,0 +1,324 @@
+﻿<link rel="stylesheet" type="text/css" href="~/css/main_v2.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css">
+<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css">
+
+<div class="loader" id="loader"></div>
+<style>
+    .option-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+        .option-item img {
+            margin-right: 10px;
+        }
+
+    .loader {
+        border: 4px solid rgba(0, 0, 0, 0.1);
+        border-top: 4px solid #007bff;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        animation: spin 1s linear infinite;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1000;
+        display: none;
+    }
+
+    @@keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    .table-wrapper {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        padding: 20px;
+        box-sizing: border-box;
+        background-color: white;
+        border: 0px solid #ddd;
+        border-radius: 5px;
+    }
+
+    .form-container {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 20px;
+    }
+
+        .form-container select,
+        .form-container input {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+    #shippingMethod {
+        width: 100%; /* Độ rộng của select theo phần tử cha */
+        padding: 8px; /* Padding bên trong select */
+        font-size: 14px; /* Kích thước chữ */
+        border: 1px solid #ccc; /* Viền ngoài */
+        border-radius: 4px; /* Độ cong của các góc */
+        background-color: #fff; /* Màu nền */
+        cursor: pointer; /* Con trỏ khi hover */
+    }
+
+        /* CSS cho các tùy chọn lựa chọn */
+        #shippingMethod option {
+            padding: 5px; /* Padding bên trong tùy chọn */
+        }
+
+        /* CSS cho phần nút dropdown */
+        #shippingMethod::-ms-expand {
+            display: none; /* Ẩn mũi tên dropdown trên IE 10 và IE 11 */
+        }
+
+        /* CSS cho phần viền và hover */
+        #shippingMethod:focus,
+        #shippingMethod:hover {
+            border-color: #66afe9; /* Màu viền khi hover */
+            outline: 0; /* Loại bỏ viền khi focus */
+        }
+
+    #shippingMethod {
+        /* Thiết lập CSS cho select box */
+        width: 100%;
+        padding: 8px;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+
+        /* Thiết lập CSS cho các option trong select */
+        #shippingMethod option {
+            font-size: 16px;
+        }
+</style>
+
+<div class="row">
+    <div class="col-md-7">
+        <div class="tile">
+            <div id="invoiceNumberDisplay"></div>
+            <div class="row">
+                <div class="col-md-4">
+                    <select id="product" class="form-control">
+                        <option value="">-- Chọn sản phẩm --</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <select id="color" class="form-control">
+                        <option value="">-- Chọn màu --</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <select id="size" class="form-control">
+                        <option value="">-- Chọn size --</option>
+                    </select>
+                </div>
+            </div>
+
+
+            <div class="du--lieu-san-pham">
+                <div>
+                    <table class="table table-hover table-bordered">
+                        <thead>
+                            <tr>
+                                <th class="col-2 text-center">Tên</th>
+                                <th class="col-2 text-center">Phân loại</th>
+                                <th class="col-2 text-center">Ảnh</th>
+                                <th class="col-2 text-center">Giá bán</th>
+                                <th class="col-2 text-center">SL</th>
+                                <th class="col-2 text-center">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="alert">
+                <i class="fas fa-exclamation-triangle"></i> Gõ mã hoặc tên sản phẩm vào thanh tìm kiếm để thêm hàng vào đơn
+                hàng
+            </div>
+        </div>
+    </div>
+    <div class="col-md-5">
+        <div class="tile">
+            <h3 class="tile-title">Thông tin thanh toán</h3>
+
+            <div class="row">
+                <table id="selectedProductsList" class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th class="col-3 text-center">Ảnh</th>
+                            <th class="col-3 text-center">Phân loại</th>
+                            <th class="col-2 text-center">Giá</th>
+                            <th class="col-2 text-center">SL</th>
+                            <th class="col-2 text-center">Tổng</th>
+                            <th class="text-center"><i class="fas fa-cog"></i></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr id="noProductsMessage">
+                            <td colspan="7" class="text-center">Không có sản phẩm nào được chọn</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="col-md-10">
+                    <label class="control-label">Số điện thoại khách hàng</label>
+                    <input class="form-control" type="text" id="customerPhoneNumber" placeholder="Tìm kiếm khách hàng">
+                </div>
+                <div class=" col-md-2">
+                    <label style="text-align: center;" class="control-label">Tạo mới</label>
+                    <button class="btn btn-primary btn-them" data-toggle="modal" data-target="#modal_user">
+                        <i class="fas fa-user-plus"></i>
+                    </button>
+                </div>
+                <div class="col-md-12" id="customerSearchResults"></div>
+                <div class=" col-md-12">
+                    <select id="shippingMethod">
+                        <option value="0" selected>Nhận tại cửa hàng</option>
+                        <option value="1">Giao hàng tiêu chuẩn</option>
+                    </select>
+                </div>
+                <div class="table-wrapper col-md-12" id="shippingDetails">
+                    <div class="form-container">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <input type="text" id="customerName" placeholder="Nhập tên người nhận" />
+                            </div>
+                            <div class="col-md-6">
+                                <input type="number" id="customerPhone" placeholder="Nhập số điện thoại người nhận" />
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-4 mb-3">
+                                <label for="city">Chọn thành phố</label>
+                                <select id="city" class="form-control"></select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="district">Chọn quận/huyện</label>
+                                <select id="district" class="form-control"></select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="ward">Chọn phường/xã</label>
+                                <select id="ward" class="form-control"></select>
+                            </div>
+                        </div>
+                        <input type="text" id="street" placeholder="Nhập tên đường">
+                        <input id="shippingAddress" class="form-control" name="ShippingAddress" readonly />
+                        <span class="text-danger"></span>
+                        <div class="shipping-fee" style="color: red; ">
+                            Giá vận chuyển: <span id="shippingFee" hidden style="font-size: 24px; font-weight: bold;">0</span>
+                            <span id="shippingFeeDisplay" style="font-size: 24px; font-weight: bold;">0</span>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-12">
+                    <label class="control-label">Ghi chú đơn hàng</label>
+                    <textarea class="form-control" rows="4" id="note_order" placeholder="Ghi chú thêm đơn hàng"></textarea>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <label class="control-label">Hình thức thanh toán</label>
+                    <select class="form-control" id="paymentMethodSelect" required>
+                        <option value="1">Trả tiền mặt tại quầy</option>
+                        <option value="0">Thanh toán chuyển khoản</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="control-label">Tạm tính tiền hàng: </label>
+                    <p class="control-all-money-tamtinh">0</p>
+                </div>
+                <div class="col-md-6">
+                    <label class="control-label">Giảm giá: </label>
+                    <input class="form-control" type="number" id="coupound" value="0" readonly>
+                </div>
+                <div class="col-md-6">
+                    <label class="control-label">Tổng cộng thanh toán: </label>
+                    <p class="control-all-money-total" id="total_pay">0</p>
+                </div>
+                <div class="col-md-6">
+                    <label class="control-label">Khách hàng đưa tiền: </label>
+                    <input class="form-control" type="number" id="money_given_by_guests" value="">
+                </div>
+                <div class="col-md-12">
+                    <label class="control-label">Khách hàng còn nợ: </label>
+                    <p class="control-all-money" id="customers_still_owe">0</p>
+                </div>
+                <div class="tile-footer col-md-12">
+                    <button id="btnLuuDonHang" class="btn btn-primary luu-san-pham" type="button" disabled> Lưu đơn hàng</button>
+                    <button id="btnLuu_InHoaDon" class="btn btn-primary luu-va-in" type="button" disabled>Lưu và in hóa đơn</button>
+                    <button class="btn btn-secondary luu-va-in" id="luu_cookies" type="button">Đóng tạm thời</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modal_user" tabindex="-1" role="dialog" aria-labelledby="modal_userTitle"
+     data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="row">
+                    <div class="form-group col-md-12">
+                        <span class="thong-tin-thanh-toan">
+                            <h5>Tạo mới khách hàng</h5>
+                        </span>
+                    </div>
+                    <div class="form-group col-md-12">
+                        <label class="control-label">Họ và tên</label>
+                        <input class="form-control" type="text" required>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label class="control-label">Địa chỉ</label>
+                        <input class="form-control" type="text" required>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label class="control-label">Email</label>
+                        <input class="form-control" type="text" required>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label class="control-label">Ngày sinh</label>
+                        <input class="form-control" type="date" required>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label class="control-label">Số điện thoại</label>
+                        <input class="form-control" type="number" required>
+                    </div>
+                </div>
+                <br>
+                <button class="btn btn-save" type="button">Lưu lại</button>
+                <a class="btn btn-cancel" data-dismiss="modal" href="#">Hủy bỏ</a>
+                <br>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/2.2.1/js.cookie.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script type="text/javascript" src="~/ajax/admin_staff/sale/sales_at_the_counter.js"></script>

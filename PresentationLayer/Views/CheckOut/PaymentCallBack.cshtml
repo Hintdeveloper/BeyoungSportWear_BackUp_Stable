@@ -1,0 +1,89 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>Giao dịch được thực hiện ho&#224;n tất</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body style="font-size: 0.9rem;">
+    <div class="container">
+        <p style="text-align: center">Giao dịch được thực hiện thành công. Cảm ơn quý khách đã sử dụng dịch vụ</p>
+        <div class="row">
+            <table class="table table-striped table-hover table-hover">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Value</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Merchant ID</td>
+                        <td>CTTVNP01</td>
+                        <td>Được cấp bởi VNPAY</td>
+                    </tr>
+                    <tr>
+                        <td>Merchant Name</td>
+                        <td>VNPAY Demo</td>
+                        <td>Tên Website Merchant</td>
+                    </tr>
+                    <tr>
+                        <td>Merchant Transaction Reference</td>
+                        <td id="transaction_merchant"></td>
+                        <td>Mã GD của website merchant</td>
+                    </tr>
+                    <tr>
+                        <td>Transaction Info</td>
+                        <td>Thời gian thanh toán: <span id="time_transaction"></span></td>
+                        <td>Thông tin mô tả từ website merchant</td>
+                    </tr>
+                    <tr>
+                        <td>Amount</td>
+                        <td id="amount"></td>
+                        <td>Số tiền được thanh toán</td>
+                    </tr>
+                    <tr>
+                        <td>Current Code</td>
+                        <td>VND</td>
+                        <td>Đơn vị tiền tệ được thanh toán</td>
+                    </tr>
+                    <tr>
+                        <td>Transaction Response Code</td>
+                        <td id="transaction_response_code"></td>
+                        <td>Trạng thái GD</td>
+                    </tr>
+                    <tr>
+                        <td>Message</td>
+                        <td id="message"></td>
+                        <td>Thông báo từ cổng thanh toán</td>
+                    </tr>
+                    <tr>
+                        <td>Transaction Number</td>
+                        <td id="code_transaction"></td>
+                        <td>Mã GD trên cổng thanh toán</td>
+                    </tr>
+                    <tr>
+                        <td>Bank</td>
+                        <td id="bank"></td>
+                        <td>Ngân hàng GD</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <P style="text-align: center">
+            <a value="Về danh sách" id="btnClose" class="btn btn-default" href="@Url.Action("Index", "Home")">Về danh sách</a>
+        </P>
+    </div> <!-- /container -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="~/ajax/client/checkout/payment_callback.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,65 @@
+﻿@model BusinessLogicLayer.Viewmodels.Sizes.SizeVM
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    ViewData["Title"] = "Details";
+    Layout = "~/Areas/Admin/Views/Shared/_layoutAdmin.cshtml";
+}
+<style>
+    .table-borderless th, .table-borderless td {
+        padding: 0.25rem; /* Giảm khoảng cách giữa các ô */
+        vertical-align: middle; /* Căn giữa theo chiều dọc */
+    }
+
+    th {
+        font-weight: bold;
+    }
+
+    .table th {
+        width: 30%; /* Điều chỉnh tỷ lệ cột cho nhãn */
+    }
+</style>
+<h1>Thông tin kích thước</h1>
+
+<div>
+    <hr />
+    <table class="table border-0" style="width:auto;">
+        <tbody>
+            <tr>
+                <td style="font-weight: bold;">
+                    @Html.DisplayNameFor(model => model.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(model => model.Name)
+                </td>
+            </tr>
+            <tr>
+                <td style="font-weight: bold;">
+                    @Html.DisplayNameFor(model => model.Description)
+                </td>
+                <td>
+                    @Html.DisplayFor(model => model.Description)
+                </td>
+            </tr>
+            <tr>
+                <td style="font-weight: bold;">
+                    @Html.DisplayNameFor(model => model.Status)
+                </td>
+
+                @if (Model.Status == 1)
+                {
+                    <td>Hoạt động</td>
+                }
+                else
+                {
+                    <td>Không hoạt động</td>
+                }
+            </tr>
+
+
+        </tbody>
+    </table>
+</div>
+<div>
+    <a class="btn btn-warning" asp-action="Edit" asp-route-id="@Model?.ID">Edit</a> |
+    <a class="btn btn-link" asp-action="Index">Back to List</a>
+</div>

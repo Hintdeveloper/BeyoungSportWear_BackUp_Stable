@@ -1,0 +1,355 @@
+﻿@{
+    ViewData["Title"] = "CheckOut";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<style>
+    #openModalBtn {
+        background-color: #4CAF50;
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+        border-radius: 5px;
+        transition: background-color 0.3s, transform 0.3s;
+    }
+
+        #openModalBtn:hover {
+            background-color: #45a049;
+        }
+
+        #openModalBtn:active {
+            transform: scale(0.98);
+        }
+
+        #openModalBtn:focus {
+            outline: none;
+        }
+
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgb(0, 0, 0);
+        background-color: rgba(0, 0, 0, 0.4);
+    }
+
+    .modal-content {
+        background-color: #fefefe;
+        margin: 10% auto;
+        padding: 10px;
+        border: 1px solid #888;
+        width: 60%;
+        max-width: 800px;
+        height: 70%;
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+    .modal-body ul {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    .modal-body li {
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+        cursor: pointer;
+    }
+
+        .modal-body li:hover {
+            background-color: #f1f1f1;
+        }
+
+    .modal-body button {
+        margin-top: 20px;
+        padding: 10px 20px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+
+        .modal-body button:hover {
+            background-color: #45a049;
+        }
+
+    .select_addrees {
+        margin-bottom: 6px;
+    }
+
+        .select_addrees p {
+            color: #111111;
+            margin-bottom: 12px;
+        }
+
+    .select_addrees {
+        height: 50px;
+        width: 100%;
+        border: 1px solid black;
+        font-size: 14px;
+        color: black;
+        padding-left: 20px;
+        margin-bottom: 20px;
+    }
+
+    /* Style for radio buttons */
+    .checkout__input__radio {
+        position: relative;
+        padding-left: 35px;
+        margin-bottom: 12px;
+        cursor: pointer;
+        font-size: 16px;
+        display: block;
+    }
+
+        .checkout__input__radio input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+            .checkout__input__radio input:checked ~ .checkmark {
+                background-color: red;
+            }
+
+        .checkout__input__radio .checkmark {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 20px;
+            width: 20px;
+            border: 2px solid #2196F3;
+            border-radius: 4px;
+            background-color: #eee;
+        }
+
+        .checkout__input__radio input:checked ~ .checkmark:after {
+            display: block;
+        }
+
+        .checkout__input__radio .checkmark:after {
+            content: "";
+            position: absolute;
+            display: none;
+        }
+
+        .checkout__input__radio input:checked ~ .checkmark:after {
+            left: 7px;
+            top: 4px;
+            width: 5px;
+            height: 10px;
+            border: solid white;
+            border-width: 0 3px 3px 0;
+            transform: rotate(45deg);
+        }
+
+    @@media only screen and (min-width: 1200px) {
+        .container {
+            max-width: 1470px;
+        }
+    }
+</style>
+
+<!-- Breadcrumb Section Begin -->
+<section class="breadcrumb-option">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="breadcrumb__text">
+                    <h4>Check Out</h4>
+                    <div class="breadcrumb__links">
+                        <a href="./index.html">Home</a>
+                        <a href="./shop.html">Shop</a>
+                        <span>Check Out</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</section>
+<!-- Breadcrumb Section End -->
+<!-- Checkout Section Begin -->
+<section class="checkout spad">
+    <div class="container">
+        <div class="checkout__form">
+            <form action="#">
+                <div class="row">
+                    <div class="col-lg-6 col-md-6">
+                        <h6 class="checkout__title">Thông tin nhận hàng</h6>
+                        <button type="button" id="openModalBtn">Chọn Địa Chỉ</button>
+
+                        <div class="row">
+                            <div class="col-lg-4">
+                                <div class="checkout__input">
+                                    <p>Họ và tên<span>*</span></p>
+                                    <input id="name" type="text">
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="checkout__input">
+                                    <p>Số điện thoại<span>*</span></p>
+                                    <input id="phone" type="text">
+                                </div>
+                            </div> 
+                            
+                            <div class="col-lg-4">
+                                <div class="checkout__input">
+                                    <p>Gmail<span>*</span></p>
+                                    <input id="gmail" type="text">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <p>Thành phố<span>*</span></p>
+                                <select id="city" class="select_addrees" style="display: none;">
+                                    <option value="" selected="">Chọn tỉnh thành</option>
+                                </select>
+                                <div class="nice-select select_addrees" tabindex="0">
+                                    <span class="current">Thành phố</span>
+                                    <ul class="list">
+                                        <li data-value="" class="option selected focus">Chọn tỉnh thành</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <p>Quận/Huyện<span>*</span></p>
+                                <select id="district" class="select_addrees" style="display: none;">
+                                    <option value="" selected="">Chọn quận huyện</option>
+                                </select>
+                                <div class="nice-select select_addrees" tabindex="0">
+                                    <span class="current">Quận/Huyện</span>
+                                    <ul class="list">
+                                        <li data-value="" class="option selected focus">Chọn quận huyện</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <p>Phường/Xã<span>*</span></p>
+                                <select id="ward" class="select_addrees" style="display: none;">
+                                    <option value="" selected="">Chọn phường xã</option>
+                                </select>
+                                <div class="nice-select select_addrees" tabindex="0">
+                                    <span class="current">Phường/Xã</span>
+                                    <ul class="list">
+                                        <li data-value="" class="option selected focus">Chọn phường xã</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="checkout__input">
+                                <p>Địa chỉ cụ thể<span>*</span></p>
+                                <input id="street" type="text">
+                            </div>
+                        </div>
+                        <div>
+                            <div class="checkout__input">
+                                <span>Địa chỉ sau khi chọn</span></p>
+                                <input id="shippingAddress" type="text" placeholder="Địa chỉ sau cùng ( tự cập nhật )" readonly>
+                            </div>
+                        </div>
+                        <div class="checkout__input__checkbox">
+                            <label for="acc">
+                                Tạo mới tài khoản?
+                                <input type="checkbox" id="acc">
+                                <span class="checkmark"></span>
+                            </label>
+                            <p>
+                                Nếu bạn chưa có tài khoản, chúng tôi sẽ hỗ trợ bạn tạo mới cùng với thông tin bạn đã
+                                cung cấp bên trên!
+                            </p>
+                        </div>
+                        <div class="checkout__input">
+                            <p>Mật khẩu<span>*</span></p>
+                            <input type="text">
+                        </div>
+                        <div class="checkout__input__checkbox">
+                            <label for="diff-acc">
+                                Tôi đồng ý tạo tài khoản
+                                <input type="checkbox" id="diff-acc">
+                                <span class="checkmark"></span>
+                            </label>
+                        </div>
+                        <div class="checkout__input">
+                            <p>Ghi chú cho đơn hàng<span>*</span></p>
+                            <input type="text"
+                                   placeholder="Bạn hãy viết điều bạn muốn cho đơn hàng này chúng tôi sẽ hết sức hỗ trợ.">
+                        </div>
+                    </div>
+                    <div class="col-lg-6 col-md-6">
+                        <div class="checkout__order">
+                            <h4 class="order__title">Đơn hàng của bạn</h4>
+                            <div class="checkout__order__products">Sản phẩm</div>
+                            <ul class="checkout__total__products" id="table-shopping-cart">
+                            </ul>
+                            <ul class="checkout__total__all">
+                                <li>Giá tạm tính <span id="provisional_fee">0đ</span></li>
+                                <li>Phí giao hàng <span id="fee_ship" hidden>0đ</span> <span id="fee_shipDisplay">0đ</span></li>
+                                <li>Tổng giá <span id="total_order">0đ</span></li>
+                            </ul>
+                            <div class="checkout__input__radio">
+                                <label for="cod">
+                                    Thanh toán khi nhận hàng
+                                    <input type="radio" name="payment" id="cod" value="1" checked>
+                                    <span class="checkmark"></span>
+                                </label>
+                            </div>
+                            <div class="checkout__input__radio">
+                                <label for="vnpay">
+                                    Thanh toán VNPay
+                                    <input type="radio" name="payment" id="vnpay" value="0">
+                                    <span class="checkmark"></span>
+                                </label>
+                            </div>
+                            <button type="button" onclick="sendOrderData()" id="btn_success_order" class="site-btn">
+                                Hoàn tất thanh toán
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+<div id="addressModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Địa chỉ của bạn</h2>
+        <div class="modal-body">
+            <ul id="addressList">
+            </ul>
+            <button id="selectAddressBtn">Chọn Địa Chỉ Đã Chọn</button>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="~/ajax/client/checkout/checkout_ver_1.js"></script>

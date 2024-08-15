@@ -1,0 +1,321 @@
+﻿@using PresentationLayer.Areas.Admin.Models
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model CompositeViewModel
+@{
+    ViewData["Title"] = "Create";
+    Layout = "~/Areas/Admin/Views/Shared/_layoutAdmin.cshtml";
+}
+<script type="text/javascript" src="/ckeditor/ckeditor.js"></script>
+<script src="http://code.jquery.com/jquery.min.js" type="text/javascript"></script>
+<style>
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+        .form-group label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .form-group input[type="text"],
+        .form-group select {
+            width: calc(100% - 40px);
+            padding: 8px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .form-group button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+
+            .form-group button:hover {
+                background-color: #0056b3;
+            }
+
+    .added-items {
+        margin-top: 10px;
+    }
+
+        .added-items span {
+            display: inline-block;
+            padding: 5px 10px;
+            margin-right: 5px;
+            margin-bottom: 5px;
+            background-color: #f1f1f1;
+            border-radius: 4px;
+        }
+
+    #classificationTable {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+        #classificationTable th,
+        #classificationTable td {
+            width: 260px;
+            text-align: center;
+            border: 1px solid #dddddd;
+            padding: 8px;
+        }
+
+        #classificationTable th {
+            background-color: #f2f2f2;
+        }
+
+        #classificationTable tbody tr {
+            height: 50px;
+        }
+
+        #classificationTable .no-data {
+            font-style: italic;
+        }
+
+    .buttons {
+        margin-top: 20px;
+        text-align: center;
+    }
+
+        .buttons button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            background-color: #28a745;
+            color: white;
+            cursor: pointer;
+            margin: 0 10px;
+        }
+
+            .buttons button:hover {
+                background-color: #218838;
+            }
+
+    .image-preview {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px; /* Khoảng cách giữa các ảnh */
+    }
+
+    .image-preview-item {
+        position: relative;
+        flex: 1 0 150px; 
+        max-width: 150px; 
+        height: 150px; 
+        margin-bottom: 10px;
+    }
+
+    .image-preview-options {
+        width: 80px;
+        height: 80px;
+        border: 1px dashed #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        position: relative;
+        /* Để có thể định vị nút xóa */
+    }
+
+        .image-preview-options img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+    .custom-file-input {
+        opacity: 0;
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        left: 0;
+        top: 0;
+        cursor: pointer;
+    }
+        .image-preview-item img {
+            width: 100%; /* Ảnh sẽ căn chỉnh trong khung */
+            height: 100%; /* Đảm bảo chiều cao ảnh bằng nhau */
+            object-fit: cover; /* Căn chỉnh ảnh để không bị kéo dãn */
+            border: 1px solid #ccc;
+            padding: 5px;
+        }
+
+
+        .image-preview-item .remove-image {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            cursor: pointer;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            padding: 5px;
+        }
+
+            .image-preview-item .remove-image:hover {
+                background-color: rgba(255, 0, 0, 0.8);
+                color: white;
+            }
+
+    #image-upload {
+        display: none;
+    }
+
+</style>
+<div class="app-title">
+    <ul class="app-breadcrumb breadcrumb">
+        <li class="breadcrumb-item">Danh sách sản phẩm</li>
+        <li class="breadcrumb-item"><a href="#">Thêm sản phẩm</a></li>
+    </ul>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="tile">
+            <h3 class="tile-title">Tạo mới sản phẩm</h3>
+            <div class="tile-body">
+                <form id="productForm">
+                    <input type="hidden" asp-for="@Model.ProductDetailsCreateVM.ID" value="@ViewBag.ID" id="ID" />
+                    <div class="row">
+                        <div class="col-md-2">
+                            <label class="control-label">Mã sản phẩm</label>
+                            <input class="form-control" id="keycode" readonly />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="control-label">Tên sản phẩm</label>
+                            <input class="form-control" id="product_name" />
+                        </div>
+
+                        <div class="col-md-2">
+                            <label for="exampleSelect1" class="control-label">Danh mục</label>
+                            <select class="form-control" id="product_category">
+                                <option>-- Chọn danh mục --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="control-label">Tên danh mục</label>
+                            <input class="form-control" id="category_name" />
+                        </div>
+
+                        <div class="col-md-2">
+                            <label for="exampleSelect1" class="control-label">Nhà sản xuất</label>
+                            <select class="form-control" id="product_manufacture">
+                                <option>-- Chọn nhà sản xuất --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="control-label">Tên nhà sản xuất</label>
+                            <input class="form-control" id="manufacture_name" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-2">
+                            <label for="exampleSelect1" class="control-label">Chất liệu</label>
+                            <select class="form-control" id="product_material">
+                                <option>-- Chọn chất liệu --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="control-label">Tên chất liệu</label>
+                            <input class="form-control" id="material_name" />
+                        </div>
+
+                        <div class="col-md-2">
+                            <label for="exampleSelect1" class="control-label">Thương hiệu</label>
+                            <select class="form-control" id="product_brand">
+                                <option>-- Chọn thương hiệu --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="control-label">Tên thương hiệu</label>
+                            <input class="form-control" id="brand_name" />
+                        </div>
+
+                        <div class="col-md-2">
+                            <label class="control-label">Style</label>
+                            <input id="product_style" class="form-control" type="text" placeholder=""></input>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="control-label">Xuất xứ</label>
+                            <input id="product_origin" class="form-control" type="text" placeholder="">
+                        </div>
+                    </div>
+
+                    <div class="form-group col-md-12">
+                        <label class="control-label">Ảnh sản phẩm</label>
+                        <div class="image-preview">
+                            <label for="image-upload" class="image-preview-item">
+                                <img src="https://via.placeholder.com/150" alt="Preview" id="image-preview-placeholder">
+                                <input type="file" id="image-upload" multiple>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group col-md-6">
+                        <label class="control-label">Mô tả sản phẩm</label>
+                        <textarea class="form-control" id="product_description"></textarea>
+                    </div>
+                    <div class="form-group col-md-12">
+                        <h1>Chi tiết sản phẩm</h1>
+                        <div class="row">
+                            <div class="form-group col-md-6">
+                                <label for="color">Màu (Tùy chỉnh)</label>
+                                <div style="display: flex; align-items: center;">
+                                    <select id="colorSelect" style="flex: 1;">
+                                        <option value="">Chọn màu</option>
+                                    </select>
+                                    <input type="text" id="color" placeholder="Nhập màu" style="flex: 2; margin-left: 5px;">
+                                    <button id="addColorButton" style="margin-left: 5px;">+</button>
+                                </div>
+                                <div class="added-items" id="addedColors"></div>
+                            </div>
+
+                            <div class="form-group col-md-6">
+                                <label for="size">Size (Tùy chỉnh)</label>
+                                <div style="display: flex; align-items: center;">
+                                    <select id="sizeSelect" style="flex: 1;">
+                                        <option value="">Chọn size</option>
+                                    </select>
+                                    <input type="text" id="size" placeholder="Nhập size" style="flex: 2; margin-left: 5px;">
+                                    <button id="addSizeButton" style="margin-left: 5px;">+</button>
+                                </div>
+                                <div class="added-items" id="addedSizes"></div>
+                            </div>
+                        </div>
+
+                        <table id="classificationTable">
+                            <thead>
+                                <tr>
+                                    <th>Hình ảnh</th>
+                                    <th>Màu</th>
+                                    <th>Size</th>
+                                    <th>Giá bán</th>
+                                    <th>Số lượng</th>
+                                    <th>Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody id="classificationBody">
+                                <tr>
+                                    <td class="no-data" colspan="7">Không có dữ liệu</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="buttons">
+                            <button onclick="applyAll()">Áp dụng cho tất cả phân loại</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <button class="btn btn-save" id="btn_saveproductdetails" type="button">Lưu lại</button>
+            <a class="btn btn-cancel" href="table-data-product.html">Hủy bỏ</a>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" src="~/ajax/admin_staff/product/productdetails_create.js"></script>

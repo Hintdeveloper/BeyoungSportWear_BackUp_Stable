@@ -1,0 +1,222 @@
+﻿@{
+    ViewData["Title"] = "OrderUpdate";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<style>
+    /* Tổng quan cho container và các thành phần chính */
+    .container {
+        padding: 20px;
+        border-radius: 8px;
+    }
+
+        /* Định dạng các cột trong phần thông tin đơn hàng */
+        .container .row p {
+            margin: 10px 0;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .container .row input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            box-sizing: border-box; /* Đảm bảo padding không làm rộng thêm chiều rộng */
+        }
+
+    /* Định dạng các tiêu đề */
+    .order-details, .order-history {
+        margin-top: 30px;
+    }
+
+        .order-details h2, .order-history h2 {
+            font-size: 22px;
+            margin-bottom: 15px;
+            color: #343a40;
+        }
+
+    /* Định dạng bảng */
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+
+        .table th, .table td {
+            padding: 12px;
+            border: 1px solid #dee2e6;
+            text-align: center;
+        }
+
+        .table th {
+            background-color: #e9ecef;
+        }
+
+    /* Định dạng modal */
+    .modal-content {
+        background-color: #ffffff;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .modal-header {
+        border-bottom: 1px solid #dee2e6;
+        padding-bottom: 10px;
+    }
+
+        .modal-header h4 {
+            margin: 0;
+            font-size: 24px;
+            color: #495057;
+        }
+
+    .modal-body {
+        padding: 20px;
+    }
+
+    .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        padding: 10px;
+    }
+
+        .modal-footer .btn-danger {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: #ffffff;
+        }
+
+    .img-fluid {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+    }
+    /* Định dạng cho phần lịch sử đơn hàng */
+    .order-history {
+        background-color: #ffffff; /* Nền trắng cho phần khung */
+        border: 1px solid #dee2e6; /* Đường viền nhẹ xung quanh phần khung */
+        border-radius: 8px; /* Bo tròn góc cho phần khung */
+        padding: 20px; /* Khoảng cách bên trong phần khung */
+        margin-top: 30px; /* Khoảng cách từ phần trên */
+    }
+
+        .order-history h2 {
+            font-size: 22px;
+            margin-bottom: 20px; /* Khoảng cách dưới tiêu đề */
+            color: #343a40;
+        }
+
+        .order-history table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .order-history th, .order-history td {
+            padding: 12px;
+            border: 1px solid #dee2e6;
+            text-align: left; /* Căn trái cho nội dung bảng */
+        }
+
+        .order-history th {
+            background-color: #e9ecef; /* Màu nền cho tiêu đề bảng */
+        }
+
+    .modal-footer .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+        color: #fff;
+        margin-right: 10px;
+    }
+
+</style>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-6">
+            <p><strong>Ngày tạo đơn:</strong> <span id="modalcreate"></span></p>
+            <p><strong>Voucher (nếu có):</strong> <span id="modalvoucher"></span></p>
+            <p><strong>Hex Code:</strong> <span id="modalhexcode"></span></p>
+            <p><strong>Họ và tên:</strong> <input id="modalcusname" /></p>
+            <p><strong>Số điện thoại:</strong> <input id="modalcusphone" /></p>
+            <p><strong>Email:</strong> <input id="modalemail" /></p>
+            <p><strong>Tổng giá:</strong> <span id="modaltotal"></span></p>
+
+        </div>
+        <div class="col-md-6">
+            <p><strong>Địa chỉ nhận hàng:</strong> <input id="modalshipaddess" readonly/></p>
+            <p><strong>Địa chỉ cụ thể:</strong> <input id="modalshipaddress2" /></p>
+            <p><strong>Phí giao hàng (nếu có):</strong> <span id="modalcosts"></span></p>
+            <p><strong>Hình thức thanh toán:</strong> <span id="modalpaymentmethod"></span></p>
+            <p><strong>Trạng thái thanh toán:</strong> <span id="modalpaymentstatus"></span></p>
+            <p><strong>Hình thức vận chuyển:</strong> <span id="modalshippingmethod"></span></p>
+            <p><strong>Trạng thái đơn hàng:</strong> <span id="modalorderstatus"></span></p>
+            <p><strong>Kiểu đơn hàng:</strong> <span id="modalordertype"></span></p>
+        </div>
+    </div>
+    <div class="order-details">
+        <h2>Chi tiết đơn hàng</h2>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Tên sản phẩm</th>
+                    <th>Kích thước</th>
+                    <th>Màu sắc</th>
+                    <th>Số lượng</th>
+                    <th>Giá bán lẻ</th>
+                    <th>Tổng giá</th>
+                </tr>
+            </thead>
+            <tbody id="orderBody"></tbody>
+        </table>
+    </div>
+    <div class="order-history" id="orderHistorySection">
+        <h2>Lịch sử đơn hàng</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th class="col-2">Ngày thay đổi</th>
+                    <th class="col-4">Lịch sử chỉnh sửa</th>
+                    <th class="col-4">Chi tiết chỉnh sửa</th>
+                </tr>
+            </thead>
+            <tbody id="orderhistory_body">
+            </tbody>
+        </table>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="btnUpdateOrder">Cập nhật</button>
+        <button type="button" class="btn btn-danger" data-dismiss="modal">Đóng</button>
+    </div>
+
+</div>
+<div class="modal fade" id="editUserModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Thông Tin Người Chỉnh Sửa</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <img id="userImage" src="" alt="User Image" class="img-fluid">
+                    </div>
+                    <div class="col-md-8">
+                        <p><strong>UserName:</strong> <span id="userName"></span></p>
+                        <p><strong>Họ và Tên:</strong> <span id="firstAndLastName"></span></p>
+                        <p><strong>Số điện thoại:</strong> <span id="userPhoneNumber"></span></p>
+                        <p><strong>Gmail:</strong> <span id="userEmail"></span></p>
+                        <p><strong>Chức vụ:</strong> <span id="roleName"></span></p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/ajax/client/order/order_update.js"></script>

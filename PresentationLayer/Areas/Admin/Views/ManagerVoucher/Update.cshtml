@@ -1,0 +1,154 @@
+﻿
+@{
+    ViewData["Title"] = "Update";
+    Layout = "~/Areas/Admin/Views/Shared/_layoutAdmin.cshtml";
+}
+
+<h1>Update</h1>
+
+<style>
+    .form-section {
+        border: 1px solid #ccc;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+    }
+
+    .user-list {
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin-top: 10px;
+        border-radius: 5px;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    .variant-item {
+        display: flex;
+        align-items: center;
+        padding: 5px 0;
+        border-bottom: 1px solid #eee;
+    }
+
+        .variant-item:last-child {
+            border-bottom: none;
+        }
+
+        .variant-item input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+    .variant-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+        .variant-info span {
+            margin-bottom: 2px;
+        }
+
+    .form-check-inline {
+        display: flex;
+        align-items: center;
+    }
+
+        .form-check-inline input[type="radio"] {
+            margin-right: 5px;
+        }
+
+        .form-check-inline label {
+            margin-right: 15px;
+        }
+
+    .input-group-text {
+        min-width: 50px;
+        text-align: center;
+    }
+</style>
+<div class="app-title">
+    <ul class="app-breadcrumb breadcrumb">
+        <li class="breadcrumb-item">Danh sách voucher</li>
+        <li class="breadcrumb-item"><a href="#">Thêm voucher</a></li>
+    </ul>
+</div>
+<div class="row">
+    <div class="col-md-6 form-section">
+        <form asp-action="Create" id="form_voucher">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="row">
+                <div class="col-md-6">
+                    <label class="control-label">Code</label>
+                    <input class="form-control" id="code" />
+                </div>
+                <div class="col-md-6">
+                    <label class="control-label">Name</label>
+                    <input class="form-control" id="name" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <label class="control-label">Ngày bắt đầu</label>
+                    <input class="form-control" id="startdate" type="datetime-local" />
+                </div>
+                <div class="col-md-6">
+                    <label class="control-label">Ngày kết thúc</label>
+                    <input class="form-control" id="enddate" type="datetime-local" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <label class="control-label">Kiểu voucher</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" value="0" id="typePercentage" name="type">
+                        <label class="form-check-label" for="typePercentage">Giảm phần trăm</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" value="1" id="typeCash" name="type">
+                        <label class="form-check-label" for="typeCash">Giảm tiền mặt</label>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label class="control-label">Số lượng</label>
+                    <input class="form-control" id="quantity" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <label class="control-label">Giá trị tối thiểu</label>
+                    <input class="form-control" id="miniamount" />
+                </div>
+                <div class="col-md-4">
+                    <label class="control-label">Giá trị tối đa</label>
+                    <input class="form-control" id="maxamount" />
+                </div>
+                <div class="col-md-4">
+                    <label id="labelForReducedValue" class="control-label">Giá trị giảm</label>
+                    <div class="input-group">
+                        <input class="form-control" id="ReducedValue" />
+                        <span id="reducedValueSuffix" class="input-group-text">...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group form-check">
+                <input class="form-check-input" type="checkbox" id="isActive">
+                <label class="form-check-label" for="isActive">Kích hoạt</label>
+            </div>
+
+            <div class="form-group">
+                <input type="button" value="Create" id="btn_create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+
+    <div class="col-md-6 form-section">
+        <div>Người dùng áp dụng</div>
+        <div>
+            <input type="checkbox" id="checkAll" name="checkAll"> Chọn tất cả
+        </div>
+        <div id="userList" class="user-list">
+        </div>
+    </div>
+</div>
+

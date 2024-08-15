@@ -1,0 +1,191 @@
+﻿<link rel="stylesheet" type="text/css" href="~/css/main_v2.css">
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css">
+<link rel="stylesheet" href="https://unpkg.com/boxicons@latest/css/boxicons.min.css">
+<link rel="styleshecet" type="text/css"
+      href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css">
+<div class="loader" id="loader"></div>
+<style>
+    .loader {
+        border: 4px solid rgba(0, 0, 0, 0.1);
+        border-top: 4px solid #007bff;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        animation: spin 1s linear infinite;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1000;
+        display: none;
+    }
+
+    @@keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+</style>
+<div class="row">
+    <div class="col-md-7">
+        <div class="tile">
+            <div id="invoiceNumberDisplay"></div>
+
+            <input type="text" id="myInput" onkeyup="myFunction()" placeholder="Nhập mã sản phẩm hoặc tên sản phẩm để tìm kiếm...">
+            <div class="du--lieu-san-pham">
+                <table class="table table-hover table-bordered">
+                    <thead>
+                        <tr>
+                            <th class="so--luong">STT</th>
+                            <th class="so--luong">Mã</th>
+                            <th class="so--luong">Tên</th>
+                            <th class="so--luong">Ảnh</th>
+                            <th class="so--luong text-center">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productTableBody">
+                    </tbody>
+                </table>
+            </div>
+            <div class="alert">
+                <i class="fas fa-exclamation-triangle"></i> Gõ mã hoặc tên sản phẩm vào thanh tìm kiếm để thêm hàng vào đơn hàng
+            </div>
+        </div>
+    </div>
+    <div class="col-md-5">
+        <div class="tile">
+            <h3 class="tile-title">Thông tin thanh toán</h3>
+
+            <div class="row">
+                <div class="form-group col-md-12">
+                    <label class="control-label">Sản phẩm đã chọn</label>
+                    <ul id="selectedProductsList" class="list-unstyled">
+                        <li id="noProductsMessage">Chưa chọn sản phẩm</li>
+                    </ul>
+                </div>
+                <div class="form-group col-md-10">
+                    <label class="control-label">Số điện thoại khách hàng</label>
+                    <input class="form-control" type="text" id="customerPhoneNumber" placeholder="Tìm kiếm khách hàng">
+                </div>
+                <div class="form-group col-md-2">
+                    <label style="text-align: center;" class="control-label">Tạo mới</label>
+                    <button class="btn btn-primary btn-them" data-toggle="modal" data-target="#exampleModalCenter">
+                        <i class="fas fa-user-plus"></i>
+                    </button>
+                </div>
+                <div class="col-md-12" id="customerSearchResults"></div>
+
+                <div class="form-group col-md-12">
+                    <label class="control-label">Nhân viên bán hàng</label>
+                    <select class="form-control" id="exampleSelect1">
+                        <option>--- Chọn nhân viên bán hàng ---</option>
+                        <option>Võ Trường</option>
+                    </select>
+                </div>
+                <div class="form-group col-md-12">
+                    <label class="control-label">Ghi chú đơn hàng</label>
+                    <textarea class="form-control" rows="4" id="note_order" placeholder="Ghi chú thêm đơn hàng"></textarea>
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group col-md-12">
+                    <label class="control-label">Hình thức thanh toán</label>
+                    <select class="form-control" id="paymentMethodSelect" required>
+                        <option value="0">Thanh toán chuyển khoản</option>
+                        <option value="1">Trả tiền mặt tại quầy</option>
+                    </select>
+                </div>
+                <div class="form-group col-md-6">
+                    <label class="control-label">Tạm tính tiền hàng: </label>
+                    <p class="control-all-money-tamtinh">0</p>
+                </div>
+                <div class="form-group col-md-6">
+                    <label class="control-label">Giảm giá: </label>
+                    <input class="form-control" type="number" id="coupound" value="0">
+                </div>
+                <div class="form-group col-md-6">
+                    <label class="control-label">Tổng cộng thanh toán: </label>
+                    <p class="control-all-money-total" id="total_pay">0</p>
+                </div>
+                <div class="form-group col-md-6">
+                    <label class="control-label">Khách hàng đưa tiền: </label>
+                    <input class="form-control" type="number" id="money_given_by_guests" value="">
+                </div>
+                <div class="form-group col-md-12">
+                    <label class="control-label">Khách hàng còn nợ: </label>
+                    <p class="control-all-money" id="customers_still_owe">0</p>
+                </div>
+                <div class="tile-footer col-md-12">
+                    <button id="btnLuuDonHang" class="btn btn-primary luu-san-pham" type="button" disabled> Lưu đơn hàng</button>
+                    <button id="btnLuu_InHoaDon" class="btn btn-primary luu-va-in" type="button">Lưu và in hóa đơn</button>
+                    <a class="btn btn-secondary luu-va-in" href="index.html">Quay về</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+     data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="row">
+                    <div class="form-group col-md-12">
+                        <span class="thong-tin-thanh-toan">
+                            <h5>Tạo mới khách hàng</h5>
+                        </span>
+                    </div>
+                    <div class="form-group col-md-12">
+                        <label class="control-label">Họ và tên</label>
+                        <input class="form-control" type="text" required>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label class="control-label">Địa chỉ</label>
+                        <input class="form-control" type="text" required>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label class="control-label">Email</label>
+                        <input class="form-control" type="text" required>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label class="control-label">Ngày sinh</label>
+                        <input class="form-control" type="date" required>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label class="control-label">Số điện thoại</label>
+                        <input class="form-control" type="number" required>
+                    </div>
+                </div>
+                <br>
+                <button class="btn btn-save" type="button">Lưu lại</button>
+                <a class="btn btn-cancel" data-dismiss="modal" href="#">Hủy bỏ</a>
+                <br>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://code.jquery.com/jquery.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="~/js/jquery-3.2.1.min.js"></script>
+<script src="~/js/popper.min.js"></script>
+<script src="https://unpkg.com/boxicons@latest/dist/boxicons.js"></script>
+<script src="~/js/bootstrap.min.js"></script>
+<script src="~/js/main.js"></script>
+<script src="~/js/plugins/pace.min.js"></script>
+<script type="text/javascript" src="~/ajax/SalesAtTheCounter/sales_at_the_counter.js"></script>

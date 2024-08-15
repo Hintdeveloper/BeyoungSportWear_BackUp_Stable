@@ -1,0 +1,475 @@
+﻿@model BusinessLogicLayer.Viewmodels.ApplicationUser.UserDataVM
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    ViewData["Title"] = "Details";
+    Layout = "~/Areas/Admin/Views/Shared/_layoutAdmin.cshtml";
+}
+<style>
+    .table-borderless th, .table-borderless td {
+        padding: 0.25rem; /* Giảm khoảng cách giữa các ô */
+        vertical-align: middle; /* Căn giữa theo chiều dọc */
+    }
+
+    th {
+        font-weight: bold;
+    }
+
+    .table th {
+        width: 30%; /* Điều chỉnh tỷ lệ cột cho nhãn */
+    }
+</style>
+<h1>Thông tin khách hàng</h1>
+
+<div>
+    <hr />
+    <table class="table border-0" style="width:auto;">
+        <tbody>
+            <tr>
+                <td style="font-weight: bold;">
+                    @Html.DisplayNameFor(model => model.FirstAndLastName)
+                </td>
+                <td>
+                    @Html.DisplayFor(model => model.FirstAndLastName)
+                </td>
+            </tr>
+            <tr>
+                <td style="font-weight: bold;">
+                    @Html.DisplayNameFor(model => model.Gender)
+                </td>
+                    @if (Model.Gender == 0)
+                    {
+                    <td>Nam</td>
+                    }
+                    else
+                    {
+                    <td>Nữ</td>
+                    }
+            </tr>
+            <tr>
+                <td style="font-weight: bold;">
+                    @Html.DisplayNameFor(model => model.DateOfBirth.Date)
+                </td>
+                <td>
+                    @Html.DisplayFor(model => model.DateOfBirth.Date)
+                </td>
+            </tr>
+            <tr>
+                <td style="font-weight: bold;">
+                    @Html.DisplayNameFor(model => model.Email)
+                </td>
+                <td>
+                    @Html.DisplayFor(model => model.Email)
+                </td>
+            </tr>
+            <tr>
+                <td style="font-weight: bold;">
+                    @Html.DisplayNameFor(model => model.PhoneNumber)
+                </td>
+                <td>
+                    @Html.DisplayFor(model => model.PhoneNumber)
+                </td>
+            </tr>
+            <tr>
+                <td style="font-weight: bold;">
+                    @Html.DisplayNameFor(model => model.Status)
+                </td>
+                    @if (Model.Status == 1)
+                    {
+                        <td>Hoạt động</td>
+                    }
+                    else
+                    {
+                        <td>Không hoạt động</td>
+                    }
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<h2>Địa chỉ người dùng</h2>
+<div>
+    <button id="createAddressButton" class="btn btn-success" onclick="openCreateModal()">Thêm địa chỉ</button>
+    <table class="table table-borderless">
+        <thead>
+            <tr>
+                <th>Địa chỉ</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.AddressVMs != null && Model.AddressVMs.Any())
+            {
+                @foreach (var address in Model.AddressVMs)
+                {
+                    <tr>
+                        <td>@address.SpecificAddress, @address.Commune, @address.DistrictCounty, @address.City</td>
+                        <td>
+                            <button class="btn btn-warning" onclick="openEditModal('@address.ID')">Sửa</button>
+                            <button class="btn btn-danger" onclick="deleteAddress('@address.ID')">Xóa</button>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="2">Chưa có địa chỉ.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+
+<!-- Modal for editing address -->
+<div class="modal fade" id="editAddressModal" tabindex="-1" role="dialog" aria-labelledby="editAddressModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h4 class="modal-title" id="updateAddressModalLabel">Cập nhật địa chỉ</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="modal-body">
+                <input type="hidden" id="userId" value="@Model.ID" />
+                    <!-- Thêm phần tử form -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="firstAndLastName">Họ và tên:</label>
+                            <input type="text" class="form-control" id="firstAndLastName" name="firstAndLastName" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="phoneNumber">Số điện thoại:</label>
+                            <input type="text" class="form-control" id="phoneNumber" name="phoneNumber" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="gmail">Gmail:</label>
+                        <input type="email" class="form-control" id="gmail" name="gmail" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label for="city">Thành phố:</label>
+                            <select id="city" name="city" class="form-control"></select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="district">Quận/Huyện:</label>
+                            <select id="district" name="district" class="form-control"></select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="ward">Phường/Xã:</label>
+                            <select id="ward" name="ward" class="form-control"></select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="specificAddress">Địa chỉ cụ thể:</label>
+                        <input type="text" class="form-control" id="specificAddress" name="specificAddress" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="IsDefault">Chọn làm mặc định?</label>
+                        <input type="checkbox" class="form-control" id="IsDefault" name="IsDefault">
+                    </div>
+            </div>
+            <!-- Modal Footer -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary" id="saveButton">Lưu</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.ID" class="btn btn-warning">Edit</a> |
+    <a asp-action="Index" class="btn btn-link">Back to List</a>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <!-- Thêm SweetAlert2 CDN -->
+    <script>
+        function getJwtFromCookie() {
+            return getCookieValue('jwt');
+        }
+        function getCookieValue(cookieName) {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                const [name, value] = cookie.split('=').map(c => c.trim());
+                if (name === cookieName) {
+                    return decodeURIComponent(value);
+                }
+            }
+            return null;
+        }
+        function getUserIdFromJwt(jwt) {
+            try {
+                const tokenPayload = JSON.parse(atob(jwt.split('.')[1]));
+                return tokenPayload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
+            }
+            catch (error) {
+                console.error('Error parsing JWT:', error);
+                return null;
+            }
+        }
+        const jwt = getJwtFromCookie();
+        const userId = getUserIdFromJwt(jwt);
+
+        //pop up form địa chỉ
+        function openEditModal(addressId) {
+
+            console.log('Opening modal for addressId:', addressId); // Kiểm tra giá trị addressId
+            $('#editAddressModal').modal('show');
+
+            if (!addressId) {
+                console.error('Invalid addressId:', addressId);
+                Swal.fire(
+                    'Lỗi!',
+                    'Không có thông tin địa chỉ để chỉnh sửa.',
+                    'error'
+                );
+                return;
+            }
+            var saveButton = document.getElementById('saveButton');
+            saveButton.innerHTML = 'Cập nhật';
+            saveButton.onclick = function () {
+                Swal.fire({
+                    title: 'Bạn có chắc chắn?',
+                    text: "Thông tin của bạn sẽ được cập nhật.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Cập nhật',
+                    cancelButtonText: 'Hủy'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        submitAddressForm(addressId); //Hàm cập nhật địa chỉ
+                        $('#editAddressModal').modal('hide');
+                        location.reload();
+                    }
+                });
+
+            };
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', `https://localhost:7241/api/Address/GetByIDAsync/${addressId}`, true);
+            xhr.onload = function () {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    var response = JSON.parse(xhr.responseText);
+                    console.log('Address details:', response); // Kiểm tra dữ liệu trả về
+
+                    document.getElementById('specificAddress').value = response.specificAddress;
+                    document.getElementById('city').value = response.city;
+
+                    // Kích hoạt sự kiện change để load quận huyện
+                    var citySelect = document.getElementById('city');
+                    var event = new Event('change');
+                    citySelect.dispatchEvent(event);
+
+                    // Sau khi quận huyện được load, gán giá trị và kích hoạt sự kiện change để load xã phường
+                    setTimeout(function () {
+                        document.getElementById('district').value = response.districtCounty;
+                        var districtSelect = document.getElementById('district');
+                        districtSelect.dispatchEvent(event);
+                    }, 500); // Đảm bảo quận huyện đã load xong
+
+                    // Cuối cùng gán giá trị xã phường
+                    setTimeout(function () {
+                        document.getElementById('ward').value = response.commune;
+                    }, 1000); // Đảm bảo xã phường đã load xong
+
+                    document.getElementById('phoneNumber').value = response.phoneNumber;
+                    document.getElementById('firstAndLastName').value = response.firstAndLastName;
+                    document.getElementById('gmail').value = response.gmail;
+
+                } else {
+                    Swal.fire(
+                        'Lỗi!',
+                        'Không thể tải thông tin địa chỉ.',
+                        'error'
+                    );
+                }
+            };
+            xhr.send();
+
+        }
+        function openCreateModal() {
+            $('#createAddressModal').modal('show');
+        }
+        function deleteAddress(addressId) {
+            Swal.fire({
+                title: 'Bạn có chắc chắn muốn xóa địa chỉ này?',
+                text: "Hành động này không thể hoàn tác!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Có, xóa!',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('DELETE', `https://localhost:7241/api/Address/DeleteAddress/${addressId}?IDUserDelete=${userId}`, true);
+                    xhr.onload = function () {
+                        if (xhr.status >= 200 && xhr.status < 300) {
+                            Swal.fire({
+                                title: 'Đã xóa!',
+                                text: 'Địa chỉ đã được xóa thành công.',
+                                icon: 'success',
+                                confirmButtonText: 'OK'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    location.reload(); // Chỉ reload lại trang khi người dùng nhấn OK
+                                }
+                            });
+                        } else {
+                            Swal.fire(
+                                'Lỗi!',
+                                'Có lỗi xảy ra khi xóa địa chỉ.',
+                                'error'
+                            );
+                        }
+                    };
+                    xhr.onerror = function () {
+                        Swal.fire(
+                            'Lỗi!',
+                            'Có lỗi xảy ra khi kết nối với máy chủ.',
+                            'error'
+                        );
+                    };
+                    xhr.send();
+                }
+            });
+        }
+
+        function submitAddressForm(addressId) {
+            var iduser = document.getElementById('userId').value; // Thay bằng cách bạn lấy userId
+            var updatedAddress = {
+                firstAndLastName: document.getElementById('firstAndLastName').value,
+                phoneNumber: document.getElementById('phoneNumber').value,
+                gmail: document.getElementById('gmail').value,
+                city: document.getElementById('city').value,
+                districtCounty: document.getElementById('district').value,
+                commune: document.getElementById('ward').value,
+                specificAddress: document.getElementById('specificAddress').value,
+                isDefault: document.getElementById('IsDefault').checked,
+                IDUser: iduser,
+                ModifiedBy: userId
+            };
+            var xhr = new XMLHttpRequest();
+            xhr.open('PUT', `https://localhost:7241/api/Address/UpdateAddress/${addressId}`, true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+
+            xhr.onload = function () {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    Swal.fire({
+                        title: 'Đã cập nhật!',
+                        text: 'Địa chỉ đã được cập nhật thành công.',
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            location.reload(); // Chỉ reload lại trang khi người dùng nhấn OK
+                        }
+                    });
+                } else {
+                    Swal.fire(
+                        'Lỗi!',
+                        'Có lỗi xảy ra khi cập nhật địa chỉ.',
+                        'error'
+                    );
+                }
+            };
+            xhr.onerror = function () {
+                Swal.fire(
+                    'Lỗi!',
+                    'Có lỗi xảy ra khi kết nối với máy chủ.',
+                    'error'
+                );
+            };
+            xhr.send(JSON.stringify(updatedAddress));
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            var token = 'd01771f0-3f8b-11ef-8f55-4ee3d82283af';
+            var Parameter = {
+                url: "https://raw.githubusercontent.com/kenzouno1/DiaGioiHanhChinhVN/master/data.json",
+                method: "GET",
+                responseType: "json",
+            };
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', Parameter.url, true);
+            xhr.responseType = 'json';
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    renderCity(xhr.response);
+                } else {
+                    console.error('Error fetching data: ', xhr.statusText);
+                }
+            };
+            xhr.onerror = function () {
+                console.error('Request failed');
+            };
+            xhr.send();
+
+            function renderCity(data) {
+                var citiesSelect = document.getElementById("city");
+                var districtsSelect = document.getElementById("district");
+                var wardsSelect = document.getElementById("ward");
+
+                citiesSelect.innerHTML = '<option value="" selected>Chọn tỉnh thành</option>';
+                data.forEach(function (city) {
+                    var option = document.createElement("option");
+                    option.value = city.Name;
+                    option.textContent = city.Name;
+                    citiesSelect.appendChild(option);
+                });
+
+                citiesSelect.addEventListener('change', function () {
+                    districtsSelect.innerHTML = '<option value="" selected>Chọn quận huyện</option>';
+                    wardsSelect.innerHTML = '<option value="" selected>Chọn xã phường</option>';
+                    districtsSelect.disabled = true;
+                    wardsSelect.disabled = true;
+
+                    var selectedCity = data.find(city => city.Name === this.value);
+                    if (selectedCity) {
+                        selectedCity.Districts.forEach(function (district) {
+                            var option = document.createElement("option");
+                            option.value = district.Name;
+                            option.textContent = district.Name;
+                            districtsSelect.appendChild(option);
+                        });
+                        districtsSelect.disabled = false;
+                    }
+                });
+
+                districtsSelect.addEventListener('change', function () {
+                    wardsSelect.innerHTML = '<option value="" selected>Chọn xã phường</option>';
+                    wardsSelect.disabled = true;
+
+                    var selectedCity = data.find(city => city.Name === document.getElementById('city').value);
+                    if (selectedCity) {
+                        var selectedDistrict = selectedCity.Districts.find(district => district.Name === this.value);
+                        if (selectedDistrict) {
+                            selectedDistrict.Wards.forEach(function (ward) {
+                                var option = document.createElement("option");
+                                option.value = ward.Name;
+                                option.textContent = ward.Name;
+                                wardsSelect.appendChild(option);
+                            });
+                            wardsSelect.disabled = false;
+                        }
+                    }
+                });
+
+                wardsSelect.addEventListener('change', function () {
+                    // Bạn có thể thực hiện tính toán phí vận chuyển hoặc hành động khác ở đây
+                });
+            }
+        });
+
+    </script>
+}

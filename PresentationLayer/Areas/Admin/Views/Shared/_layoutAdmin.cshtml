@@ -1,0 +1,168 @@
+﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Danh sách nhân viên | Quản trị Admin</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="~/css/main_v2.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.css">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/boxicons@latest/css/boxicons.min.css">
+    <link rel="stylesheet" type="text/css"
+          href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css">
+</head>
+<body class="app sidebar-mini rtl">
+    <header class="app-header">
+        <a class="app-sidebar__toggle" href="#" data-toggle="sidebar"
+           aria-label="Hide Sidebar"></a>
+        <ul class="app-nav">
+            <li>
+                <a class="app-nav__item" asp-controller="Home" asp-action="Login">
+                    <i class='bx bx-log-out bx-rotate-180'></i>
+                </a>
+            </li>
+        </ul>
+    </header>
+    <div class="app-sidebar__overlay" data-toggle="sidebar"></div>
+    <aside class="app-sidebar">
+        <div class="app-sidebar__user">
+            <img class="app-sidebar__user-avatar" src="~/images/datnt.jpg" width="50px"
+                 alt="User Image">
+            <div>
+                <p class="app-sidebar__user-name">
+                    <b>Tuấn Đạt</b>
+                </p>
+                <p class="app-sidebar__user-designation">Chào mừng bạn trở lại</p>
+            </div>
+        </div>
+        <hr>
+        <ul class="app-menu">
+            <li>
+                <a class="app-menu__item haha" asp-area="Admin" asp-controller="SalesAtTheCounter" asp-action="Index">
+                    <i class='app-menu__icon bx bx-cart-alt'></i>
+                    <span class="app-menu__label">POS Bán Hàng</span>
+                </a>
+            </li>
+            <li>
+                <a class="app-menu__item active" href="index.html">
+                    <i class='app-menu__icon bx bx-tachometer'></i>
+                    <span class="app-menu__label">Bảng điều khiển</span>
+                </a>
+            </li>
+            <li>
+                <a class="app-menu__item " asp-area="Admin" asp-controller="Home" asp-action="Account">
+                    <i class='app-menu__icon bx bx-id-card'></i>
+                    <span class="app-menu__label">Thông tin tài khoản</span>
+                </a>
+            </li>
+
+            <li>
+                <a class="app-menu__item " asp-area="Admin" asp-controller="ManagerStaff" asp-action="Index">
+                    <i class='app-menu__icon bx bx-id-card'></i>
+                    <span class="app-menu__label">Quản lý nhân viên</span>
+                </a>
+            </li>
+            <li>
+                <a class="app-menu__item" asp-area="Admin" asp-controller="ManagerGuest" asp-action="Index">
+                    <i class='app-menu__icon bx bx-user-voice'></i>
+                    <span class="app-menu__label">Quản lý khách hàng</span>
+                </a>
+            </li>
+            <li>
+                <a class="app-menu__item" asp-area="Admin" asp-controller="ManagerProductDetails" asp-action="Index">
+                    <i class='app-menu__icon bx bx-purchase-tag-alt'></i>
+                    <span class="app-menu__label">Quản lý sản phẩm</span>
+                </a>
+            </li>
+            <li>
+                <a class="app-menu__item" asp-area="Admin" asp-controller="Brands" asp-action="Index">
+                    <i class='app-menu__icon bx bx-purchase-tag-alt'></i>
+                    <span class="app-menu__label">Quản lý thương hiệu</span>
+                </a>
+            </li>
+            <li>
+                <a class="app-menu__item" asp-area="Admin" asp-controller="Color" asp-action="Index">
+                    <i class='app-menu__icon bx bx-purchase-tag-alt'></i>
+                    <span class="app-menu__label">Quản lý màu sắc</span>
+                </a>
+            </li>
+            <li>
+                <a class="app-menu__item" asp-area="Admin" asp-controller="Materials" asp-action="Index">
+                    <i class='app-menu__icon bx bx-purchase-tag-alt'></i>
+                    <span class="app-menu__label">Quản lý chất liệu</span>
+                </a>
+            </li>
+            <li>
+                <a class="app-menu__item" asp-area="Admin" asp-controller="Category" asp-action="Index">
+                    <i class='app-menu__icon bx bx-purchase-tag-alt'></i>
+                    <span class="app-menu__label">Quản lý danh mục hàng</span>
+                </a>
+            </li>
+            <li>
+                <a class="app-menu__item" asp-area="Admin" asp-controller="Manufacturers" asp-action="Index">
+                    <i class='app-menu__icon bx bx-purchase-tag-alt'></i>
+                    <span class="app-menu__label">Quản lý nhà sản xuất</span>
+                </a>
+            </li>
+            <li>
+                <a class="app-menu__item" asp-area="Admin" asp-controller="Size" asp-action="Index">
+                    <i class='app-menu__icon bx bx-purchase-tag-alt'></i>
+                    <span class="app-menu__label">Quản lý kích thước</span>
+                </a>
+            </li>
+
+            <li>
+                <a class="app-menu__item" asp-area="Admin" asp-controller="ManagerOrder" asp-action="Index">
+                    <i class='app-menu__icon bx bx-task'></i>
+                    <span class="app-menu__label">Quản lý đơn hàng</span>
+                </a>
+            </li>
+            <li>
+                <a class="app-menu__item" asp-area="Admin" asp-controller="Voucher" asp-action="Index">
+                    <i class='app-menu__icon bx bx-run'></i>
+                    <span class="app-menu__label">
+                        Quản lý voucher
+                    </span>
+                </a>
+            </li>
+            <li>
+                <a class="app-menu__item" asp-area="Admin" asp-controller="ManagementRevenue" asp-action="Index">
+                    <i class='app-menu__icon bx bx-pie-chart-alt-2'></i>
+                    <span class="app-menu__label">Báo cáo doanh thu</span>
+                </a>
+            </li>
+        </ul>
+    </aside>
+    <main class="app-content">
+        @RenderBody()
+    </main>
+    @RenderSection("Scripts", required: false)
+    <div class="text-center" style="font-size: 13px">
+      <p><b>Copyright
+          <script type="text/javascript">
+            document.write(new Date().getFullYear());
+          </script> Phần mềm quản lý bán hàng | Dev By TDat
+        </b></p>
+    </div>
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://code.jquery.com/jquery.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="~/js/jquery-3.2.1.min.js"></script>
+    <script src="~/js/popper.min.js"></script>
+    <script src="https://unpkg.com/boxicons@latest/dist/boxicons.js"></script>
+    <script src="~/js/bootstrap.min.js"></script>
+    <script src="~/js/main.js"></script>
+    <script src="~/js/plugins/pace.min.js"></script>
+    <script type="text/javascript" src="~/js/plugins/chart.js"></script>
+</body>
+
+</html>

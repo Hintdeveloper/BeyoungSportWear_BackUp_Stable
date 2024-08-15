@@ -1,0 +1,321 @@
+﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Areas/Admin/Views/Shared/_layoutAdmin.cshtml";
+}
+<style>
+    .loader {
+        border: 4px solid rgba(0, 0, 0, 0.1);
+        border-top: 4px solid #007bff;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        animation: spin 1s linear infinite;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1000;
+        display: none;
+    }
+
+    @@keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    .container {
+        width: 100%;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #ffffff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        margin-top: 20px;
+    }
+
+    h1,
+    h2 {
+        color: #333333;
+        border-bottom: 2px solid #ddd;
+        padding-bottom: 10px;
+    }
+
+    .order-info,
+    .order-details,
+    .order-history {
+        margin-bottom: 20px;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background-color: #fafafa;
+    }
+
+        .order-info p,
+        .order-details p,
+        .order-history p {
+            margin: 5px 0;
+            padding: 5px 0;
+        }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+
+        table th,
+        table td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #dddddd;
+        }
+
+        table th {
+            background-color: #f2f2f2;
+        }
+
+        table tbody tr:nth-child(odd) {
+            background-color: #f9f9f9;
+        }
+
+    strong {
+        font-weight: bold;
+    }
+
+    #orderHistorySection {
+        /* CSS cho phần tử order-history */
+        margin-bottom: 20px;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background-color: #fafafa;
+    }
+
+        #orderHistorySection h2 {
+            /* CSS cho tiêu đề h2 trong order-history */
+            color: #333333;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 10px;
+        }
+
+        #orderHistorySection table {
+            /* CSS cho bảng trong order-history */
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+            #orderHistorySection table th,
+            #orderHistorySection table td {
+                /* CSS cho các ô th và td trong bảng */
+                padding: 10px;
+                text-align: left;
+                border: 1px solid #dddddd;
+            }
+
+            #orderHistorySection table th {
+                /* CSS cho các ô th trong bảng */
+                background-color: #f2f2f2;
+            }
+
+            #orderHistorySection table tbody tr:nth-child(odd) {
+                /* CSS cho các hàng lẻ trong tbody của bảng */
+                background-color: #f9f9f9;
+            }
+
+    .modal-content {
+        position: relative;
+        background-color: #fefefe;
+        margin: auto;
+        padding: 0;
+        border: 1px solid #888;
+        margin-top: 0px;
+        width: 130%;
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    }
+</style>
+
+<div class="loader" id="loader"></div>
+
+<div class="app-title">
+    <ul class="app-breadcrumb breadcrumb side">
+        <li class="breadcrumb-item active"><a href="#"><b>Danh sách đơn hàng</b></a></li>
+    </ul>
+    <div id="clock"></div>
+</div>
+<div>
+    <input type="text" id="searchHexCode" placeholder="Nhập mã HexCode">
+    <button onclick="searchOrder()">Tìm kiếm</button>
+    <select id="orderTypeFilter">
+        <option value="">Tất cả</option>
+        <option value="0">Đặt hàng online</option>
+        <option value="1">Đặt hàng tại cửa hàng</option>
+    </select>
+    <button onclick="filterOrders()">Lọc</button>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="tile">
+            <div class="tile-body">
+                <div class="row element-button">
+                    <div class="col-sm-2">
+                        <a class="btn btn-excel btn-sm"
+                           href="/manager_orderstatus" title="Quản lý trạng thái">
+                            <i class="fas fa-cog status-icon"></i>
+                            Quản lý trạng thái
+                        </a>
+                    </div>
+                </div>
+
+                <table class="table table-hover table-bordered" id="sampleTable">
+                    <thead>
+                        <tr>
+                            <th width="10"><input type="checkbox" id="all"></th>
+                            <th>Mã đơn hàng</th>
+                            <th>Khách hàng</th>
+                            <th>Số điện thoại</th>
+                            <th>Thời gian mua hàng</th>
+                            <th>Hình thức thanh toán</th>
+                            <th>Tổng tiền</th>
+                            <th>Kiểu đơn hàng</th>
+                            <th>Trạng thái đơn hàng</th>
+                            <th>Tính năng</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orderListBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="orderStatusModal" tabindex="-1" role="dialog" aria-labelledby="orderStatusModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="orderStatusModalLabel">Chọn Trạng Thái Đơn Hàng</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Chọn một trạng thái để cập nhật đơn hàng:</p>
+                <button class="btn btn-warning" onclick="updateOrderStatus('Processing')">Xử lý</button>
+                <button class="btn btn-info" onclick="updateOrderStatus('Shipped')">Đã vận chuyển</button>
+                <button class="btn btn-success" onclick="updateOrderStatus('Delivered')">Đã giao hàng</button>
+                <input type="hidden" id="orderId">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="OrderModal" tabindex="-1" role="dialog" aria-labelledby="OrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="OrderModalLabel">Chi tiết đơn hàng</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="container">
+                <div class="row order-info">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Ngày tạo đơn:</strong> <span id="modalcreate"></span></p>
+                            <p><strong>Voucher (nếu có):</strong> <span id="modalvoucher"></span></p>
+                            <p><strong>Hex Code:</strong> <span id="modalhexcode"></span></p>
+                            <p><strong>Họ và tên:</strong> <span id="modalcusname"></span></p>
+                            <p><strong>Số điện thoại:</strong> <span id="modalcusphone"></span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Email:</strong> <span id="modalemail"></span></p>
+                            <p><strong>Địa chỉ nhận hàng:</strong> <span id="modalshipaddess"></span></p>
+                            <p><strong>Địa chỉ cụ thể:</strong> <span id="modalshipaddress2"></span></p>
+                            <p><strong>Phí giao hàng ( nếu có ):</strong> <span id="modalcosts"></span></p>
+                            <p><strong>Tổng giá:</strong> <span id="modaltotal"></span></p>
+                            <p><strong>Hình thức thanh toán:</strong> <span id="modalpaymentmethod"></span></p>
+                            <p><strong>Trạng thái thanh toán:</strong> <span id="modalpaymentstatus"></span></p>
+                            <p><strong>Hình thức vận chuyển:</strong> <span id="modalshippingmethod"></span></p>
+                            <p><strong>Trạng thái đơn hàng:</strong> <span id="modalorderstatus"></span></p>
+                            <p><strong>Kiểu đơn hàng:</strong> <span id="modalordertype"></span></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="order-details">
+                    <h2>Chi tiết đơn hàng</h2>
+
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Tên sản phẩm</th>
+                                <th>Kích thước</th>
+                                <th>Màu sắc</th>
+                                <th>Số lượng</th>
+                                <th>Giá bán lẻ</th>
+                                <th>Tổng giá</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orderBody"></tbody>
+                    </table>
+                </div>
+                <div class="order-history" id="orderHistorySection">
+                    <h2>Lịch sử đơn hàng</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="col-2">Ngày thay đổi</th>
+                                <th class="col-4">Lịch sử chỉnh sửa</th>
+                                <th class="col-4">Chi tiết chỉnh sửa</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orderhistory_body">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="editUserModal">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Thông Tin Người Chỉnh Sửa</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <img id="userImage" src="" alt="User Image" class="img-fluid">
+                    </div>
+                    <div class="col-md-8">
+                        <p><strong>UserName:</strong> <span id="userName"></span></p>
+                        <p><strong>Họ và Tên:</strong> <span id="firstAndLastName"></span></p>
+                        <p><strong>Số điện thoại:</strong> <span id="userPhoneNumber"></span></p>
+                        <p><strong>Gmail:</strong> <span id="userEmail"></span></p>
+                        <p><strong>Chức vụ:</strong> <span id="roleName"></span></p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/ajax/admin_staff/order/order_index.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/2.0.8/css/dataTables.bootstrap5.min.css">

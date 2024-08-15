@@ -1,0 +1,211 @@
+﻿@using BusinessLogicLayer.Viewmodels.VoucherM
+@model BusinessLogicLayer.Viewmodels.VoucherM.CreateVoucherVM
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    ViewData["Title"] = "Create";
+    Layout = "~/Areas/Admin/Views/Shared/_layoutAdmin.cshtml";
+}
+
+<h2>Tạo mới voucher</h2>
+<hr />
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+<div class="row">
+    <div class="col-md-12">
+        <form asp-action="Create" method="post" onsubmit="return validateForm()">
+            @* <div asp-validation-summary="ModelOnly" class="text-danger"></div> *@
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Mã voucher</label>
+                    <div class="input-group">
+                        <input asp-for="Code" id="voucherCode" class="form-control" />
+                        <div class="input-group-append">
+                            <button type="button" class="btn btn-secondary" onclick="generateRandomCode()">Tạo ngẫu nhiên</button>
+                        </div>
+                    </div>
+                    <span asp-validation-for="Code" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label>Tên voucher</label>
+                    <input asp-for="Name" class="form-control" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label>Ngày bắt đầu</label>
+                    <input asp-for="StartDate" class="form-control" type="datetime-local" />
+                    <span asp-validation-for="StartDate" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label>Ngày kết thúc</label>
+                    <input asp-for="EndDate" class="form-control" type="datetime-local" />
+                    <span asp-validation-for="EndDate" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label>Số lượng</label>
+                    <input asp-for="Quantity" class="form-control" />
+                    <span asp-validation-for="Quantity" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label>Phương thức giảm giá</label>
+                    <select asp-for="Type" id="discountType" class="form-control">
+                        <option value="Percent">Phần trăm</option>
+                        <option value="Cash">Tiền mặt</option>
+                    </select>
+                    <span asp-validation-for="Type" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label>Số tiền chi tối thiểu</label>
+                    <div class="input-group mb-3">
+                        <input asp-for="MinimumAmount" class="form-control" data-format-currency aria-label="Minimum amount">
+                        <span class="input-group-text">VNĐ</span>
+                    </div>
+                    <span asp-validation-for="MinimumAmount" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label>Số tiền giảm tối đa</label>
+                    <div class="input-group mb-3">
+                        <input asp-for="MaximumAmount" id="maximumAmount" class="form-control" aria-label="Maximum amount">
+                        <span class="input-group-text">VNĐ</span>
+                    </div>
+                    <span asp-validation-for="MaximumAmount" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label>Số tiền giảm</label>
+                    <div class="input-group mb-3">
+                        <input asp-for="ReducedValue" id="reducedValue" class="form-control" aria-label="Reduced value" />
+                        <span id="currencyLabel" class="input-group-text">VNĐ</span>
+                    </div>
+                    <span asp-validation-for="ReducedValue" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input asp-for="ApplyToAllUsers" type="checkbox" id="applyToAllUsers" />
+                        Áp dụng cho tất cả khách hàng
+                    </label>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div id="userSelection" style="display: @(Model.ApplyToAllUsers ? "none" : "block")">
+                    <div class="form-group">
+                        <label>Chọn khách hàng áp dụng voucher</label>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Tên khách hàng</th>
+                                    <th>Số điện thoại</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var user in (List<UserVM>)ViewBag.Users)
+                                {
+                                    <tr>
+                                        <td><input type="checkbox" name="SelectedUser" value="@user.Id" @(Model.SelectedUser.Contains(user.Id) ? "checked" : "") /></td>
+                                        <td>@user.Name</td>
+                                        <td>@user.SDT</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <span asp-validation-for="SelectedUserForValidation" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Tạo mới" class="btn btn-primary" onclick="return confirmCreate();" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Trở về</a>
+</div>
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var applyToAllUsersCheckbox = document.getElementById('applyToAllUsers');
+            var userSelectionDiv = document.getElementById('userSelection');
+
+            // Cập nhật trạng thái của danh sách khách hàng khi tải trang
+            if (applyToAllUsersCheckbox.checked) {
+                userSelectionDiv.style.display = 'none';
+            } else {
+                userSelectionDiv.style.display = 'block';
+            }
+
+            // Lắng nghe sự kiện thay đổi của checkbox
+            applyToAllUsersCheckbox.addEventListener('change', function () {
+                userSelectionDiv.style.display = this.checked ? 'none' : 'block';
+            });
+
+            var discountTypeSelect = document.getElementById('discountType');
+            var reducedValueInput = document.getElementById('reducedValue');
+            var maximumAmountInput = document.getElementById('maximumAmount');
+            var currencyLabel = document.getElementById('currencyLabel');
+
+            // Đảm bảo rằng các trường được cập nhật khi trang tải
+            discountTypeSelect.addEventListener('change', function () {
+                var selectedValue = discountTypeSelect.value;
+                if (selectedValue === 'Cash') {
+                    currencyLabel.textContent = 'VNĐ';
+                    maximumAmountInput.disabled = true;
+                    maximumAmountInput.value = reducedValueInput.value;
+                } else if (selectedValue === 'Percent') {
+                    currencyLabel.textContent = '%';
+                    maximumAmountInput.disabled = false;
+                }
+            });
+
+            // Lắng nghe sự kiện thay đổi của trường số tiền giảm
+            reducedValueInput.addEventListener('input', function () {
+                if (discountTypeSelect.value === 'Cash') {
+                    maximumAmountInput.value = reducedValueInput.value;
+                }
+            });
+
+            // Kích hoạt sự kiện change để cập nhật trạng thái ban đầu
+            discountTypeSelect.dispatchEvent(new Event('change'));
+        });
+
+        function generateRandomCode() {
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let result = '';
+            const length = 10; // Độ dài mã voucher
+
+            for (let i = 0; i < length; i++) {
+                const randomIndex = Math.floor(Math.random() * characters.length);
+                result += characters[randomIndex];
+            }
+
+            document.getElementById('voucherCode').value = result;
+        }
+
+        function confirmCreate() {
+            return confirm("Bạn có chắc chắn muốn tạo mới voucher không?");
+        }
+        function validateForm() {
+            var discountTypeSelect = document.getElementById('discountType');
+            var reducedValueInput = document.getElementById('reducedValue');
+            var maximumAmountInput = document.getElementById('maximumAmount');
+
+            if (discountTypeSelect.value === 'Cash') {
+                maximumAmountInput.disabled = false;
+            }
+
+            return true;
+        }
+    </script>
+}

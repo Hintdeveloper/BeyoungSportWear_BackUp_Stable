@@ -1,0 +1,138 @@
+﻿@{
+    ViewData["Title"] = "Index_Ver_2";
+    Layout = "~/Areas/Admin/Views/Shared/_layoutAdmin.cshtml";
+}
+<style>
+    .order-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+    }
+
+        .order-table th, .order-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .order-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        .order-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .order-table tr:hover {
+            background-color: #f1f1f1;
+        }
+
+    .arrow {
+        font-size: 30px;
+        color: #ccc;
+        margin: 0px;
+    }
+
+    .order-status {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        padding: 20px;
+        border: 2px solid #ccc;
+        border-radius: 5px;
+    }
+
+    .status-item {
+        text-align: center;
+        margin: 10px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: background-color 0.3s, border-color 0.3s;
+    }
+
+    .status-icon {
+        font-size: 50px;
+        width: 100px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 10px;
+    }
+
+    .pending {
+        color: #ffc107;
+    }
+
+    .processing {
+        color: #007bff;
+    }
+
+    .shipped {
+        color: #17a2b8;
+    }
+
+    .delivered {
+        color: #28a745;
+    }
+
+    .cancelled {
+        color: #dc3545;
+    }
+
+    .selected {
+        background-color: #94bdec;
+        border-color: #0056b3;
+        color: white !important;
+    }
+</style>
+
+<div class="app-title">
+    <ul class="app-breadcrumb breadcrumb side">
+        <li class="breadcrumb-item active"><a href="#"><b>Danh sách trạng thái đơn hàng</b></a></li>
+    </ul>
+    <div id="clock"></div>
+</div>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<div class="order-status">
+    <div class="status-item" data-status="Pending" value="0">
+        <i class="fas fa-hourglass-start status-icon pending"></i>
+        <div>Chưa giải quyết</div>
+    </div>        
+    <i class="fas fa-arrow-right arrow"></i>
+
+    <div class="status-item" data-status="Processing" value="1">
+        <i class="fas fa-spinner status-icon processing"></i>
+        <div>Đang xử lý</div>
+    </div>        
+    <i class="fas fa-arrow-right arrow"></i>
+
+    <div class="status-item" data-status="Shipped" value="2">
+        <i class="fas fa-truck status-icon shipped"></i>
+        <div>Đã vận chuyển</div>
+    </div>        
+    <i class="fas fa-arrow-right arrow"></i>
+
+    <div class="status-item" data-status="Delivered" value="3">
+        <i class="fas fa-check-circle status-icon delivered"></i>
+        <div>Đã giao hàng</div>
+    </div>        
+    
+
+    <div class="status-item" data-status="Cancelled" value="4">
+        <i class="fas fa-ban status-icon cancelled"></i>
+        <div>Đã bị hủy</div>
+    </div>
+</div>
+<div>
+    <input type="text" id="searchHexCode" placeholder="Nhập mã HexCode">
+    <button onclick="searchOrder()">Tìm kiếm</button>
+</div>
+<div id="order-list" class="order-list">
+
+</div>
+<script src="~/ajax/admin_staff/order/manager_order_status.js"></script>
+

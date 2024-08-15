@@ -1,0 +1,179 @@
+﻿@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Areas/Admin/Views/Shared/_layoutAdmin.cshtml";
+}
+<style>
+    .tab-container {
+        position: relative;
+        white-space: nowrap;
+        background-color: #f9f9f9;
+    }
+
+    .tabs {
+        display: inline-block;
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+
+    .tab {
+        display: inline-block;
+        padding: 10px 20px;
+        cursor: pointer;
+        border: 1px solid #ccc;
+        border-bottom: none;
+        position: relative;
+        background-color: lawngreen;
+        margin-right: 5px;
+        border-radius: 10px 10px 0 0;
+        color: #2c6f2d;
+    }
+
+        .tab.active {
+            background-color: #fff;
+            border-color: #ddd;
+            box-shadow: 0 -2px 3px rgba(0,0,0,0.1);
+        }
+
+    .tab-content {
+        display: none;
+        padding: 0;
+        border: 1px solid #ccc;
+        height: calc(100vh - 130px); /* Điều chỉnh chiều cao của tab-content */
+        overflow: hidden;
+        border-radius: 0 0 10px 10px;
+        width: 100%; /* Đảm bảo nội dung chiếm toàn bộ chiều rộng */
+    }
+
+        .tab-content.active {
+            display: block;
+        }
+
+    iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+    }
+
+    .close-btn {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        color: red;
+        cursor: pointer;
+        font-size: 18px;
+    }
+
+    .loader {
+        border: 4px solid rgba(0, 0, 0, 0.1);
+        border-top: 4px solid #007bff;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        animation: spin 1s linear infinite;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1000;
+        display: none;
+    }
+
+    @@keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th,
+    td {
+        padding: 8px;
+        text-align: left;
+        border: 1px solid #ddd;
+    }
+
+        th.so--luong,
+        td.so--luong {
+            white-space: nowrap;
+        }
+
+    .action-button {
+        text-align: center;
+    }
+
+    img {
+        max-width: 50px;
+        height: auto;
+    }
+
+    .selected-product-frame {
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 10px;
+        margin-bottom: 10px;
+        background-color: #f9f9f9;
+    }
+
+        .selected-product-frame .row {
+            display: flex;
+            align-items: center;
+        }
+
+        .selected-product-frame .col-md-1 {
+            flex: 0 0 10%;
+            padding: 5px;
+        }
+
+        .selected-product-frame .col-md-2 {
+            flex: 0 0 20%;
+            padding: 5px;
+        }
+
+        .selected-product-frame img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 3px;
+        }
+
+        .selected-product-frame p {
+            margin: 0;
+        }
+
+        .selected-product-frame .btn {
+            margin-top: 5px;
+        }
+
+</style>
+<div class="row">
+    <div class="col-md-12">
+        <div class="app-title">
+            <ul class="app-breadcrumb breadcrumb">
+                <li class="breadcrumb-item"><a href="#"><b>POS bán hàng</b></a></li>
+            </ul>
+            <div id="clock"></div>
+        </div>
+    </div>
+</div>
+<div class="tab-container" id="tabContainer">
+    <div class="tabs">
+        <div class="tab active" onclick="openTab(event, 'HoaDon1')">
+            Hóa đơn 1
+            <span class="close-btn" onclick="closeTab(event, 'HoaDon1')">&times;</span>
+        </div>
+    </div>
+    <button onclick="addTab()" class="btn btn-primary create-tab-btn">Tạo hóa đơn mới</button>
+</div>
+<div id="HoaDon1" class="tab-content active">
+    <iframe src="https://localhost:7065/viewshare_sale_at_the_counter?invoiceNumber=1"></iframe>
+</div>
+<script type="text/javascript" src="~/ajax/admin_staff/sale/addtab_order.js"></script>
+<script type="text/javascript" src="~/ajax/admin_staff/sale/sales_at_the_counter.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/2.2.1/js.cookie.min.js"></script>

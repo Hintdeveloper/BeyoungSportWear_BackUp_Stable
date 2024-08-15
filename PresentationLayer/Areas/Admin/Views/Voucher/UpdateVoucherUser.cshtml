@@ -1,0 +1,157 @@
+﻿@using BusinessLogicLayer.Viewmodels.VoucherM
+@using static DataAccessLayer.Entity.Base.EnumBase
+@model BusinessLogicLayer.Viewmodels.VoucherM.UpdateVC
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    ViewData["Title"] = "Update Voucher";
+    Layout = "~/Areas/Admin/Views/Shared/_layoutAdmin.cshtml";
+}
+
+<h2>Cập nhật voucher</h2>
+<hr />
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+<div class="row">
+    <div class="col-md-12">
+        <form asp-action="UpdateVoucherUser" method="post" onsubmit="return validateForm()">
+            @* <div asp-validation-summary="ModelOnly" class="text-danger"></div> *@
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Mã voucher</label>
+                    <input asp-for="Code" id="voucherCode" class="form-control" readonly="@(Model.IsActive == StatusVoucher.IsBeginning ? "true" : "false")" />
+                    <span asp-validation-for="Code" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label>Tên voucher</label>
+                    <input asp-for="Name" class="form-control" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label>Ngày bắt đầu</label>
+                    <input asp-for="StartDate" class="form-control" type="datetime-local" readonly="@(Model.IsActive == StatusVoucher.IsBeginning ? "true" : "false")" />
+                    <span asp-validation-for="StartDate" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label>Ngày kết thúc</label>
+                    <input asp-for="EndDate" class="form-control" type="datetime-local" />
+                    <span asp-validation-for="EndDate" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label>Số lượng</label>
+                    <input asp-for="Quantity" class="form-control" />
+                    <span asp-validation-for="Quantity" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label>Phương thức giảm giá</label>
+                    <select asp-for="Type" id="discountType" class="form-control" readonly="@(Model.IsActive == StatusVoucher.IsBeginning ? "true" : "false")">
+                        <option value="Percent">Phần trăm</option>
+                        <option value="Cash">Tiền mặt</option>
+                    </select>
+                    <span asp-validation-for="Type" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label>Số tiền chi tối thiểu</label>
+                    <div class="input-group mb-3">
+                        <input asp-for="MinimumAmount" class="form-control" aria-label="Minimum amount" readonly="@(Model.IsActive == StatusVoucher.IsBeginning ? "true" : "false")">
+                        <span class="input-group-text">VNĐ</span>
+                    </div>
+                    <span asp-validation-for="MinimumAmount" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label>Số tiền giảm tối đa</label>
+                    <div class="input-group mb-3">
+                        <input asp-for="MaximumAmount" id="maximumAmount" class="form-control" aria-label="Maximum amount" readonly="@(Model.IsActive == StatusVoucher.IsBeginning ? "true" : "false")">
+                        <span class="input-group-text">VNĐ</span>
+                    </div>
+                    <span asp-validation-for="MaximumAmount" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label>Số tiền giảm</label>
+                    <div class="input-group mb-3">
+                        <input asp-for="ReducedValue" id="reducedValue" class="form-control" aria-label="Reduced value" readonly="@(Model.IsActive == StatusVoucher.IsBeginning ? "true" : "false")" />
+                        <span id="currencyLabel" class="input-group-text">VNĐ</span>
+                    </div>
+                    <span asp-validation-for="ReducedValue" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input asp-for="ApplyToAllUsers" type="checkbox" id="applyToAllUsers" />
+                        Áp dụng cho tất cả khách hàng
+                    </label>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div id="userSelection" style="display: @(Model.ApplyToAllUsers ? "none" : "block")">
+                    <div class="form-group">
+                        <label>Chọn khách hàng áp dụng voucher</label>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Tên khách hàng</th>
+                                    <th>Số điện thoại</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var user in (List<UserVM>)ViewBag.Users ?? new List<UserVM>())
+                                {
+                                    <tr>
+                                        <td>
+                                            <input type="checkbox" name="SelectedUser" value="@user.Id"
+                                            @(ViewBag.SelectedUserIds.Contains(user.Id) ? "checked" : "") />
+                                        </td>
+                                        <td>@user.Name</td>
+                                        <td>@user.SDT</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <span asp-validation-for="SelectedUserForValidation" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Cập nhật" class="btn btn-primary" onclick="return confirmCreate();" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Trở về</a>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var applyToAllUsersCheckbox = document.getElementById('applyToAllUsers');
+            var userSelectionDiv = document.getElementById('userSelection');
+
+            // Cập nhật trạng thái của danh sách khách hàng khi tải trang
+            if (applyToAllUsersCheckbox.checked) {
+                userSelectionDiv.style.display = 'none';
+            } else {
+                userSelectionDiv.style.display = 'block';
+            }
+
+            // Lắng nghe sự kiện thay đổi của checkbox
+            applyToAllUsersCheckbox.addEventListener('change', function () {
+                userSelectionDiv.style.display = this.checked ? 'none' : 'block';
+            });
+        });
+
+        function confirmCreate() {
+            return confirm("Bạn có chắc chắn muốn cập nhật voucher không?");
+        }
+    </script>
+}

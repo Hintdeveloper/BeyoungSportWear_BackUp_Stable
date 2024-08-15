@@ -1,0 +1,223 @@
+﻿@model IEnumerable<BusinessLogicLayer.Viewmodels.Voucher.VoucherVM>
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Areas/Admin/Views/Shared/_layoutAdmin.cshtml";
+}
+<style>
+     .custom-modal-auto {
+         max-width: 40%; /* Thiết lập chiều rộng tối đa */
+         margin: auto; /* Để canh giữa */
+         overflow-y: auto; /* Cho phép thanh cuộn nếu nội dung quá dài */
+     }
+
+         .custom-modal-auto .modal-dialog {
+             max-width: 80%;
+         }
+
+     .modal-body {
+         padding: 50px;
+     }
+
+     .modal-header {
+         background-color: #007bff; /* Màu nền */
+         color: #fff; /* Màu chữ */
+         border-bottom: none; /* Loại bỏ viền dưới */
+     }
+
+     .close {
+         color: #fff;
+         opacity: 1;
+     }
+
+     /* Thanh cuộn bên trong modal (nếu cần) */
+     .modal-body {
+         overflow-y: auto; /* Hiển thị thanh cuộn nếu nội dung quá dài */
+     }
+
+     /* Hình ảnh sản phẩm */
+     .img-fluid {
+         max-width: 80%; /* Hình ảnh sẽ không vượt quá phần tử chứa */
+         height: auto; /* Đảm bảo tỷ lệ khung hình không bị biến dạng */
+     }
+     /* Phần bảng thông tin chi tiết sản phẩm */
+     .product-details-table {
+         margin-top: 20px; /* Khoảng cách giữa phần thông tin và bảng */
+     }
+
+         /* Định dạng phần tiêu đề của bảng */
+         .product-details-table thead th {
+             background-color: #007bff; /* Màu nền */
+             color: #fff; /* Màu chữ */
+             font-weight: bold; /* Đậm */
+         }
+
+         /* Định dạng các ô dữ liệu của bảng */
+         .product-details-table tbody td {
+             vertical-align: middle; /* Căn giữa dọc */
+         }
+
+         /* Định dạng các dòng trong bảng */
+         .product-details-table tbody tr:nth-child(even) {
+             background-color: #f2f2f2; /* Màu nền xen kẽ */
+         }
+
+     .btn-details {
+         color: #007bff; /* Màu chữ */
+         background-color: transparent; /* Màu nền trong suốt */
+         border: none; /* Loại bỏ đường viền */
+         cursor: pointer; /* Con trỏ chuột chỉ */
+     }
+
+         .btn-details:hover {
+             text-decoration: underline;
+         }
+
+</style>
+
+<style>
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+
+        .table th {
+            padding: 10px;
+            text-align: center;
+            background-color: #343a40;
+            color: #fff; 
+            font-weight: bold;
+        }
+
+        .table td {
+            padding: 8px;
+            text-align: center;
+        }
+
+    .table-striped tbody tr:nth-of-type(odd) {
+        background-color: #f2f2f2;
+    }
+
+    .action-icons a {
+        color: #007bff; 
+        margin-right: 5px; 
+    }
+
+</style>
+<div class="app-title">
+    <ul class="app-breadcrumb breadcrumb side">
+        <li class="breadcrumb-item active"><a href="#"><b>Danh sách voucher</b></a></li>
+    </ul>
+    <div id="clock"></div>
+</div>
+<div class="row element-button">
+    <div class="col-sm-2">
+
+        <a class="btn btn-add btn-sm" asp-area="Admin" asp-controller="ManagerVoucher" asp-action="Create" title="Thêm">
+            <i class="fas fa-plus"></i>
+            Tạo mới voucher
+        </a>
+    </div>
+    <div class="col-sm-2">
+        <a class="btn btn-delete btn-sm nhap-tu-file" type="button" title="Nhập" onclick="myFunction(this)">
+            <i class="fas fa-file-upload"></i> Tải từ file
+        </a>
+    </div>
+
+    <div class="col-sm-2">
+        <a class="btn btn-delete btn-sm print-file" type="button" title="In" onclick="myApp.printTable()">
+            <i class="fas fa-print"></i> In dữ liệu
+        </a>
+    </div>
+    <div class="col-sm-2">
+        <a class="btn btn-delete btn-sm print-file js-textareacopybtn" type="button" title="Sao chép">
+            <i class="fas fa-copy"></i> Sao chép
+        </a>
+    </div>
+
+    <div class="col-sm-2">
+        <a class="btn btn-excel btn-sm" href="" title="In"><i class="fas fa-file-excel"></i> Xuất Excel</a>
+    </div>
+    <div class="col-sm-2">
+        <a class="btn btn-delete btn-sm pdf-file" type="button" title="In" onclick="myFunction(this)">
+            <i class="fas fa-file-pdf"></i> Xuất PDF
+        </a>
+    </div>
+    <div class="col-sm-2">
+        <a class="btn btn-delete btn-sm" type="button" title="Xóa">
+            <i class="fas fa-trash-alt"></i> Xóa tất cả
+        </a>
+    </div>
+
+</div>
+
+<table id="voucherTable" class="table">
+    <thead>
+        <tr>
+            <th>Mã</th>
+            <th>Tên</th>
+            <th>Thời gian</th>
+            <th>Số lượng</th>
+            <th>Type</th>
+            <th>Giá trị tối thiểu</th>
+            <th>Giá trị tối đa</th>
+            <th>Giá trị giảm</th>
+            <th>Trạng thái</th>
+            <th>Hành động</th>
+        </tr>
+    </thead>
+    <tbody id="voucherBody">
+       
+    </tbody>
+</table>
+
+<div class="modal fade" id="voucherModal" tabindex="-1" role="dialog" aria-labelledby="voucherModalLabel" aria-hidden="true">
+    <div class="modal-dialog custom-modal-auto" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="voucherModalLabel">Chi tiết voucher</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-7">
+                        <p><strong>Mã:</strong> <span id="modalvoucher"></span></p>
+                        <p><strong>Tên:</strong> <span id="modalvoucherName"></span></p>
+                        <p><strong>Ngày bắt đầu:</strong> <span id="modalvoucherStart"></span></p>
+                        <p><strong>Ngày kết thúc:</strong> <span id="modalvoucherEnd"></span></p>
+                        <p><strong>Kiểu voucher:</strong> <span id="modalvoucherType"></span></p>
+                        <p><strong>Số lượng:</strong> <span id="modalvoucherQuantity"></span></p>
+                        <p><strong>Giá trị tối thiểu:</strong> <span id="modalvoucherMinimum"></span></p>
+                        <p><strong>Giá trị tối đa:</strong> <span id="modalvoucherMax"></span></p>
+                        <p><strong>Giá trị giảm:</strong> <span id="modalvoucherValue"></span></p>
+                        <p><strong>Trạng thái:</strong> <span id="modalStatus"></span></p>
+                    </div>
+@*                     <div class="col-md-5">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Tên</th>
+                                    <th>Tài khoản</th>
+                                    <th>Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody id="voucherBody">
+
+                            </tbody>
+                        </table>
+                    </div>
+ *@                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" src="~/ajax/admin_staff/voucher/voucher_index.js"></script>
