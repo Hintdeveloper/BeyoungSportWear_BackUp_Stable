@@ -15,7 +15,6 @@ using System.Text.Json;
 
 namespace PresentationLayer.Areas.Admin.Controllers
 {
-    [Authorize(Roles = "Admin")]
     [Area("Admin")]
     public class ManagerStaffController : Controller
     {
@@ -137,7 +136,35 @@ namespace PresentationLayer.Areas.Admin.Controllers
                     var httpClient = new HttpClient();
                     httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken); // Use jwtToken directly
 
-                    var response = await httpClient.PostAsJsonAsync(requestURL, registerUser);
+                    // Tạo MultipartFormDataContent để gửi dữ liệu dạng form
+                    var formData = new MultipartFormDataContent();
+
+                    // Thêm các trường dữ liệu vào form-data
+                    formData.Add(new StringContent(registerUser.FirstAndLastName ?? string.Empty), nameof(registerUser.FirstAndLastName));
+                    formData.Add(new StringContent(registerUser.Username ?? string.Empty), nameof(registerUser.Username));
+                    formData.Add(new StringContent(registerUser.Password ?? string.Empty), nameof(registerUser.Password));
+                    formData.Add(new StringContent(registerUser.ConfirmPassword ?? string.Empty), nameof(registerUser.ConfirmPassword));
+                    formData.Add(new StringContent(registerUser.Email ?? string.Empty), nameof( registerUser.Email));
+                    formData.Add(new StringContent(registerUser.PhoneNumber ?? string.Empty), nameof(registerUser.PhoneNumber));
+                    formData.Add(new StringContent(registerUser.Gender.ToString() ?? string.Empty), nameof(registerUser.Gender));
+                    formData.Add(new StringContent(registerUser.DateOfBirth.ToString("yyyy-MM-dd") ?? string.Empty), nameof(registerUser.DateOfBirth));
+
+                    // Thêm hình ảnh nếu có
+                    if (registerUser.Images != null)
+                    {
+                        var stream = registerUser.Images.OpenReadStream();
+                        var fileContent = new StreamContent(stream);
+                        fileContent.Headers.ContentType = new MediaTypeHeaderValue(registerUser.Images.ContentType);
+                        formData.Add(fileContent, nameof(registerUser.Images), registerUser.Images.FileName);
+                    }
+
+                    // Thêm địa chỉ nếu có
+                        formData.Add(new StringContent(registerUser.SpecificAddress ?? string.Empty), "SpecificAddress");
+                        formData.Add(new StringContent(registerUser.City ?? string.Empty), "City");
+                        formData.Add(new StringContent(registerUser.DistrictCounty ?? string.Empty), "DistrictCounty");
+                        formData.Add(new StringContent(registerUser.Commune ?? string.Empty), "Commune");
+
+                    var response = await httpClient.PostAsync(requestURL, formData);
                     if (response.IsSuccessStatusCode)
                     {
                         Console.WriteLine("User's Password: " + registerUser.Password);

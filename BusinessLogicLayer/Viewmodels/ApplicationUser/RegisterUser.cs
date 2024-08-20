@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using BusinessLogicLayer.Viewmodels.Address;
+using Microsoft.AspNetCore.Http;
 
 namespace BusinessLogicLayer.Viewmodels.ApplicationUser
 {
@@ -17,5 +18,6 @@ namespace BusinessLogicLayer.Viewmodels.ApplicationUser
         public string DistrictCounty { get; set; } = null!;//Quận
         public string Commune { get; set; } = null!;//Xã
         public string SpecificAddress { get; set; } = null!;//Cụ thể
+        public AddressCreateVM? AddressCreateVM { get; set; }
     }
 }

@@ -18,106 +18,113 @@
         width: 30%; /* Điều chỉnh tỷ lệ cột cho nhãn */
     }
 </style>
-<h1>Thông tin khách hàng</h1>
-
-<div>
-    <hr />
-    <table class="table border-0" style="width:auto;">
-        <tbody>
-            <tr>
-                <td style="font-weight: bold;">
-                    @Html.DisplayNameFor(model => model.FirstAndLastName)
-                </td>
-                <td>
-                    @Html.DisplayFor(model => model.FirstAndLastName)
-                </td>
-            </tr>
-            <tr>
-                <td style="font-weight: bold;">
-                    @Html.DisplayNameFor(model => model.Gender)
-                </td>
-                @if (Model.Gender == 0)
-                {
-                    <td>Nam</td>
-                }
-                else
-                {
-                    <td>Nữ</td>
-                }
-            </tr>
-            <tr>
-                <td style="font-weight: bold;">
-                    @Html.DisplayNameFor(model => model.DateOfBirth.Date)
-                </td>
-                <td>
-                    @Html.DisplayFor(model => model.DateOfBirth.Date)
-                </td>
-            </tr>
-            <tr>
-                <td style="font-weight: bold;">
-                    @Html.DisplayNameFor(model => model.Email)
-                </td>
-                <td>
-                    @Html.DisplayFor(model => model.Email)
-                </td>
-            </tr>
-            <tr>
-                <td style="font-weight: bold;">
-                    @Html.DisplayNameFor(model => model.PhoneNumber)
-                </td>
-                <td>
-                    @Html.DisplayFor(model => model.PhoneNumber)
-                </td>
-            </tr>
-            <tr>
-                <td style="font-weight: bold;">
-                    @Html.DisplayNameFor(model => model.Status)
-                </td>
-                @if (Model.Status == 1)
-                {
-                    <td>Hoạt động</td>
-                }
-                else
-                {
-                    <td>Không hoạt động</td>
-                }
-            </tr>
-        </tbody>
-    </table>
-</div>
-
-<h2>Địa chỉ</h2>
-<div>
-    <table class="table table-borderless">
-        <thead>
-            <tr>
-                <th>Địa chỉ</th>
-                <th>Hành động</th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (Model.AddressVMs != null && Model.AddressVMs.Any())
-            {
-                @foreach (var address in Model.AddressVMs)
-                {
+<div class="container">
+    <div class="row">
+        <!-- Thông tin khách hàng -->
+        <div class="col-md-6">
+            <h1>Thông tin khách hàng</h1>
+            <hr />
+            <table class="table border-0" style="width:auto;">
+                <tbody>
                     <tr>
-                        <td>@address.SpecificAddress, @address.Commune, @address.DistrictCounty, @address.City</td>
+                        <td style="font-weight: bold;">
+                            @Html.DisplayNameFor(model => model.FirstAndLastName)
+                        </td>
                         <td>
-                            <button class="btn btn-warning" onclick="openEditModal('@address.ID')">Sửa</button>
-                            <button class="btn btn-danger" onclick="deleteAddress('@address.ID')">Xóa</button>
+                            @Html.DisplayFor(model => model.FirstAndLastName)
                         </td>
                     </tr>
-                }
-            }
-            else
-            {
-                <tr>
-                    <td colspan="2">Chưa có địa chỉ.</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+                    <tr>
+                        <td style="font-weight: bold;">
+                            @Html.DisplayNameFor(model => model.Gender)
+                        </td>
+                        @if (Model.Gender == 0)
+                        {
+                            <td>Nam</td>
+                        }
+                        else
+                        {
+                            <td>Nữ</td>
+                        }
+                    </tr>
+                    <tr>
+                        <td style="font-weight: bold;">
+                            @Html.DisplayNameFor(model => model.DateOfBirth.Date)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(model => model.DateOfBirth.Date)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: bold;">
+                            @Html.DisplayNameFor(model => model.Email)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(model => model.Email)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: bold;">
+                            @Html.DisplayNameFor(model => model.PhoneNumber)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(model => model.PhoneNumber)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: bold;">
+                            @Html.DisplayNameFor(model => model.Status)
+                        </td>
+                        @if (Model.Status == 1)
+                        {
+                            <td>Hoạt động</td>
+                        }
+                        else
+                        {
+                            <td>Không hoạt động</td>
+                        }
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Địa chỉ người dùng -->
+        <div class="col-md-6">
+            <h2>Địa chỉ người dùng</h2>
+            <button id="createAddressButton" class="btn btn-success" onclick="openCreateModal()">Thêm địa chỉ</button>
+            <table class="table table-borderless">
+                <thead>
+                    <tr>
+                        <th>Địa chỉ</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.AddressVMs != null && Model.AddressVMs.Any())
+                    {
+                        @foreach (var address in Model.AddressVMs)
+                        {
+                            <tr>
+                                <td>@address.SpecificAddress, @address.Commune, @address.DistrictCounty, @address.City</td>
+                                <td>
+                                    <button class="btn btn-warning" onclick="openEditModal('@address.ID')">Sửa</button>
+                                    <button class="btn btn-danger" onclick="deleteAddress('@address.ID')">Xóa</button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="2">Chưa có địa chỉ.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
+
 
 <!-- Modal for editing address -->
 <div class="modal fade" id="editAddressModal" tabindex="-1" role="dialog" aria-labelledby="editAddressModalLabel" aria-hidden="true">
@@ -133,48 +140,49 @@
 
             <!-- Modal Body -->
             <div class="modal-body">
+                <input type="hidden" id="userId" value="@Model.ID" />
+                <!-- Thêm phần tử form -->
                 <div class="row">
                     <div class="col-md-6">
                         <label for="firstAndLastName">Họ và tên:</label>
-                        <input type="text" class="form-control" id="firstAndLastName" required>
+                        <input type="text" class="form-control" id="firstAndLastName" name="firstAndLastName" required>
                     </div>
                     <div class="col-md-6">
                         <label for="phoneNumber">Số điện thoại:</label>
-                        <input type="text" class="form-control" id="phoneNumber" required>
+                        <input type="text" class="form-control" id="phoneNumber" name="phoneNumber" required>
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="gmail">Gmail:</label>
-                    <input type="email" class="form-control" id="gmail" required>
+                    <input type="email" class="form-control" id="gmail" name="gmail" required>
                 </div>
                 <div class="row">
                     <div class="col-md-4">
                         <label for="city">Thành phố:</label>
-                        <select id="city" class="form-control"></select>
+                        <select id="city" name="city" class="form-control"></select>
                     </div>
                     <div class="col-md-4">
-                        <label for="districtCounty">Quận/Huyện:</label>
-                        <select id="district" class="form-control"></select>
+                        <label for="district">Quận/Huyện:</label>
+                        <select id="district" name="district" class="form-control"></select>
                     </div>
                     <div class="col-md-4">
-                        <label for="commune">Phường/Xã:</label>
-                        <select id="ward" class="form-control"></select>
+                        <label for="ward">Phường/Xã:</label>
+                        <select id="ward" name="ward" class="form-control"></select>
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="specificAddress">Địa chỉ cụ thể:</label>
-                    <input type="text" class="form-control" id="specificAddress" required>
+                    <input type="text" class="form-control" id="specificAddress" name="specificAddress" required>
                 </div>
                 <div class="form-group">
-                    <label for="specificAddress">Chọn làm mặc định?</label>
-                    <input type="checkbox" class="form-control" id="IsDefault" required>
+                    <label for="IsDefault">Chọn làm mặc định?</label>
+                    <input type="checkbox" class="form-control" id="IsDefault" name="IsDefault">
                 </div>
             </div>
-
             <!-- Modal Footer -->
             <div class="modal-footer">
                 <button type="button" class="btn btn-danger" data-dismiss="modal">Đóng</button>
-                <button type="button" class="btn btn-primary" id="saveButton" onclick="submitAddressForm()">Lưu</button>
+                <button type="button" class="btn btn-primary" id="saveButton">Lưu</button>
             </div>
         </div>
     </div>
@@ -213,9 +221,12 @@
         }
         const jwt = getJwtFromCookie();
         const userId = getUserIdFromJwt(jwt);
+
+        //pop up form địa chỉ
         function openEditModal(addressId) {
 
             console.log('Opening modal for addressId:', addressId); // Kiểm tra giá trị addressId
+            $('#editAddressModal').modal('show');
 
             if (!addressId) {
                 console.error('Invalid addressId:', addressId);
@@ -226,7 +237,27 @@
                 );
                 return;
             }
+            var saveButton = document.getElementById('saveButton');
+            saveButton.innerHTML = 'Cập nhật';
+            saveButton.onclick = function () {
+                Swal.fire({
+                    title: 'Bạn có chắc chắn?',
+                    text: "Thông tin của bạn sẽ được cập nhật.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Cập nhật',
+                    cancelButtonText: 'Hủy'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        submitAddressForm(addressId); //Hàm cập nhật địa chỉ
+                        $('#editAddressModal').modal('hide');
+                        location.reload();
+                    }
+                });
 
+            };
             var xhr = new XMLHttpRequest();
             xhr.open('GET', `https://localhost:7241/api/Address/GetByIDAsync/${addressId}`, true);
             xhr.onload = function () {
@@ -236,12 +267,28 @@
 
                     document.getElementById('specificAddress').value = response.specificAddress;
                     document.getElementById('city').value = response.city;
-                    document.getElementById('district').value = response.districtCounty;
-                    document.getElementById('ward').value = response.commune;
+
+                    // Kích hoạt sự kiện change để load quận huyện
+                    var citySelect = document.getElementById('city');
+                    var event = new Event('change');
+                    citySelect.dispatchEvent(event);
+
+                    // Sau khi quận huyện được load, gán giá trị và kích hoạt sự kiện change để load xã phường
+                    setTimeout(function () {
+                        document.getElementById('district').value = response.districtCounty;
+                        var districtSelect = document.getElementById('district');
+                        districtSelect.dispatchEvent(event);
+                    }, 500); // Đảm bảo quận huyện đã load xong
+
+                    // Cuối cùng gán giá trị xã phường
+                    setTimeout(function () {
+                        document.getElementById('ward').value = response.commune;
+                    }, 1000); // Đảm bảo xã phường đã load xong
+
                     document.getElementById('phoneNumber').value = response.phoneNumber;
                     document.getElementById('firstAndLastName').value = response.firstAndLastName;
                     document.getElementById('gmail').value = response.gmail;
-                    $('#editAddressModal').modal('show');
+
                 } else {
                     Swal.fire(
                         'Lỗi!',
@@ -250,14 +297,11 @@
                     );
                 }
             };
-            xhr.onerror = function () {
-                Swal.fire(
-                    'Lỗi!',
-                    'Có lỗi xảy ra khi kết nối với máy chủ.',
-                    'error'
-                );
-            };
             xhr.send();
+
+        }
+        function openCreateModal() {
+            $('#createAddressModal').modal('show');
         }
         function deleteAddress(addressId) {
             Swal.fire({
@@ -275,12 +319,16 @@
                     xhr.open('DELETE', `https://localhost:7241/api/Address/DeleteAddress/${addressId}?IDUserDelete=${userId}`, true);
                     xhr.onload = function () {
                         if (xhr.status >= 200 && xhr.status < 300) {
-                            Swal.fire(
-                                'Đã xóa!',
-                                'Địa chỉ đã được xóa thành công.',
-                                'success',
-                            );
-                            location.reload(); // Hoặc cập nhật UI
+                            Swal.fire({
+                                title: 'Đã xóa!',
+                                text: 'Địa chỉ đã được xóa thành công.',
+                                icon: 'success',
+                                confirmButtonText: 'OK'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    location.reload(); // Chỉ reload lại trang khi người dùng nhấn OK
+                                }
+                            });
                         } else {
                             Swal.fire(
                                 'Lỗi!',
@@ -301,21 +349,36 @@
             });
         }
 
-        function submitAddressForm() {
-            var form = document.getElementById('editAddressForm');
-            var formData = new FormData(form);
-
+        function submitAddressForm(addressId) {
+            var iduser = document.getElementById('userId').value; // Thay bằng cách bạn lấy userId
+            var updatedAddress = {
+                firstAndLastName: document.getElementById('firstAndLastName').value,
+                phoneNumber: document.getElementById('phoneNumber').value,
+                gmail: document.getElementById('gmail').value,
+                city: document.getElementById('city').value,
+                districtCounty: document.getElementById('district').value,
+                commune: document.getElementById('ward').value,
+                specificAddress: document.getElementById('specificAddress').value,
+                isDefault: document.getElementById('IsDefault').checked,
+                IDUser: iduser,
+                ModifiedBy: userId
+            };
             var xhr = new XMLHttpRequest();
-            xhr.open('POST', `https://localhost:7241/api/Address/UpdateAddress/${addressId}`, true);
+            xhr.open('PUT', `https://localhost:7241/api/Address/UpdateAddress/${addressId}`, true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+
             xhr.onload = function () {
                 if (xhr.status >= 200 && xhr.status < 300) {
-                    Swal.fire(
-                        'Cập nhật thành công!',
-                        'Địa chỉ đã được cập nhật.',
-                        'success'
-                    );
-                    $('#editAddressModal').modal('hide');
-                    location.reload(); // Hoặc cập nhật UI
+                    Swal.fire({
+                        title: 'Đã cập nhật!',
+                        text: 'Địa chỉ đã được cập nhật thành công.',
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            location.reload(); // Chỉ reload lại trang khi người dùng nhấn OK
+                        }
+                    });
                 } else {
                     Swal.fire(
                         'Lỗi!',
@@ -331,7 +394,7 @@
                     'error'
                 );
             };
-            xhr.send(formData);
+            xhr.send(JSON.stringify(updatedAddress));
         }
 
         document.addEventListener("DOMContentLoaded", function () {

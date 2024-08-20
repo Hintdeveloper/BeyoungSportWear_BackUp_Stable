@@ -4,7 +4,6 @@
     ViewData["Title"] = "Shop";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
-
 <section class="breadcrumb-option">
     <div class="container">
         <div class="row">
@@ -52,22 +51,22 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="card">
-                                <div class="card-heading">
-                                    <a data-toggle="collapse" data-target="#collapseTwo">Filter by Price</a>
-                                </div>
-                                <div id="collapseTwo" class="collapse show" data-parent="#accordionExample">
-                                    <div class="card-body">
-                                        <div class="shop__sidebar__price">
-                                            <ul>
-                                                <li><a asp-controller="Category" asp-action="Index" asp-route-minPrice="0" asp-route-maxPrice="80000">0 - 80,000</a></li>
-                                                <!-- Add more price ranges as needed -->
-                                            </ul>
+                            <div class="shop__sidebar__search">
+                                <form asp-controller="Category" asp-action="Index" method="get">
+                                    <input type="hidden" name="categoryId" value="@Model.SelectedCategoryID" />
+                                    <div class="form-row align-items-end">
+                                        <div class="col-md-4 mb-3">
+                                            <label for="minPrice">Min Price</label>
+                                            <input type="number" class="form-control" id="minPrice" name="minPrice" step="0.01" value="@Model.MinPrice">
                                         </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="maxPrice">Max Price</label>
+                                            <input type="number" class="form-control" id="maxPrice" name="maxPrice" step="0.01" value="@Model.MaxPrice">
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">Search</button>
                                     </div>
-                                </div>
+                                </form>
                             </div>
-                            <!-- Add more filters or other options here -->
                         </div>
                     </div>
                 </div>
@@ -80,10 +79,11 @@
                             <div class="product__item">
                                 <img src="@product.ImagePaths.FirstOrDefault()" alt="Product Image" class="img-responsive">
                             </div>
+                            <a asp-controller="Main" asp-action="Product" asp-route-id="@product.ID" style="visibility: visible; color: crimson">Xem chi tiết</a>
+
                             <div class="product__item__text">
                                 <h6>@product.ProductName</h6>
-                                <a href="#" class="add-cart">+ Add To Cart</a>
-                                <h5>@product.SmallestPrice.ToString("C")</h5>
+                                <h5>@Currency.FormatCurrency(product.SmallestPrice.ToString()) đ</h5>
                             </div>
                         </div>
                     }

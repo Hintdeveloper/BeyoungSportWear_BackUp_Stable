@@ -37,7 +37,7 @@ function renderProducts(products) {
                     </div>
                     <div class="product__item__text">
                         <h6>${product.productName}</h6>
-                        <a href="#" class="add-cart" onclick="navigateToUpdatePage('${product.id}')">+ Thêm vào giỏ hàng</a>
+                        <a href="#" class="add-cart" onclick="navigateToUpdatePage('${product.id}')">Xem chi tiết</a>
                         <h5>${priceHtml}</h5>
                     </div>
                 </div>

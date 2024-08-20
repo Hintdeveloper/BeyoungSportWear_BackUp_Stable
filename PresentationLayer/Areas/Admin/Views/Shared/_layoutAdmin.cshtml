@@ -18,6 +18,31 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css">
+    <style>
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            background-color: #fff;
+            padding: 10px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+
+            .dropdown-menu a {
+                display: block;
+                color: #333; /* Màu sắc của các liên kết */
+                padding: 5px 10px;
+                text-decoration: none;
+            }
+
+                .dropdown-menu a:hover {
+                    background-color: #f1f1f1; /* Màu nền khi hover */
+                }
+
+        .dropdown.is-expanded .dropdown-menu {
+            display: block; /* Hiển thị dropdown khi nút dropdown được nhấn */
+        }
+    </style>
 </head>
 <body class="app sidebar-mini rtl">
     <header class="app-header">
@@ -82,42 +107,51 @@
                     <span class="app-menu__label">Quản lý sản phẩm</span>
                 </a>
             </li>
-            <li>
-                <a class="app-menu__item" asp-area="Admin" asp-controller="Brands" asp-action="Index">
+            <li class="dropdown">
+                <a class="app-menu__item dropdown-toggle" href="#">
                     <i class='app-menu__icon bx bx-purchase-tag-alt'></i>
-                    <span class="app-menu__label">Quản lý thương hiệu</span>
+                    <span class="app-menu__label">Quản lý phân loại</span>
                 </a>
+                <ul class="dropdown-menu">
+                    <li>
+                        <a class="app-menu__item" asp-area="Admin" asp-controller="Brands" asp-action="Index">
+                            <i class='app-menu__icon bx bx-purchase-tag-alt'></i>
+                            <span class="app-menu__label">Quản lý thương hiệu</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="app-menu__item" asp-area="Admin" asp-controller="Color" asp-action="Index">
+                            <i class='app-menu__icon bx bx-purchase-tag-alt'></i>
+                            <span class="app-menu__label">Quản lý màu sắc</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="app-menu__item" asp-area="Admin" asp-controller="Materials" asp-action="Index">
+                            <i class='app-menu__icon bx bx-purchase-tag-alt'></i>
+                            <span class="app-menu__label">Quản lý chất liệu</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="app-menu__item" asp-area="Admin" asp-controller="Category" asp-action="Index">
+                            <i class='app-menu__icon bx bx-purchase-tag-alt'></i>
+                            <span class="app-menu__label">Quản lý danh mục hàng</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="app-menu__item" asp-area="Admin" asp-controller="Manufacturers" asp-action="Index">
+                            <i class='app-menu__icon bx bx-purchase-tag-alt'></i>
+                            <span class="app-menu__label">Quản lý nhà sản xuất</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="app-menu__item" asp-area="Admin" asp-controller="Size" asp-action="Index">
+                            <i class='app-menu__icon bx bx-purchase-tag-alt'></i>
+                            <span class="app-menu__label">Quản lý kích thước</span>
+                        </a>
+                    </li>
+                </ul>
             </li>
-            <li>
-                <a class="app-menu__item" asp-area="Admin" asp-controller="Color" asp-action="Index">
-                    <i class='app-menu__icon bx bx-purchase-tag-alt'></i>
-                    <span class="app-menu__label">Quản lý màu sắc</span>
-                </a>
-            </li>
-            <li>
-                <a class="app-menu__item" asp-area="Admin" asp-controller="Materials" asp-action="Index">
-                    <i class='app-menu__icon bx bx-purchase-tag-alt'></i>
-                    <span class="app-menu__label">Quản lý chất liệu</span>
-                </a>
-            </li>
-            <li>
-                <a class="app-menu__item" asp-area="Admin" asp-controller="Category" asp-action="Index">
-                    <i class='app-menu__icon bx bx-purchase-tag-alt'></i>
-                    <span class="app-menu__label">Quản lý danh mục hàng</span>
-                </a>
-            </li>
-            <li>
-                <a class="app-menu__item" asp-area="Admin" asp-controller="Manufacturers" asp-action="Index">
-                    <i class='app-menu__icon bx bx-purchase-tag-alt'></i>
-                    <span class="app-menu__label">Quản lý nhà sản xuất</span>
-                </a>
-            </li>
-            <li>
-                <a class="app-menu__item" asp-area="Admin" asp-controller="Size" asp-action="Index">
-                    <i class='app-menu__icon bx bx-purchase-tag-alt'></i>
-                    <span class="app-menu__label">Quản lý kích thước</span>
-                </a>
-            </li>
+
 
             <li>
                 <a class="app-menu__item" asp-area="Admin" asp-controller="ManagerOrder" asp-action="Index">
@@ -163,6 +197,29 @@
     <script src="~/js/main.js"></script>
     <script src="~/js/plugins/pace.min.js"></script>
     <script type="text/javascript" src="~/js/plugins/chart.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Bắt sự kiện click vào dropdown toggle
+            $('.dropdown-toggle').on('click', function (e) {
+                e.preventDefault();
+                var $dropdownMenu = $(this).next('.dropdown-menu');
+
+                // Đóng các dropdown khác nếu đang mở
+                $('.dropdown-menu').not($dropdownMenu).slideUp();
+
+                // Toggle dropdown hiện tại
+                $dropdownMenu.slideToggle();
+            });
+
+            // Đóng dropdown khi click bên ngoài
+            $(document).on('click', function (event) {
+                if (!$(event.target).closest('.dropdown').length) {
+                    $('.dropdown-menu').slideUp();
+                }
+            });
+        });
+    </script>
+
 </body>
 
 </html>

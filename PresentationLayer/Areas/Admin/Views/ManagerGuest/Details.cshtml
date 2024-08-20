@@ -18,106 +18,111 @@
         width: 30%; /* Điều chỉnh tỷ lệ cột cho nhãn */
     }
 </style>
-<h1>Thông tin khách hàng</h1>
-
-<div>
-    <hr />
-    <table class="table border-0" style="width:auto;">
-        <tbody>
-            <tr>
-                <td style="font-weight: bold;">
-                    @Html.DisplayNameFor(model => model.FirstAndLastName)
-                </td>
-                <td>
-                    @Html.DisplayFor(model => model.FirstAndLastName)
-                </td>
-            </tr>
-            <tr>
-                <td style="font-weight: bold;">
-                    @Html.DisplayNameFor(model => model.Gender)
-                </td>
-                    @if (Model.Gender == 0)
-                    {
-                    <td>Nam</td>
-                    }
-                    else
-                    {
-                    <td>Nữ</td>
-                    }
-            </tr>
-            <tr>
-                <td style="font-weight: bold;">
-                    @Html.DisplayNameFor(model => model.DateOfBirth.Date)
-                </td>
-                <td>
-                    @Html.DisplayFor(model => model.DateOfBirth.Date)
-                </td>
-            </tr>
-            <tr>
-                <td style="font-weight: bold;">
-                    @Html.DisplayNameFor(model => model.Email)
-                </td>
-                <td>
-                    @Html.DisplayFor(model => model.Email)
-                </td>
-            </tr>
-            <tr>
-                <td style="font-weight: bold;">
-                    @Html.DisplayNameFor(model => model.PhoneNumber)
-                </td>
-                <td>
-                    @Html.DisplayFor(model => model.PhoneNumber)
-                </td>
-            </tr>
-            <tr>
-                <td style="font-weight: bold;">
-                    @Html.DisplayNameFor(model => model.Status)
-                </td>
-                    @if (Model.Status == 1)
-                    {
-                        <td>Hoạt động</td>
-                    }
-                    else
-                    {
-                        <td>Không hoạt động</td>
-                    }
-            </tr>
-        </tbody>
-    </table>
-</div>
-
-<h2>Địa chỉ người dùng</h2>
-<div>
-    <button id="createAddressButton" class="btn btn-success" onclick="openCreateModal()">Thêm địa chỉ</button>
-    <table class="table table-borderless">
-        <thead>
-            <tr>
-                <th>Địa chỉ</th>
-                <th>Hành động</th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (Model.AddressVMs != null && Model.AddressVMs.Any())
-            {
-                @foreach (var address in Model.AddressVMs)
-                {
+<div class="container">
+    <div class="row">
+        <!-- Thông tin khách hàng -->
+        <div class="col-md-6">
+            <h1>Thông tin khách hàng</h1>
+            <hr />
+            <table class="table border-0" style="width:auto;">
+                <tbody>
                     <tr>
-                        <td>@address.SpecificAddress, @address.Commune, @address.DistrictCounty, @address.City</td>
+                        <td style="font-weight: bold;">
+                            @Html.DisplayNameFor(model => model.FirstAndLastName)
+                        </td>
                         <td>
-                            <button class="btn btn-warning" onclick="openEditModal('@address.ID')">Sửa</button>
-                            <button class="btn btn-danger" onclick="deleteAddress('@address.ID')">Xóa</button>
+                            @Html.DisplayFor(model => model.FirstAndLastName)
                         </td>
                     </tr>
-                }
-            }
-            else
-            {
-                <tr>
-                    <td colspan="2">Chưa có địa chỉ.</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+                    <tr>
+                        <td style="font-weight: bold;">
+                            @Html.DisplayNameFor(model => model.Gender)
+                        </td>
+                        @if (Model.Gender == 0)
+                        {
+                            <td>Nam</td>
+                        }
+                        else
+                        {
+                            <td>Nữ</td>
+                        }
+                    </tr>
+                    <tr>
+                        <td style="font-weight: bold;">
+                            @Html.DisplayNameFor(model => model.DateOfBirth.Date)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(model => model.DateOfBirth.Date)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: bold;">
+                            @Html.DisplayNameFor(model => model.Email)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(model => model.Email)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: bold;">
+                            @Html.DisplayNameFor(model => model.PhoneNumber)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(model => model.PhoneNumber)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: bold;">
+                            @Html.DisplayNameFor(model => model.Status)
+                        </td>
+                        @if (Model.Status == 1)
+                        {
+                            <td>Hoạt động</td>
+                        }
+                        else
+                        {
+                            <td>Không hoạt động</td>
+                        }
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Địa chỉ người dùng -->
+        <div class="col-md-6">
+            <h2>Địa chỉ người dùng</h2>
+            <button id="createAddressButton" class="btn btn-success" onclick="openCreateModal()">Thêm địa chỉ</button>
+            <table class="table table-borderless">
+                <thead>
+                    <tr>
+                        <th>Địa chỉ</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.AddressVMs != null && Model.AddressVMs.Any())
+                    {
+                        @foreach (var address in Model.AddressVMs)
+                        {
+                            <tr>
+                                <td>@address.SpecificAddress, @address.Commune, @address.DistrictCounty, @address.City</td>
+                                <td>
+                                    <button class="btn btn-warning" onclick="openEditModal('@address.ID')">Sửa</button>
+                                    <button class="btn btn-danger" onclick="deleteAddress('@address.ID')">Xóa</button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="2">Chưa có địa chỉ.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 

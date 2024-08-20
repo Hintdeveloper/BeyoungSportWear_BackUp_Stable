@@ -5,12 +5,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using NuGet.Protocol;
+using PresentationLayer.Areas.Admin.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 
 namespace PresentationLayer.Areas.Admin.Controllers
 {
-    [Authorize(Roles = "Admin,Staff")]
     [Area("admin")]
     public class ManagerGuestController : Controller
     {
@@ -151,22 +151,36 @@ namespace PresentationLayer.Areas.Admin.Controllers
 
                     string requestURL = $"https://localhost:7241/api/ApplicationUser/GetInformationUser/{ID}";
                     var httpClient = new HttpClient();
-                    httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken); // Use jwtToken directly
+                    httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
 
                     var response = await httpClient.GetAsync(requestURL);
                     string apiData = await response.Content.ReadAsStringAsync();
+
                     if (response.IsSuccessStatusCode)
                     {
-                        var users = JsonConvert.DeserializeObject<UserUpdateVM>(apiData);
-                        return View(users);
+                        var userDTO = JsonConvert.DeserializeObject<UserUpdateDTO>(apiData);
+                        if (userDTO != null)
+                        {
+                            var userVM = new UserUpdateVM
+                            {
+                                ModifiedBy = userDTO.ModifiedBy,
+                                FirstAndLastName = userDTO.FirstAndLastName,
+                                Email = userDTO.Email,
+                                PhoneNumber = userDTO.PhoneNumber,
+                                Gender = userDTO.Gender,
+                                DateOfBirth = userDTO.DateOfBirth,
+                                AddressUpdateVM = userDTO.AddressUpdateVM,
+                                // Không gán trực tiếp Images từ URL vào IFormFile, giữ nó null cho phần edit.
+                            };
+
+                            return View(userVM);
+                        }
                     }
                 }
                 catch (Exception)
                 {
                     return BadRequest();
-                    throw;
                 }
-
             }
             return Unauthorized();
         }
@@ -384,6 +398,21 @@ namespace PresentationLayer.Areas.Admin.Controllers
             return Unauthorized();
         }
 
+        public async Task<IFormFile> DownloadFileAsIFormFileAsync(string url, string fileName)
+        {
+            using (var httpClient = new HttpClient())
+            {
+                var fileBytes = await httpClient.GetByteArrayAsync(url);
 
+                var stream = new MemoryStream(fileBytes);
+                var formFile = new FormFile(stream, 0, fileBytes.Length, null, fileName)
+                {
+                    Headers = new HeaderDictionary(),
+                    ContentType = "application/octet-stream"
+                };
+
+                return formFile;
+            }
+        }
     }
 }
