@@ -101,7 +101,7 @@ namespace ExternalInterfaceLayer.Controllers
 
         [Authorize(Roles = "Admin")]
 
-        [HttpGet("SetStatus/{ID}")]
+        [HttpGet("ChangeStatus/{ID}")]
         public async Task<IActionResult> ChangeStatus(string ID)
         {
             var success = await _IUserService.SetStatus(Guid.Parse(ID));

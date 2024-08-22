@@ -16,15 +16,15 @@
         <div class="tile">
             <div class="tile-body">
 
-@*                 <div class="row element-button">
+                <div class="row element-button">
                     <div class="col-sm-2">
 
-                        <a class="btn btn-add btn-sm disabled" href="form-add-nhan-vien.html" title="Thêm">
+                        <a class="btn btn-add btn-sm" asp-action="Create" asp-controller="ManagerGuest" title="Thêm">
                             <i class="fas fa-plus"></i>
-                            Tạo mới
+                            Tạo mới khách hàng
                         </a>
                     </div>
-                    <div class="col-sm-2">
+@*                     <div class="col-sm-2">
                         <a class="btn btn-delete btn-sm nhap-tu-file" type="button" title="Nhập" onclick="myFunction(this)">
                             <i class="fas fa-file-upload"></i> Tải từ file
                         </a>
@@ -53,9 +53,9 @@
                         <a class="btn btn-delete btn-sm" type="button" title="Xóa" onclick="myFunction(this)">
                             <i class="fas fa-trash-alt"></i> Xóa tất cả
                         </a>
-                    </div>
+                    </div> *@
                 </div>
- *@
+
                 <div class="row">
                     <form asp-action="Index" method="get" class="form-inline">
                         <div class="form-group col-md-3">
@@ -136,7 +136,7 @@
                                     <td>
                                         <a asp-action="Edit" asp-route-id="@item.ID" class="btn btn-warning">Edit</a> |
                                         <a asp-action="Details" asp-route-id="@item.ID" class="btn btn-info">Details</a> |
-                                        <a asp-action="ChangeStatus" asp-route-id="@item.ID" class="btn btn-outline-info">ChangeStatus</a>
+                                        <a asp-action="ChangeStatus" asp-route-id="@item.ID" class="btn btn-outline-info changebtn">ChangeStatus</a>
                                     </td>
                                 </tr>
 
@@ -148,7 +148,65 @@
         </div>
     </div>
 </div>
+<script>
+    document.querySelectorAll(".changebtn").forEach(function (button) {
+        button.addEventListener("click", function (event) {
+            event.preventDefault(); // Ngăn chặn hành vi mặc định của thẻ a
 
+            Swal.fire({
+                title: 'Bạn có chắc chắn muốn đổi trạng thái người dùng này?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'OK',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Lấy URL từ href của thẻ a
+                    const url = this.href;
+
+                    console.log("Fetching URL:", url);
+
+                    // Gửi yêu cầu AJAX
+                    fetch(url, {
+                        method: 'GET'
+                    })
+                        .then(response => {
+                            if (response.ok) {
+                                // Nếu server trả về redirect, xử lý thông báo thành công
+                                return response.text(); // Đọc phản hồi dưới dạng văn bản
+                            } else {
+                                // Nếu có lỗi, đọc phản hồi dưới dạng văn bản và hiển thị thông báo lỗi
+                                return response.text().then(text => {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Lỗi!',
+                                        text: text || 'Có lỗi xảy ra khi gửi yêu cầu.'
+                                    });
+                                    throw new Error(text);
+                                });
+                            }
+                        })
+                        .then(text => {
+                            // Nếu phản hồi thành công, hiển thị thông báo thành công
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Thành công!',
+                                text: 'Trạng thái người dùng đã được thay đổi.'
+                            }).then(() => {
+                                // Chuyển hướng sau khi hiển thị thông báo thành công
+                                window.location.href = '@Url.Action("Index")';
+                            });
+                        })
+                        .catch(error => {
+                            console.error("Fetch error:", error.message);
+                        });
+                }
+            });
+        });
+    });
+</script>
 <div class="modal fade" id="ModalUP" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static"
      data-keyboard="false">
     <div class="modal-dialog modal-dialog-centered" role="document">
@@ -213,3 +271,4 @@
         </div>
     </div>
 </div>
+

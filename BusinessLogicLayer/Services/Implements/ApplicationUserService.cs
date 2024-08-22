@@ -100,7 +100,7 @@ namespace BusinessLogicLayer.Services.Implements
                 {
                     From = new MailAddress(_mailSettings.Mail, _mailSettings.DisplayName),
                     Subject = "Xác nhận địa chỉ email",
-                    Body = $"Vui lòng xác nhận địa chỉ email của bạn bằng cách nhấp vào <a href='{callbackUri}'>đây</a>.",
+                    Body = $"Vui lòng xác nhận địa chỉ email của bạn bằng cách nhấp vào <a href='{callbackUri}'>đây</a>",
                     IsBodyHtml = true
                 };
 

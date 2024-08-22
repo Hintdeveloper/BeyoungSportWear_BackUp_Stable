@@ -253,7 +253,6 @@
                     if (result.isConfirmed) {
                         submitAddressForm(addressId); //Hàm cập nhật địa chỉ
                         $('#editAddressModal').modal('hide');
-                        location.reload();
                     }
                 });
 
@@ -301,7 +300,38 @@
 
         }
         function openCreateModal() {
-            $('#createAddressModal').modal('show');
+            // Reset các trường nhập liệu trong modal
+            document.getElementById('specificAddress').value = '';
+            document.getElementById('phoneNumber').value = '';
+            document.getElementById('firstAndLastName').value = '';
+            document.getElementById('gmail').value = '';
+            document.getElementById('city').value = '';
+            document.getElementById('district').value = '';
+            document.getElementById('ward').value = '';
+            document.getElementById('IsDefault').checked = false;
+
+            $('#editAddressModal').modal('show');
+
+            var saveButton = document.getElementById('saveButton');
+            saveButton.innerHTML = 'Thêm mới';
+            saveButton.onclick = function (event) {
+                Swal.fire({
+                    title: 'Bạn có chắc chắn?',
+                    text: "Thông tin địa chỉ mới sẽ được thêm.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Thêm',
+                    cancelButtonText: 'Hủy'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        submitNewAddressForm(); // Hàm tạo địa chỉ mới
+                        $('#editAddressModal').modal('hide');
+                        // location.reload(); // Refresh trang để hiển thị địa chỉ mới trong danh sách
+                    }
+                });
+            };
         }
         function deleteAddress(addressId) {
             Swal.fire({
@@ -396,7 +426,55 @@
             };
             xhr.send(JSON.stringify(updatedAddress));
         }
+        function submitNewAddressForm() {
+            var iduser = document.getElementById('userId').value;
+            var newAddress = {
+                firstAndLastName: document.getElementById('firstAndLastName').value,
+                phoneNumber: document.getElementById('phoneNumber').value,
+                gmail: document.getElementById('gmail').value,
+                city: document.getElementById('city').value,
+                districtCounty: document.getElementById('district').value,
+                commune: document.getElementById('ward').value,
+                specificAddress: document.getElementById('specificAddress').value,
+                isDefault: document.getElementById('IsDefault').checked,
+                IDUser: iduser,
+                createBy: userId // userId được lấy từ JWT
+            };
 
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', `https://localhost:7241/api/Address/create_address`, true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+
+            xhr.onload = function () {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    Swal.fire({
+                        title: 'Đã thêm!',
+                        text: 'Địa chỉ mới đã được thêm thành công.',
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            location.reload(); // Reload trang để hiển thị địa chỉ mới trong danh sách
+                        }
+                    });
+                } else {
+                    console.error('Error:', xhr.status, xhr.statusText);
+                    Swal.fire(
+                        'Lỗi!',
+                        'Có lỗi xảy ra khi thêm địa chỉ.',
+                        'error'
+                    );
+                }
+            };
+            xhr.onerror = function () {
+                Swal.fire(
+                    'Lỗi!',
+                    'Có lỗi xảy ra khi kết nối với máy chủ.',
+                    'error'
+                );
+            };
+            xhr.send(JSON.stringify(newAddress));
+        }
         document.addEventListener("DOMContentLoaded", function () {
             var token = 'd01771f0-3f8b-11ef-8f55-4ee3d82283af';
             var Parameter = {

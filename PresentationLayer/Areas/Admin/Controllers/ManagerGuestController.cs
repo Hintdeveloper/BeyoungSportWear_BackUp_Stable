@@ -8,6 +8,7 @@ using NuGet.Protocol;
 using PresentationLayer.Areas.Admin.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
+using System.Text;
 
 namespace PresentationLayer.Areas.Admin.Controllers
 {
@@ -109,6 +110,83 @@ namespace PresentationLayer.Areas.Admin.Controllers
             }
             return Unauthorized();
         }
+        [HttpGet("home/guest/create")]
+        public async Task<IActionResult> Create()
+        {
+            return View();
+        }
+        [HttpPost("home/guest/create")]
+        public async Task<IActionResult> Create(RegisterUser registerUser, string role)
+        {
+            if (HttpContext.Request.Cookies.TryGetValue("jwt", out string jwtToken))
+            {
+                try
+                {
+                    var handler = new JwtSecurityTokenHandler();
+                    var token = handler.ReadJwtToken(jwtToken);
+
+                    role = "Client";
+
+                    registerUser.Password = GenerateRandomPassword(10);
+                    registerUser.ConfirmPassword = registerUser.Password;
+                    string requestURL = $"https://localhost:7241/api/ApplicationUser/Register?role={role}";
+                    var httpClient = new HttpClient();
+                    httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken); // Use jwtToken directly
+
+                    // Tạo MultipartFormDataContent để gửi dữ liệu dạng form
+                    var formData = new MultipartFormDataContent();
+
+                    // Thêm các trường dữ liệu vào form-data
+                    formData.Add(new StringContent(registerUser.FirstAndLastName ?? string.Empty), nameof(registerUser.FirstAndLastName));
+                    formData.Add(new StringContent(registerUser.Username ?? string.Empty), nameof(registerUser.Username));
+                    formData.Add(new StringContent(registerUser.Password ?? string.Empty), nameof(registerUser.Password));
+                    formData.Add(new StringContent(registerUser.ConfirmPassword ?? string.Empty), nameof(registerUser.ConfirmPassword));
+                    formData.Add(new StringContent(registerUser.Email ?? string.Empty), nameof(registerUser.Email));
+                    formData.Add(new StringContent(registerUser.PhoneNumber ?? string.Empty), nameof(registerUser.PhoneNumber));
+                    formData.Add(new StringContent(registerUser.Gender.ToString() ?? string.Empty), nameof(registerUser.Gender));
+                    formData.Add(new StringContent(registerUser.DateOfBirth.ToString("yyyy-MM-dd") ?? string.Empty), nameof(registerUser.DateOfBirth));
+
+                    // Thêm hình ảnh nếu có
+                    if (registerUser.Images != null)
+                    {
+                        var stream = registerUser.Images.OpenReadStream();
+                        var fileContent = new StreamContent(stream);
+                        fileContent.Headers.ContentType = new MediaTypeHeaderValue(registerUser.Images.ContentType);
+                        formData.Add(fileContent, nameof(registerUser.Images), registerUser.Images.FileName);
+                    }
+
+                    // Thêm địa chỉ nếu có
+                    formData.Add(new StringContent(registerUser.SpecificAddress ?? string.Empty), "SpecificAddress");
+                    formData.Add(new StringContent(registerUser.City ?? string.Empty), "City");
+                    formData.Add(new StringContent(registerUser.DistrictCounty ?? string.Empty), "DistrictCounty");
+                    formData.Add(new StringContent(registerUser.Commune ?? string.Empty), "Commune");
+
+                    var response = await httpClient.PostAsync(requestURL, formData);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        Console.WriteLine("User's Password: " + registerUser.Password);
+                        TempData["SuccessMessage"] = "Người dùng đã được tạo thành công!";
+                        return RedirectToAction("Index");
+                    }
+                    else
+                    {
+                        var errorMessage = await response.Content.ReadAsStringAsync();
+                        // Log the error message or inspect it for further details
+                        TempData["ErrorMessage"] = $"Đã xảy ra lỗi: {errorMessage}";
+                        return View(registerUser);
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    TempData["ErrorMessage"] = $"Đã xảy ra lỗi: {ex.Message}";
+                    return View(registerUser);
+                }
+
+            }
+            return Unauthorized();
+        }
+
         [HttpGet("home/guest/details/{ID}")]
         public async Task<IActionResult> Details(Guid ID)
         {
@@ -260,7 +338,7 @@ namespace PresentationLayer.Areas.Admin.Controllers
                     var handler = new JwtSecurityTokenHandler();
                     var token = handler.ReadJwtToken(jwtToken);
 
-                    string requestURL = $"https://localhost:7241/api/ApplicationUser/SetStatus/{ID}";
+                    string requestURL = $"https://localhost:7241/api/ApplicationUser/ChangeStatus/{ID}";
                     var httpClient = new HttpClient();
                     httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken); // Use jwtToken directly
 
@@ -396,6 +474,35 @@ namespace PresentationLayer.Areas.Admin.Controllers
                 }
             }
             return Unauthorized();
+        }
+        public string GenerateRandomPassword(int length)
+        {
+            // Ensure the length is at least 4 to accommodate all required characters
+            if (length < 4)
+            {
+                length = 10;
+            }
+
+            const string upperChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            const string numberChars = "1234567890";
+            const string specialChars = "!@#$%^&*()";
+            const string validChars = "abcdefghijklmnopqrstuvwxyz" + upperChars + numberChars + specialChars;
+
+            StringBuilder password = new StringBuilder();
+            Random random = new Random();
+
+            // Ensure at least one uppercase letter, one number, and one special character
+            password.Append(upperChars[random.Next(upperChars.Length)]);
+            password.Append(numberChars[random.Next(numberChars.Length)]);
+            password.Append(specialChars[random.Next(specialChars.Length)]);
+
+            // Fill the rest of the password length with random characters
+            while (password.Length < length)
+            {
+                password.Append(validChars[random.Next(validChars.Length)]);
+            }
+
+            return password.ToString();
         }
 
         public async Task<IFormFile> DownloadFileAsIFormFileAsync(string url, string fileName)
