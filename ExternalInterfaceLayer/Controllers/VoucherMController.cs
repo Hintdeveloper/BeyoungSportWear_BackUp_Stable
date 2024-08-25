@@ -128,6 +128,30 @@ namespace ExternalInterfaceLayer.Controllers
 
             return Ok(new { Exists = exists });
         }
+        [HttpPost("ToggleStatus/{id}/{userId}")]
+        public async Task<IActionResult> ToggleStatus(Guid id, string userId)
+        {
+            var result = await _voucherService.ToggleVoucherStatusAsync(id, userId);
 
+            if (!result)
+            {
+                return BadRequest(new { status = "Error", message = "Failed to update voucher status." });
+            }
+
+            return Ok(new { status = "Success", message = "Voucher status updated successfully." });
+        }
+
+        [HttpGet("GetVouchersByUserId")]
+        public async Task<IActionResult> GetVouchersByUserIdWithStatusAsync(string idUser)
+        {
+            var vouchers = await _voucherService.GetVouchersByUserIdWithStatusAsync(idUser);
+
+            if (vouchers == null || !vouchers.Any())
+            {
+                return NotFound("No vouchers found for the given user ID.");
+            }
+
+            return Ok(vouchers);
+        }
     }
 }

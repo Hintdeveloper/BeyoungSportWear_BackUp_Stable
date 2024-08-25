@@ -6,7 +6,7 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddHostedService<VoucherStatusUpdateService>();
+//builder.Services.AddHostedService<VoucherStatusUpdateService>();
 var cloudinaryAccount = new Account("drv4cstnl", "818812395582614", "HvaCHQdfLUBn5pB90ayzUpCqqmk");
 var cloudinary = new Cloudinary(cloudinaryAccount);
 builder.Services.AddSingleton(cloudinary);

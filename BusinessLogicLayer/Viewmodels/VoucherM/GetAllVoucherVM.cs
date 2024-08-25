@@ -25,4 +25,26 @@ namespace BusinessLogicLayer.Viewmodels.VoucherM
         public List<string> IDUser { get; set; }
         public int Status { get; set; }
     }
+    public class VoucherViewModel
+    {
+        public Guid ID { get; set; }
+        public Guid IDUser { get; set; }
+        public decimal MinimumAmount { get; set; }
+        public string Code { get; set; }
+        public string Name { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+        public int Quantity { get; set; }
+        public decimal ReducedValue { get; set; }
+        public StatusVoucher? IsActive { get; set; }
+        public int status { get; set; }
+        public int DaysLeft
+        {
+            get
+            {
+                return (EndDate - DateTime.Today).Days;
+            }
+        }
+
+    }
 }

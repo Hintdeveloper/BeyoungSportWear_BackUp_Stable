@@ -92,9 +92,9 @@ namespace BusinessLogicLayer.Services.Implements
         public async Task<List<GetAllVoucherVM>> GetAll()
         {
             var vouchers = await _dbcontext.Voucher
-                                           .Include(c => c.VoucherUser)                                          
-                                           .OrderBy(p => p.Status == 0 ? 1 : 0)
-                                           .ThenByDescending(p => p.CreateDate)
+                                           .Include(c => c.VoucherUser)
+                                           .OrderBy(p => p.IsActive.HasValue ? (int)p.IsActive.Value : int.MaxValue)
+                                   .ThenByDescending(p => p.CreateDate)
                                            .Select(p => new GetAllVoucherVM
                                            {
                                                ID = p.ID,
@@ -277,7 +277,7 @@ namespace BusinessLogicLayer.Services.Implements
         }
 
         public async Task UpdateVoucherStatusesAsync()
-        {
+            {
             var today = DateTime.Now; 
 
             // Lấy tất cả voucher từ cơ sở dữ liệu
@@ -431,6 +431,63 @@ namespace BusinessLogicLayer.Services.Implements
         public async Task<bool> IsVoucherCodeExistsAsync(string code)
         {
             return await _dbcontext.Voucher.AnyAsync(v => v.Code == code);
+        }
+        public async Task<bool> ToggleVoucherStatusAsync(Guid ID, string IDUser)
+        {
+            try
+            {
+                var voucher = await _dbcontext.Voucher.FirstOrDefaultAsync(c => c.ID == ID);
+
+                if (voucher != null)
+                {
+                    if (voucher.IsActive == StatusVoucher.IsBeginning || voucher.IsActive == StatusVoucher.HasntStartedYet)
+                    {
+                        voucher.IsActive = StatusVoucher.Finished;
+                    }
+                    else if (voucher.IsActive == StatusVoucher.Finished)
+                    {
+                        voucher.IsActive = voucher.IsActive == StatusVoucher.IsBeginning ? StatusVoucher.HasntStartedYet : StatusVoucher.IsBeginning;
+                    }
+
+                    voucher.DeleteDate = DateTime.Now;
+                    voucher.DeleteBy = IDUser;
+
+                    _dbcontext.Voucher.Attach(voucher);
+                    await _dbcontext.SaveChangesAsync();
+
+                    return true;
+                }
+
+                return false;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public async Task<List<VoucherViewModel>> GetVouchersByUserIdWithStatusAsync(string idUser)
+        {
+            var voucherList = await _dbcontext.VoucherUser
+                                         .Where(vu => vu.IDUser == idUser
+                                                   && (vu.Voucher.IsActive == StatusVoucher.IsBeginning))
+                                         .Select(vu => new VoucherViewModel
+                                         {
+                                             ID = vu.IDVoucher,
+                                             IDUser = Guid.Parse(vu.IDUser),
+                                             MinimumAmount = vu.Voucher.MinimumAmount,
+                                             Code = vu.Voucher.Code,
+                                             Name = vu.Voucher.Name,
+                                             StartDate = vu.Voucher.StartDate,
+                                             EndDate = vu.Voucher.EndDate,
+                                             Quantity = vu.Voucher.Quantity,
+                                             ReducedValue = vu.Voucher.ReducedValue,
+                                             IsActive = vu.Voucher.IsActive,
+                                             status = vu.Status,
+                                         })
+                                         .ToListAsync();
+
+            return voucherList;
         }
     }
 }

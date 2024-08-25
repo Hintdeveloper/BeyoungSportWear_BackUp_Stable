@@ -23,5 +23,7 @@ namespace BusinessLogicLayer.Services.Interface
         public Task<bool> UpdateVoucherUser(Guid ID, UpdateVC request);
         Task<List<string>> GetVoucherUsersAsync(Guid id);
         Task<bool> IsVoucherCodeExistsAsync(string code);
+        public Task<bool> ToggleVoucherStatusAsync(Guid ID, string IDUser);
+        public Task<List<VoucherViewModel>> GetVouchersByUserIdWithStatusAsync(string idUser);
     }
 }

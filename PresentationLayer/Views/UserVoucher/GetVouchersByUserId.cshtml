@@ -1,0 +1,132 @@
+﻿@using BusinessLogicLayer.Viewmodels.VoucherM
+@model IEnumerable<VoucherViewModel>
+
+@{
+    ViewData["Title"] = "Danh sách Voucher";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<style>
+    .card {
+        background-color: white;
+        border-radius: 10px;
+        padding: 15px;
+        width: 95%;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .card-title {
+        font-size: 16px;
+        font-weight: bold;
+    }
+
+    .card-body {
+        font-size: 14px;
+    }
+
+    .status {
+        padding: 5px 10px;
+        border-radius: 5px;
+        background-color: #f0f0f0;
+        color: #555;
+    }
+
+    .status-used {
+        background-color: #4CAF50;
+        color: white;
+    }
+
+    .status-expired {
+        background-color: #f44336;
+        color: white;
+    }
+
+    .card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 10px;
+    }
+
+    .card-footer-left {
+        font-size: 12px;
+        color: #777;
+    }
+
+    .card-footer-right {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 5px 10px;
+        border-radius: 5px;
+        background-color: #f0f0f0;
+        color: #555;
+        font-size: 12px;
+    }
+
+        .card-footer-right a {
+            color: #555;
+            text-decoration: none;
+        }
+
+            .card-footer-right a:hover {
+                text-decoration: underline;
+            }
+
+    .button {
+        padding: 10px 20px;
+        border-radius: 5px;
+        background-color: #4CAF50;
+        color: white;
+        font-weight: bold;
+        font-size: 16px;
+        border: none;
+        cursor: pointer;
+    }
+
+        .button:hover {
+            background-color: #3e8e41;
+        }
+</style>
+<div class="container">
+    <h2 style="color:ActiveBorder">Danh sách ưu đãi của bạn</h2>
+    @foreach (var item in Model)
+    {
+        <div class="card">
+
+            <div class="card-header">
+                <div class="card-title"> Ưu đãi : @Html.DisplayFor(modelItem => item.Name)  </div>
+                <div class="status status-used">
+                    @if (item.status == 0)
+                    {
+                        <span>Đã sử dụng</span>
+                    }
+                    else
+                    {
+                        <span>Chưa sử dụng</span>
+                    }
+                </div>
+            </div>
+            <div class="card-body">
+                Mã Voucher :  @item.Code
+            </div>
+            <div class="card-body">
+                Giảm : @Html.DisplayFor(modelItem => item.ReducedValue) .vnđ 
+                <br />
+                Nếu số tiền thanh toán từ : @Html.DisplayFor(modelItem => item.MinimumAmount) .vnđ
+            </div>
+            <div class="card-footer">
+                <div class="card-footer-left">HSD Còn : @item.DaysLeft </div>
+            </div>
+        </div>
+    }  
+</div>

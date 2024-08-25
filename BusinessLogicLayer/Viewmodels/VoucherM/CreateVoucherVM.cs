@@ -15,10 +15,11 @@ namespace BusinessLogicLayer.Viewmodels.VoucherM
         public string CreateBy { get; set; }
         [Required(ErrorMessage = "Mã voucher không được để trống")]
         [StringLength(10, ErrorMessage = "Mã voucher không được vượt quá 10 ký tự")]
-        [RegularExpression(@"^\S*$", ErrorMessage = "Mã voucher không được chứa khoảng trắng")]
+        [RegularExpression(@"^[a-zA-Z0-9]*$", ErrorMessage = "Mã voucher không được chứa ký tự đặc biệt hoặc khoảng trắng")]
         public string Code { get; set; } = null!;
 
         [Required(ErrorMessage = "Tên voucher không được để trống")]
+        [RegularExpression(@"^[a-zA-Z0-9\s]*$", ErrorMessage = "Mã voucher không được chứa ký tự đặc biệt")]
         public string Name { get; set; } = null!;
 
         [Required(ErrorMessage = "Ngày bắt đầu không được để trống")]
