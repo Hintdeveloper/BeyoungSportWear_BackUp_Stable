@@ -102,30 +102,35 @@
                     method: 'POST',
                     body: formData
                 })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Thành công!',
-                                text: data.message
-                            }).then(() => {
-                                window.location.href = '@Url.Action("Index")';
-                            });
+                    .then(response => {
+                        if (response.ok) {
+                            // Nếu server trả về redirect, xử lý thông báo thành công
+                            return response.text(); // Đọc phản hồi dưới dạng văn bản
                         } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Lỗi!',
-                                text: data.message
+                            // Nếu có lỗi, đọc phản hồi dưới dạng văn bản và hiển thị thông báo lỗi
+                            return response.text().then(text => {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Lỗi!',
+                                    text: text || 'Có lỗi xảy ra khi gửi yêu cầu.'
+                                });
+                                throw new Error(text);
                             });
                         }
                     })
-                    .catch(error => {
+                    .then(text => {
+                        // Nếu phản hồi thành công, hiển thị thông báo thành công
                         Swal.fire({
-                            icon: 'error',
-                            title: 'Lỗi!',
-                            text: 'Có lỗi xảy ra khi gửi yêu cầu.'
+                            icon: 'success',
+                            title: 'Thành công!',
+                            text: 'Danh mục hàng đã được tạo thành công'
+                        }).then(() => {
+                            // Chuyển hướng sau khi hiển thị thông báo thành công
+                            window.location.href = '@Url.Action("Index")';
                         });
+                    })
+                    .catch(error => {
+                        console.error("Fetch error:", error.message);
                     });
             }
         });
