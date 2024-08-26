@@ -26,7 +26,7 @@
             <i class="fas fa-plus"></i>
             Tạo mới voucher
         </a>
-        
+
     </div>
     <div class="col-sm-4">
         <form id="searchForm" method="get" action="@Url.Action("SearchVouchers", "Voucher", new { area = "Admin" })">
@@ -44,7 +44,7 @@
         <tr>
 
             <th>
-               STT 
+                STT
             </th>
             <th>
                 Mã voucher
@@ -74,12 +74,10 @@
                 Số tiền giảm
             </th>
             <th>
-                Trạng thái hoạt động
+                Trạng thái hoạt động 2
             </th>
+
             
-           @*  <th>
-                Trạng thái hoạt động
-            </th> *@
         </tr>
     </thead>
     <tbody>
@@ -88,7 +86,7 @@
         }
         @foreach (var item in Model)
         {
-            <tr>
+            <tr data-id="@item.ID">
                 <td>
                     @count
                 </td>
@@ -141,7 +139,7 @@
                         <text>Không xác định</text>
                     }
                 </td>
-                <td>
+                @* <td>
                     @if (item.IsActive.HasValue)
                     {
                         switch (item.IsActive.Value)
@@ -157,21 +155,11 @@
                                 break;
                         }
                     }
-                </td>
-                @* <td>
-                    @if (item.Status == 0)
-                    {
-                        <text>Không hoạt động</text>
-                    }
-                    else if (item.Status == 1)
-                    {
-                        <text>Đang hoạt động</text>
-                    }
-                    else
-                    {
-                        <text>Không xác định</text>
-                    }
                 </td> *@
+                <td>
+                    @(item.IsActive == StatusVoucher.HasntStartedYet ? "Chưa bắt đầu" : item.IsActive == StatusVoucher.IsBeginning ? "Đang diễn ra" : "Đã kết thúc")
+                </td>
+                
                 <td>
                     @if (item.IsActive != StatusVoucher.Finished)
                     {
@@ -179,19 +167,12 @@
                             <i class="fas fa-edit"></i>
                         </a>
                     }
+
                     
-                    @* <a asp-action="Update" asp-controller="Voucher" asp-route-id="@item.ID" class="btn btn-primary btn-sm edit" title="Sửa">
-                        <i class="fas fa-edit"></i>
-                    </a> *@
                     <a asp-action="Detail" asp-controller="Voucher" asp-route-id="@item.ID" class="btn btn-primary btn-sm view" type="button" title="Xem chi tiết">
                         <i class="fas fa-eye"></i>
                     </a>
-                    @* <form asp-action="Delete" asp-controller="Voucher" method="post" id="deleteForm-@item.ID" style="display:inline;">
-                        <input type="hidden" name="id" value="@item.ID" />
-                        <button type="submit" class="btn btn-primary btn-sm trash" title="Ẩn bán" onclick="return confirmDelete();">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
-                    </form> *@
+                    
 
                     <form asp-action="ToggleStatus" asp-controller="Voucher" asp-route-id="@item.ID" method="post" id="toggleForm-@item.ID" style="display:inline;">
                         <input type="hidden" name="id" value="@item.ID" />
@@ -203,13 +184,18 @@
                         </label>
                     </form>
                 </td>
-                
+
             </tr>
             count++;
         }
     </tbody>
 </table>
 <script type="text/javascript">
+    const StatusVoucher = {
+        HasntStartedYet: 0,
+        IsBeginning: 1,
+        Finished: 2
+    };
     function confirmDelete() {
         return confirm("Bạn có chắc chắn muốn xóa không?");
     }
@@ -233,14 +219,14 @@
         var form = document.getElementById('toggleForm-' + id);
         form.submit();
     }
-    
-    
+
+
     function autoUpdateVoucherStatus() {
         $.ajax({
-            url: 'https://localhost:7241/api/VoucherM/update-status', 
+            url: 'https://localhost:7241/api/VoucherM/update-status',
             type: 'POST',
             success: function (response) {
-                console.log(response.message); 
+                console.log(response.message);
                 refreshVoucherStatus();
             },
             error: function (xhr, status, error) {
@@ -254,8 +240,28 @@
             url: 'https://localhost:7241/api/VoucherM/getall',
             type: 'GET',
             success: function (data) {
-                
-                $('#voucherTable').html(data); 
+                data.forEach(function (item) {
+                    const statusText = item.IsActive === StatusVoucher.HasntStartedYet ? 'Chưa bắt đầu' :
+                        item.IsActive === 1 ? 'Đang diễn ra' :
+                            'Đã kết thúc';
+
+                    const $row = $(`#voucherTable tbody tr[data-id="${item.ID}"]`);
+
+                    if ($row.length) {
+                        $row.find('td:nth-child(10)').text(statusText);
+
+                        const $toggle = $row.find('input[type="checkbox"]');
+                        const $toggleIcon = $row.find('.fas');
+
+                        if (item.IsActive !== 2) {
+                            $toggle.prop('checked', true);
+                            $toggleIcon.removeClass('fa-toggle-off').addClass('fa-toggle-on');
+                        } else {
+                            $toggle.prop('checked', false);
+                            $toggleIcon.removeClass('fa-toggle-on').addClass('fa-toggle-off');
+                        }
+                    }
+                });
             },
             error: function (xhr, status, error) {
                 console.error('Error refreshing voucher list:', error);
@@ -263,6 +269,7 @@
         });
     }
 
-    
-    setInterval(autoUpdateVoucherStatus, 500); 
+
+    setInterval(autoUpdateVoucherStatus, 500);
+    setInterval(refreshVoucherStatus,1000);
 </script>
