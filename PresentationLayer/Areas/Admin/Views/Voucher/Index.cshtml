@@ -197,9 +197,9 @@
                         <input type="hidden" name="id" value="@item.ID" />
 
                         <input style="display: none;" type="checkbox" id="toggle-@item.ID" onchange="toggleVoucherStatus('@item.ID');"
-                        @(item.IsActive == StatusVoucher.IsBeginning ? "checked" : "") />
+                        @(item.IsActive == StatusVoucher.HasntStartedYet || item.IsActive == StatusVoucher.IsBeginning ? "checked" : "") />
                         <label for="toggle-@item.ID" class="btn btn-primary btn-sm">
-                            <i id="toggleIcon-@item.ID" class="fas @(item.IsActive == StatusVoucher.IsBeginning ? "fa-toggle-on" : "fa-toggle-off")"></i>
+                            <i id="toggleIcon-@item.ID" class="fas @(item.IsActive == StatusVoucher.HasntStartedYet || item.IsActive == StatusVoucher.IsBeginning ? "fa-toggle-on" : "fa-toggle-off")"></i>
                         </label>
                     </form>
                 </td>
@@ -219,11 +219,11 @@
         const checkbox = document.getElementById(`toggle-${id}`);
 
         if (checkbox.checked) {
-            // Nếu được chọn, trạng thái là IsBeginning
+            // Nếu checkbox được chọn, giá trị là 1
             statusInput.value = 1; // IsBeginning
         } else {
-            // Nếu không được chọn, bạn có thể quyết định trạng thái dựa trên logic của bạn
-            statusInput.value = 2; // Finished hoặc một trạng thái khác mà bạn mong muốn
+            // Nếu checkbox không được chọn, giá trị là 2
+            statusInput.value = 2; // Finished
         }
 
         document.getElementById(`toggleForm-${id}`).submit();
