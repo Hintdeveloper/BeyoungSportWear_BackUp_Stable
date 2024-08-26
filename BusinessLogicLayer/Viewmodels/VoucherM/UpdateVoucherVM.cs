@@ -34,19 +34,19 @@ namespace BusinessLogicLayer.Viewmodels.VoucherM
         public DateTime EndDate { get; set; }
 
         [Required(ErrorMessage = "Số lượng không được để trống")]
-        [Range(1, 99999, ErrorMessage = "Số lượng phải lớn hơn 0 và nhỏ hơn 100000")]
+        [Range(1, 9999, ErrorMessage = "Số lượng phải lớn hơn 0 và nhỏ hơn 10000")]
         public int Quantity { get; set; }
         [Required(ErrorMessage = "Phương thức giảm giá không được để trống")]
         public Types Type { get; set; }
         [Required(ErrorMessage = "Số tiền chi tối thiểu không được để trống")]
-        [Range(0.01, double.MaxValue, ErrorMessage = "Số tiền giảm tối thiểu phải lớn hơn 0")]
+        [Range(0.01, 10000000, ErrorMessage = "Số tiền giảm tối thiểu phải lớn hơn 0 10000000")]
         public decimal MinimumAmount { get; set; }
         [Required(ErrorMessage = "Số tiền giảm tối đa không được để trống")]
-        [Range(0.01, double.MaxValue, ErrorMessage = "Số tiền giảm tối đa phải lớn hơn 0")]
+        [Range(0.01, 10000000, ErrorMessage = "Số tiền giảm tối đa phải lớn hơn 0 10000000")]
         //[CustomDecimalGreaterThan(nameof(MinimumAmount), ErrorMessage = "Số tiền giảm tối đa phải lớn hơn số tiền giảm tối thiểu")]
         public decimal MaximumAmount { get; set; }
         [Required(ErrorMessage = "Số tiền giảm không được để trống")]
-        [Range(0.01, double.MaxValue, ErrorMessage = "Số tiền giảm phải lớn hơn 0")]
+        [Range(0.01, 10000000, ErrorMessage = "Số tiền giảm phải lớn hơn 0 10000000")]
         [ValidateReducedValueUpdate]
         public decimal ReducedValue { get; set; }
         public StatusVoucher IsActive { get; set; }
