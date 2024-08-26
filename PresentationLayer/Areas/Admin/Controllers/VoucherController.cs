@@ -84,6 +84,14 @@ namespace PresentationLayer.Areas.Admin.Controllers
 
             if (!checkResponse.IsSuccessStatusCode)
             {
+                var usersResponse = await client.GetAsync("https://localhost:7241/api/VoucherM/getallClient");
+                List<UserVM> users = new List<UserVM>();
+                if (usersResponse.IsSuccessStatusCode)
+                {
+                    var usersContent = await usersResponse.Content.ReadAsStringAsync();
+                    users = JsonConvert.DeserializeObject<List<UserVM>>(usersContent);
+                }
+                ViewBag.Users = users;
                 ModelState.AddModelError(string.Empty, "Có lỗi xảy ra khi kiểm tra mã voucher.");
                 return View(model);
             }
