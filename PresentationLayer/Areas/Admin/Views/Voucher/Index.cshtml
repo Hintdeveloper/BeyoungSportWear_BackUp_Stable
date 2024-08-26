@@ -251,7 +251,7 @@
 
     function refreshVoucherStatus() {
         $.ajax({
-            url: '/Admin/Voucher/GetAllVouchers', 
+            url: 'https://localhost:7241/api/VoucherM/getall',
             type: 'GET',
             success: function (data) {
                 
@@ -264,5 +264,5 @@
     }
 
     
-    setInterval(autoUpdateVoucherStatus, 1); 
+    setInterval(autoUpdateVoucherStatus, 500); 
 </script>
