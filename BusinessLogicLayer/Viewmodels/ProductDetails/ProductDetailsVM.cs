@@ -34,6 +34,6 @@ namespace BusinessLogicLayer.Viewmodels.ProductDetails
         public List<OptionsVM> Options { get; set; }
         public List<ImageVM> ImageVM { get; set; }
         public bool IsActive { get; set; }
-        public string? Barcode { get; set; }
+        //public string? Barcode { get; set; }
     }
 }

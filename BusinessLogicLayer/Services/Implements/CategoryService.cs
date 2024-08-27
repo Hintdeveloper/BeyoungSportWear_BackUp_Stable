@@ -76,7 +76,7 @@ namespace BusinessLogicLayer.Services.Implements
                 Style = p.Style,
                 Origin = p.Origin,
                 IsActive = p.IsActive,
-                Barcode = p.BarCode,
+                //Barcode = p.BarCode,
                 Status = 1,
             }).ToList();
         }
@@ -165,7 +165,7 @@ namespace BusinessLogicLayer.Services.Implements
                 Style = p.Style,
                 Origin = p.Origin,
                 IsActive = p.IsActive,
-                Barcode = p.BarCode,
+                //Barcode = p.BarCode,
                 Status = p.Status,
             }).ToList();
         }

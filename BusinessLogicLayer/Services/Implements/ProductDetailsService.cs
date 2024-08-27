@@ -256,7 +256,7 @@ namespace BusinessLogicLayer.Services.Implements
                         Origin = request.Origin,
                         Style = request.Style,
                         KeyCode = request.KeyCode,
-                        BarCode = request.BarCode,
+                        //BarCode = request.BarCode,
                         Description = request.Description,
                         IsActive = request.IsActive,
                         CreateBy = request.CreateBy,

@@ -28,7 +28,7 @@ namespace BusinessLogicLayer.Viewmodels.ProductDetails
         public string Origin { get; set; } = null!; 
         public List<string> ImagePaths { get; set; } = null!;
         public bool IsActive { get; set; }
-        public string BarCode { get; set; }
+        //public string BarCode { get; set; }
         public List<OptionsCreateVM> OptionsCreateVM { get; set; } 
     }
 }

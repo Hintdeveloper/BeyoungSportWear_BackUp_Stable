@@ -14,7 +14,7 @@ namespace DataAccessLayer.Entity
         public string Style { get; set; } = null!;
         public string Origin { get; set; } = null!;
         public bool IsActive { get; set; }
-        public string BarCode { get; set; }
+        //public string BarCode { get; set; }
 
         public virtual Product Products { get; set; } = null!;
         public virtual Material Material { get; set; } = null!;

@@ -27,6 +27,6 @@ namespace BusinessLogicLayer.Viewmodels.ProductDetails
 		public List<string> Color { get; set; }
 		public string ImageURL_Only { get; set; }
 		public int Status { get; set; }
-        public string? Barcode { get; set; }
+        //public string? Barcode { get; set; }
     }
 }
