@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 
 namespace BusinessLogicLayer.Viewmodels.Order
 {
-    public class UpdateOrderStatusRequest
+    public class OrderResult
     {
-        public int Status { get; set; }
-        public string IDUser { get; set; }
+        public bool Success { get; set; }
+        public string ErrorMessage { get; set; }
+        public decimal TotalAmount { get; set; }
     }
 }

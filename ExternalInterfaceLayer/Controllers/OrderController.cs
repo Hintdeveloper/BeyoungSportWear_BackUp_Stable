@@ -29,7 +29,7 @@ namespace ExternalInterfaceLayer.Controllers
 
             var result = await _orderService.CreateAsync(request);
 
-            if (result)
+            if (result.Success)
             {
                 if (printInvoice)
                 {
@@ -205,7 +205,7 @@ namespace ExternalInterfaceLayer.Controllers
         [HttpPut("UpdateOrderStatus/{orderId}")]
         public async Task<IActionResult> UpdateOrderStatus(Guid orderId, [FromBody] UpdateOrderStatusRequest request)
         {
-            if (request == null || string.IsNullOrEmpty(request.Status) || string.IsNullOrEmpty(request.IDUser))
+            if (request == null || request.Status==null || string.IsNullOrEmpty(request.IDUser))
             {
                 return BadRequest("Invalid request data");
             }

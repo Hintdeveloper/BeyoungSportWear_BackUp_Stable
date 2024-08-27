@@ -900,7 +900,6 @@ function setCookie(name, value, days) {
     }
     document.cookie = name + "=" + (value || "") + expires + "; path=/";
 }
-
 function loadDataFromCookies() {
     const invoiceNumberDisplay = document.getElementById('invoiceNumberDisplay').innerText;
     const tabName = invoiceNumberDisplay.replace('Hóa đơn số: ', '').replace(/\s/g, '');
@@ -1304,7 +1303,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (printInvoice) {
                         window.open(`http://127.0.0.1:8080/${pdfUrl}`, '_blank');
                     } else {
-                        window.location.href = `/manager_orderstatus_verII/${response.id}`;
+                        window.location.href = `/order_success`;
                     }
                 });
             } else {
@@ -1968,56 +1967,56 @@ function formatReducedValue(type, value) {
 function formatDate(date) {
     return date.toLocaleTimeString() + ' ' + date.toLocaleDateString();
 }
-function openModal() {
-    document.getElementById('barcodeModal').style.display = 'block';
-}
-function closeModal() {
-    document.getElementById('barcodeModal').style.display = 'none';
-    stopBarcodeScanner();
-}
-document.getElementById('btn_barcode_sweep').addEventListener('click', function () {
-    openModal();
-    startBarcodeScanner();
-});
-function startBarcodeScanner() {
-    const quaggaConf = {
-        inputStream: {
-            name: "Live",
-            type: "LiveStream",
-            target: document.querySelector("#camera"),
-            constraints: {
-                width: { min: 640 },
-                height: { min: 480 },
-                facingMode: "environment"
-            }
-        },
-        decoder: {
-            readers: ['code_128_reader'],
-            multiple: false
-        },
-        locate: true,
-        frequency: 50
-    };
+//function openModal() {
+//    document.getElementById('barcodeModal').style.display = 'block';
+//}
+//function closeModal() {
+//    document.getElementById('barcodeModal').style.display = 'none';
+//    stopBarcodeScanner();
+//}
+//document.getElementById('btn_barcode_sweep').addEventListener('click', function () {
+//    openModal();
+//    startBarcodeScanner();
+//});
+//function startBarcodeScanner() {
+//    const quaggaConf = {
+//        inputStream: {
+//            name: "Live",
+//            type: "LiveStream",
+//            target: document.querySelector("#camera"),
+//            constraints: {
+//                width: { min: 640 },
+//                height: { min: 480 },
+//                facingMode: "environment"
+//            }
+//        },
+//        decoder: {
+//            readers: ['code_128_reader'],
+//            multiple: false
+//        },
+//        locate: true,
+//        frequency: 50
+//    };
 
 
-    Quagga.init(quaggaConf, function (err) {
-        if (err) {
-            console.error("Quagga initialization error: ", err);
-            return;
-        }
-        console.log("Quagga initialized");
-        Quagga.start();
-    });
+//    Quagga.init(quaggaConf, function (err) {
+//        if (err) {
+//            console.error("Quagga initialization error: ", err);
+//            return;
+//        }
+//        console.log("Quagga initialized");
+//        Quagga.start();
+//    });
 
-    Quagga.onDetected(function (result) {
-        console.log("Detected barcode: " + result.codeResult.code);
-        Quagga.stop();
+//    Quagga.onDetected(function (result) {
+//        console.log("Detected barcode: " + result.codeResult.code);
+//        Quagga.stop();
 
-    });
-}
-function stopBarcodeScanner() {
-    Quagga.stop();
-}
-document.querySelector('.close-button').addEventListener('click', function () {
-    closeModal();
-});
+//    });
+//}
+//function stopBarcodeScanner() {
+//    Quagga.stop();
+//}
+//document.querySelector('.close-button').addEventListener('click', function () {
+//    closeModal();
+//});

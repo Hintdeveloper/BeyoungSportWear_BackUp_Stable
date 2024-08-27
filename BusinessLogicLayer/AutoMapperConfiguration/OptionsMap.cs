@@ -14,6 +14,8 @@ namespace BusinessLogicLayer.AutoMapperConfiguration
         public OptionsMap()
         {
             CreateMap<Options, OptionsVM>()
+                .ForMember(dest => dest.KeyCode, opt => opt.MapFrom(erc => erc.ProductDetails.KeyCode))
+                .ForMember(dest => dest.ProductName, opt => opt.MapFrom(erc => erc.ProductDetails.Products.Name))
                 .ForMember(dest => dest.ColorName, opt => opt.MapFrom(erc => erc.Colors.Name))
                 .ForMember(dest => dest.SizesName, opt => opt.MapFrom(erc => erc.Sizes.Name))
                 .ReverseMap();

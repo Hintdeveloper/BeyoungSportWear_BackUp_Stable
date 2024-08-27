@@ -1,7 +1,18 @@
-﻿@{
-    ViewData["Title"] = "Index";
+﻿﻿@{
+    ViewData["Title"] = "Create";
     Layout = "~/Areas/Admin/Views/Shared/_layoutAdmin.cshtml";
 }
+
+<!-- Các thư viện CSS khác -->
+<link rel="stylesheet" type="text/css" href="~/css/main_v2.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css">
+<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+
+<!-- Bootstrap CSS -->
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
 <style>
     .tab-container {
         position: relative;
@@ -167,6 +178,7 @@
         <div class="tab active" onclick="openTab(event, 'HoaDon1')">
             Hóa đơn 1
             <span class="close-btn" onclick="closeTab(event, 'HoaDon1')">&times;</span>
+
         </div>
     </div>
     <button onclick="addTab()" class="btn btn-primary create-tab-btn">Tạo hóa đơn mới</button>
@@ -174,8 +186,58 @@
 <div id="HoaDon1" class="tab-content active">
     <iframe src="https://localhost:7065/viewshare_sale_at_the_counter?invoiceNumber=1"></iframe>
 </div>
-<script type="text/javascript" src="~/ajax/admin_staff/sale/addtab_order.js"></script>
-<script type="text/javascript" src="~/ajax/admin_staff/sale/sales_at_the_counter.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/2.2.1/js.cookie.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+<!-- Các thư viện JavaScript khác -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/2.2.1/js.cookie.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/5.0.7/signalr.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@@ericblade/quagga2/dist/quagga.min.js"></script>
+
+<script type="text/javascript" src="~/ajax/admin_staff/sale/addtab_order.js"></script>
+<script type="text/javascript" src="~/ajax/admin_staff/sale/sales_at_the_counter_verII.js"></script>
+
+<!-- Bootstrap JS (nhúng sau khi tải jQuery nếu cần) -->
+<script type="text/javascript">
+    //Thời Gian
+    function time() {
+        var today = new Date();
+        var weekday = new Array(7);
+        weekday[0] = "Chủ Nhật";
+        weekday[1] = "Thứ Hai";
+        weekday[2] = "Thứ Ba";
+        weekday[3] = "Thứ Tư";
+        weekday[4] = "Thứ Năm";
+        weekday[5] = "Thứ Sáu";
+        weekday[6] = "Thứ Bảy";
+        var day = weekday[today.getDay()];
+        var dd = today.getDate();
+        var mm = today.getMonth() + 1;
+        var yyyy = today.getFullYear();
+        var h = today.getHours();
+        var m = today.getMinutes();
+        var s = today.getSeconds();
+        m = checkTime(m);
+        s = checkTime(s);
+        nowTime = h + " giờ " + m + " phút " + s + " giây";
+        if (dd < 10) {
+            dd = '0' + dd
+        }
+        if (mm < 10) {
+            mm = '0' + mm
+        }
+        today = day + ', ' + dd + '/' + mm + '/' + yyyy;
+        tmp = '<span class="date"> ' + today + ' - ' + nowTime +
+            '</span>';
+        document.getElementById("clock").innerHTML = tmp;
+        clocktime = setTimeout("time()", "1000", "Javascript");
+
+        function checkTime(i) {
+            if (i < 10) {
+                i = "0" + i;
+            }
+            return i;
+        }
+    }
+</script>

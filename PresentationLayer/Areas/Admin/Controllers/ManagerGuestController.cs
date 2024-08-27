@@ -29,7 +29,7 @@ namespace PresentationLayer.Areas.Admin.Controllers
                     // Kiểm tra từng tiêu chí và gọi các phương thức tương ứng
                     if (!string.IsNullOrEmpty(email))
                     {
-                        var result = await GetUserByEmail(email);
+                        var result = await GetUserByEmail(email.Trim());
                         if (result is ViewResult viewResult && viewResult.Model is List<UserDataVM> userList)
                         {
                             users = userList;
@@ -37,7 +37,7 @@ namespace PresentationLayer.Areas.Admin.Controllers
                     }
                     else if (!string.IsNullOrEmpty(phone))
                     {
-                        var result = await GetUserByPhoneNumber(phone);
+                        var result = await GetUserByPhoneNumber(phone.Trim());
                         if (result is ViewResult viewResult && viewResult.Model is List<UserDataVM> userList)
                         {
                             users = userList;
@@ -45,7 +45,7 @@ namespace PresentationLayer.Areas.Admin.Controllers
                     }
                     else if (!string.IsNullOrEmpty(name))
                     {
-                        var result = await GetUserByName(name);
+                        var result = await GetUserByName(name.Trim());
                         if (result is ViewResult viewResult && viewResult.Model is List<UserDataVM> userList)
                         {
                             users = userList;
