@@ -168,13 +168,16 @@ namespace PresentationLayer.Areas.Admin.Controllers
                     if (response.IsSuccessStatusCode)
                     {
                         Console.WriteLine("User's Password: " + registerUser.Password);
-                        return RedirectToAction("Index");
+                        //return RedirectToAction("Index");
+                        return Json(new { isSuccess = true});
+
                     }
                     else
                     {
                         var errorMessage = await response.Content.ReadAsStringAsync();
                         // Log the error message or inspect it for further details
-                        return BadRequest($"Server returned error: {errorMessage}");
+                        //return BadRequest($"Server returned error: {errorMessage}");
+                        return Json(new { isSuccess = false, errorMessage = errorMessage });
                     }
 
                 }
@@ -295,13 +298,17 @@ namespace PresentationLayer.Areas.Admin.Controllers
                     var response = await httpClient.PutAsync(requestURL, formData);
                     if (response.IsSuccessStatusCode)
                     {
-                        return RedirectToAction("Index");
+                        //return RedirectToAction("Index");
+                        return Json(new { isSuccess = true});
+
                     }
                     else
                     {
                         var errorMessage = await response.Content.ReadAsStringAsync();
                         // Log the error message or inspect it for further details
-                        return BadRequest($"Server returned error: {errorMessage}");
+                        //return BadRequest($"Server returned error: {errorMessage}");
+                        return Json(new { isSuccess = false, errorMessage = errorMessage });
+
                     }
 
                 }

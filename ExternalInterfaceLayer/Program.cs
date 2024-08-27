@@ -21,6 +21,7 @@ var mailSetting = builder.Configuration.GetSection("MailSettings");
 builder.Services.Configure<MailSettings>(mailSetting);
 builder.Services.AddTransient<IOrderHistoryService, OrderHistoryService>();
 builder.Services.AddTransient<IVnPayService, VnPayService>();
+builder.Services.AddTransient<IBarcodeGeneratorService, BarcodeGeneratorService>();
 builder.Services.AddTransient<ICartOptionsService, CartOptionsService>();
 builder.Services.AddTransient<IStatisticsService, StatisticsService>();
 builder.Services.AddTransient<ICategoryService, CategoryService>();
