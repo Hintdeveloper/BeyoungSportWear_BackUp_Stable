@@ -1,4 +1,3 @@
-
 ﻿using BusinessLogicLayer.Viewmodels.Image;
 using BusinessLogicLayer.Viewmodels.Options;
 using DataAccessLayer.Entity;
@@ -21,11 +20,8 @@ namespace BusinessLogicLayer.Viewmodels.ProductDetails
         public string? ProductName { get; set; }
         public Guid? IDCategory { get; set; }
         public string? CategoryName { get; set; }
-        public Guid? IDManufacturers { get; set; }
         public string? ManufacturersName { get; set; }
-        public Guid? IDMaterial { get; set; }
         public string? MaterialName { get; set; }
-        public Guid? IDBrand { get; set; }
         public string? BrandName { get; set; }
         public decimal SmallestPrice { get; set; }
         public decimal BiggestPrice { get; set; }
@@ -37,8 +33,7 @@ namespace BusinessLogicLayer.Viewmodels.ProductDetails
         public int Status { get; set; }
         public List<OptionsVM> Options { get; set; }
         public List<ImageVM> ImageVM { get; set; }
-
         public bool IsActive { get; set; }
-
+        public string? Barcode { get; set; }
     }
 }

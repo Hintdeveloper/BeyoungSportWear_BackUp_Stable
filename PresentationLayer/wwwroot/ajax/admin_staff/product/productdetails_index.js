@@ -1,30 +1,4 @@
-﻿function getJwtFromCookie() {
-    return getCookieValue('jwt');
-}
-function getCookieValue(cookieName) {
-    const cookies = document.cookie.split(';');
-    for (let cookie of cookies) {
-        const [name, value] = cookie.split('=').map(c => c.trim());
-        if (name === cookieName) {
-            return decodeURIComponent(value);
-        }
-    }
-    return null;
-}
-function getUserIdFromJwt(jwt) {
-    try {
-        const tokenPayload = JSON.parse(atob(jwt.split('.')[1]));
-        return tokenPayload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
-    }
-    catch (error) {
-        console.error('Error parsing JWT:', error);
-        return null;
-    }
-}
-const jwt = getJwtFromCookie();
-const userId = getUserIdFromJwt(jwt);
-
-function displayData(data) {
+﻿function displayData(data) {
     const tableBody = document.getElementById('table_productdetails');
     tableBody.innerHTML = '';
 
@@ -41,8 +15,10 @@ function displayData(data) {
 
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td width="10"><input type="checkbox" name="check1" value="${productdetails.id}"></td>
-            <td>${productdetails.keyCode}</td>
+          <td>
+            ${productdetails.keyCode}<br>
+        </td>
+
             <td>${productdetails.productName}</td>
             <td>
                 <img src="${productdetails.imagePaths[0]}" alt="Ảnh sản phẩm" width="60px;">
@@ -52,7 +28,6 @@ function displayData(data) {
                 ${productdetails.totalQuantity >= 1 ? '<span class="badge bg-success">Còn hàng</span>' : '<span class="badge bg-danger">Hết hàng</span>'}
             </td>
             <td>${priceToShow}</td>
-            <td>${productdetails.categoryName}</td>
             <td>${productdetails.isActive == true ? '<span class="badge bg-success">Đang bán</span>' : '<span class="badge bg-danger">Đã ngừng bán</span>'}</td>
 
             <td>
@@ -70,20 +45,10 @@ function displayData(data) {
         `;
         tableBody.appendChild(row);
     });
-
-    if ($.fn.dataTable.isDataTable('#sampleTable')) {
-        $('#sampleTable').DataTable().destroy();
-    }
-    $('#sampleTable').DataTable({
-        columnDefs: [
-            { orderable: false, targets: [0, 8] }
-        ]
-    });
 }
 function fetchData() {
     var xhr = new XMLHttpRequest();
     xhr.open('GET', 'https://localhost:7241/api/ProductDetails/GetAll', true);
-    xhr.setRequestHeader("Authorization", "Bearer " + jwt);
     xhr.onreadystatechange = function () {
         if (xhr.readyState == 4) {
             if (xhr.status == 200) {
@@ -99,8 +64,6 @@ function fetchData() {
 function viewDetails(productID) {
     var xhr = new XMLHttpRequest();
     xhr.open('GET', `https://localhost:7241/api/ProductDetails/GetByIDAsyncVer_1/${productID}`, true);
-    xhr.setRequestHeader("Authorization", "Bearer " + jwt);
-
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4) {
             if (xhr.status === 200) {
@@ -208,8 +171,6 @@ function toggleProductStatus(productID, isActive) {
     var xhr = new XMLHttpRequest();
     xhr.open('POST', `https://localhost:7241/api/ProductDetails/UpdateIsActive`, true);
     xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.setRequestHeader("Authorization", "Bearer " + jwt);
-
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4) {
             if (xhr.status === 200) {

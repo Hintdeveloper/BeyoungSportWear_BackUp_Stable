@@ -24,40 +24,45 @@ function getUserIdFromJwt(jwt) {
 const jwt = getJwtFromCookie();
 const userId = getUserIdFromJwt(jwt);
 
-
-
-
-async function fetchOrder() {
-    try {
-        const response = await fetch('https://localhost:7241/api/Order/allactive');
-        if (!response.ok) {
-            throw new Error('Error fetching orders');
-        }
-        const orders = await response.json();
-        orderList(orders);
-    } catch (error) {
-        console.error('Error fetching orders:', error.message);
-    } finally {
+var currentUrl = window.location.href;
+var urlParts = currentUrl.split('/');
+var ID = urlParts[urlParts.length - 1];
+viewDetails(ID);
+function maskPhoneNumber(phoneNumber) {
+    if (phoneNumber && phoneNumber.length > 4) {
+        return phoneNumber.slice(0, 2) + '*****' + phoneNumber.slice(-3);
     }
+    return phoneNumber;
 }
-function navigateToUpdatePage(productId) {
-    window.location.href = `/managerupdate_order/${productId}`;
+
+function maskEmail(email) {
+    if (email) {
+        const [localPart, domain] = email.split('@');
+        const maskedLocalPart = localPart.slice(0, 2) + '********' + localPart.slice(-1);
+        return maskedLocalPart + '@' + domain.replace(/(?<=.{0}).+(?=.{2})/, '*****');
+    }
+    return email;
 }
-async function viewDetails(IDOrder) {
+
+async function viewDetails(ID) {
     try {
-        //showLoader();
-        const response = await fetch(`https://localhost:7241/api/Order/GetByIDAsync/${IDOrder}`);
+        const response = await fetch(`https://localhost:7241/api/Order/GetByIDAsync/${ID}`);
         if (!response.ok) {
             throw new Error('Error fetching order details');
         }
         const data = await response.json();
-
+        console.log(data)
         document.getElementById('modalcreate').innerText = formatDateTime(data.createDate);
         document.getElementById('modalvoucher').innerText = data.voucherCode || "Không có";
         document.getElementById('modalhexcode').innerText = data.hexCode;
         document.getElementById('modalcusname').innerText = data.customerName;
-        document.getElementById('modalcusphone').innerText = data.customerPhone;
-        document.getElementById('modalemail').innerText = data.customerEmail;
+        if (!jwt) {
+            document.getElementById('modalcusphone').innerText = maskPhoneNumber(data.customerPhone);
+            document.getElementById('modalemail').innerText = maskEmail(data.customerEmail);
+        } else {
+            document.getElementById('modalcusphone').innerText = data.customerPhone;
+            document.getElementById('modalemail').innerText = data.customerEmail;
+        }
         document.getElementById('modalshipaddess').innerText = data.shippingAddress;
         document.getElementById('modalshipaddress2').innerText = data.shippingAddressLine2 || "Không có";
         document.getElementById('modalcosts').innerText = data.cotsts.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
@@ -115,8 +120,6 @@ async function viewDetails(IDOrder) {
         } else {
             console.error('Không tìm thấy phần tử có id "orderhistory_body" trong DOM.');
         }
-
-        //$('#OrderModal').modal('show');
     } catch (error) {
         console.error('Error fetching order details:', error.message);
     } finally {
@@ -126,7 +129,7 @@ async function viewDetails(IDOrder) {
 function translatePaymentMethod(method) {
     switch (method) {
         case 0:
-            return 'Chuyển khoản ngân hàng';
+            return 'Chuyển khoản';
         case 1:
             return 'Tiền mặt khi giao hàng';
         default:
@@ -172,7 +175,7 @@ function translateOrderStatus(status) {
         case 2:
             return 'Đã vận chuyển';
         case 3:
-            return 'Đã giao hàng';
+            return 'Đã hoàn thành';
         case 4:
             return 'Đã hủy';
         case 5:
@@ -196,7 +199,6 @@ function formatDateTime(dateTimeString) {
     return date.toLocaleString('vi-VN', options) + ` ${period}`;
 }
 
-fetchOrder();
 function formatLink(text) {
     var tempDiv = document.createElement('div');
     tempDiv.innerHTML = text;
@@ -211,22 +213,6 @@ function formatLink(text) {
     });
     return tempDiv.innerHTML;
 }
-function handleUserLinkClick(event) {
-    event.preventDefault();
-    var userID = this.getAttribute('data-user-id');
-    getUserInfoByID(userID);
-}
-function addClickEventToUserLinks() {
-    document.querySelectorAll('a[data-user-id]').forEach(link => {
-        link.style.fontWeight = 'bold';
-        link.removeEventListener('click', handleUserLinkClick);
-        link.addEventListener('click', handleUserLinkClick);
-    });
-}
-
-const observer = new MutationObserver(addClickEventToUserLinks);
-observer.observe(document.body, { childList: true, subtree: true });
-addClickEventToUserLinks();
 function getUserInfoByID(userID) {
     var apiUrl = `https://localhost:7241/api/ApplicationUser/GetInformationUser/${userID}`;
 
@@ -258,250 +244,24 @@ function getUserInfoByID(userID) {
 
     xhr.send();
 }
-function orderList(order) {
-    const orderListBody = document.getElementById('orderListBody');
-    orderListBody.innerHTML = '';
-    orders.forEach(order => {
-        const isCancelled = order.orderStatus === 3 || order.orderStatus === 4;
 
-    if (Array.isArray(order)) {
-        order.forEach(item => {
-            const isCancelled = item.trackingCheck === true || item.orderStatus === 4;
 
-        const row = document.createElement('tr');
-        row.innerHTML = `
-                <td width="10"><input type="checkbox" name="check1" value="${item.id}"></td>
-                <td>${item.hexCode}</td>
-                <td>${item.customerName}</td>
-                <td>${item.customerPhone}</td>
-                <td>${formatDateTime(item.createDate)}</td>
-                <td>${translatePaymentMethod(item.paymentMethod)}</td>
-                <td>${item.totalAmount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</td>
-                <td><span class="badge bg-success">${translateOrderType(item.orderType)}</span></td>
-                <td><span class="badge bg-success">${translateOrderStatus(item.orderStatus)}</span></td>
-             <td>
-                    <button class="btn btn-primary btn-sm trash" onclick="markAsTrackingCheck('${item.id}', '${userId}')" type="button" ${isCancelled ? "disabled" : ""}>
-                    <i class="fa fa-check"></i>
-                </button>
-                    <button class="btn btn-danger btn-sm trash" type="button" data-id="${item.id}" id="cancelOrderButton">
-                        <i class="fa fa-ban"></i>
-                    </button>
-                    <button class="btn btn-primary btn-sm edit" type="button" onclick="navigateToUpdatePage('${item.id}')" title="Sửa">
-                    <i class="fa fa-edit"></i>
-                </button>
-                    <button class="btn btn-primary btn-sm view" data-toggle="modal" data-target="#OrderModal" type="button" onclick="viewDetails('${item.id}')" title="Chi tiết">
-                    <i class="fas fa-eye"></i>
-                </button>
-            </td>
-        `;
-        orderListBody.appendChild(row);
-    });
-    } else {
-        const item = order;
-        const isCancelled = item.trackingCheck === true || item.orderStatus === 4;
-
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td width="10"><input type="checkbox" name="check1" value="${item.id}"></td>
-            <td>${item.hexCode}</td>
-            <td>${item.customerName}</td>
-            <td>${item.customerPhone}</td>
-            <td>${formatDateTime(item.createDate)}</td>
-            <td>${translatePaymentMethod(item.paymentMethod)}</td>
-            <td>${item.totalAmount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</td>
-            <td><span class="badge bg-success">${translateOrderType(item.orderType)}</span></td>
-            <td><span class="badge bg-success">${translateOrderStatus(item.orderStatus)}</span></td>
-            <td>
-                <button class="btn btn-primary btn-sm trash" onclick="markAsTrackingCheck('${item.id}', '${userId}')" type="button" ${isCancelled ? "disabled" : ""}>
-                    <i class="fa fa-check"></i>
-                </button>
-                <button class="btn btn-danger btn-sm trash" type="button" data-id="${item.id}" id="cancelOrderButton">
-                    <i class="fa fa-ban"></i>
-                </button>
-                <button class="btn btn-primary btn-sm edit" type="button" onclick="navigateToUpdatePage('${item.id}')" title="Sửa">
-                    <i class="fa fa-edit"></i>
-                </button>
-                <button class="btn btn-primary btn-sm view" data-toggle="modal" data-target="#OrderModal" type="button" onclick="viewDetails('${item.id}')" title="Chi tiết">
-                    <i class="fas fa-eye"></i>
-                </button>
-            </td>
-        `;
-        orderListBody.appendChild(row);
+function handleUserLinkClick(event) {
+    event.preventDefault();
+    var userID = this.getAttribute('data-user-id');
+    getUserInfoByID(userID);
 }
-let currentOrderId = null;
 
-    document.querySelectorAll('.trash').forEach(button => {
-        button.addEventListener('click', function () {
-            const orderId = this.getAttribute('data-id');
-            cancelOrder(orderId);
-        });
+function addClickEventToUserLinks() {
+    document.querySelectorAll('a[data-user-id]').forEach(link => {
+        link.style.fontWeight = 'bold';
+        link.removeEventListener('click', handleUserLinkClick);
+        link.addEventListener('click', handleUserLinkClick);
     });
 }
-function markAsTrackingCheck(orderId, userId) {
-    const xhr = new XMLHttpRequest();
-    const url = `https://localhost:7241/api/Order/MarkAsTrackingCheckAsync/${orderId}/${userId}`;
-    xhr.open("PUT", url, true);
-    xhr.setRequestHeader("Accept", "*/*");
 
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4) {
-            if (xhr.status === 200) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Thành công',
-                    text: 'Đơn hàng đã được đánh dấu thành công!'
-                }).then(() => {
-                    fetchOrder(); 
-                });
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Lỗi',
-                    text: 'Có lỗi xảy ra khi đánh dấu đơn hàng.' + xhr.responseText,  
-                });
-            }
-        }
-    };
-    xhr.send();
-}
-function cancelOrder(orderId) {
-    Swal.fire({
-        title: 'Xác nhận',
-        text: "Bạn có chắc chắn muốn hủy đơn hàng này không?",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Có',
-        cancelButtonText: 'Hủy'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            const xhr = new XMLHttpRequest();
-            xhr.open('PUT', `https://localhost:7241/api/Order/MarkAsCancelled/${orderId}/${userId}`, true);
-            xhr.setRequestHeader('Content-Type', 'application/json');
-            xhr.setRequestHeader('Authorization', `Bearer ${getJwtFromCookie()}`);
+const observer = new MutationObserver(addClickEventToUserLinks);
+observer.observe(document.body, { childList: true, subtree: true });
 
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === XMLHttpRequest.DONE) {
-                    if (xhr.status === 200) {
-                        Swal.fire(
-                            'Thành công!',
-                            'Đơn hàng đã được hủy.',
-                            'success'
-                        );
-                        fetchOrder();
-                    } else {
-                        Swal.fire(
-                            'Lỗi!',
-                            'Có lỗi xảy ra khi hủy đơn hàng.',
-                            'error'
-                        );
-                        console.error('Error:', xhr.statusText);
-                    }
-                }
-            };
+addClickEventToUserLinks();
 
-            xhr.onerror = function () {
-                Swal.fire(
-                    'Lỗi!',
-                    'Có lỗi xảy ra khi hủy đơn hàng.',
-                    'error'
-                );
-                console.error('Request failed');
-            };
-
-            xhr.send();
-        }
-    });
-}
-function searchOrder() {
-    var hexCode = document.getElementById('searchHexCode').value;
-
-    if (!hexCode) {
-        Swal.fire({
-            title: 'Lỗi',
-            text: 'Vui lòng nhập mã HexCode.',
-            icon: 'warning'
-        });
-        return;
-    }
-
-            var xhr = new XMLHttpRequest();
-    var url = `https://localhost:7241/api/Order/GetByHexCode/${encodeURIComponent(hexCode)}`;
-
-    xhr.open('GET', url, true);
-    xhr.setRequestHeader('Accept', 'application/json');
-
-            xhr.onload = function () {
-                if (xhr.status >= 200 && xhr.status < 300) {
-            try {
-                var response = JSON.parse(xhr.responseText);
-                orderList(Array.isArray(response) ? response : [response]);
-
-                Swal.fire({
-                    title: 'Thành công',
-                    text: 'Đơn hàng đã được lấy thành công!',
-                    icon: 'success'
-                });
-            } catch (e) {
-                console.error('Lỗi phân tích phản hồi:', xhr.responseText);
-                    Swal.fire({
-                    title: 'Lỗi',
-                    text: 'Lỗi khi phân tích phản hồi.',
-                    icon: 'error'
-                    });
-            }
-                } else {
-            console.error('Lỗi khi lấy đơn hàng theo mã hex. Mã trạng thái:', xhr.responseText);
-                    Swal.fire({
-                title: 'Lỗi',
-                text: 'Không thể lấy đơn hàng. Vui lòng thử lại sau.',
-                icon: 'error'
-                    });
-                    console.error('Error:', xhr.statusText);
-                }
-            };
-
-            xhr.onerror = function () {
-        console.error('Yêu cầu thất bại. Lỗi mạng.');
-                Swal.fire({
-            title: 'Lỗi mạng',
-            text: 'Không thể thực hiện yêu cầu. Vui lòng kiểm tra kết nối mạng của bạn.',
-            icon: 'error'
-                });
-                console.error('Network Error:', xhr.statusText);
-            };
-
-    xhr.send();
-}
-
-function getOrdersByType(orderType) {
-    var xhr = new XMLHttpRequest();
-    var url = 'https://localhost:7241/api/Order/GetByOrderType/' + orderType;
-
-    xhr.open('GET', url, true);
-    xhr.setRequestHeader('accept', '*/*');
-
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState === XMLHttpRequest.DONE) {
-            if (xhr.status === 200) {
-                var response = JSON.parse(xhr.responseText);
-                orderList(Array.isArray(response) ? response : [response]);
-
-                console.log(response);
-            } else {
-                console.error('Có lỗi xảy ra: ' + xhr.status);
-        }
-    });
-}
-    };
-
-    xhr.send();
-            }
-
-function filterOrders() {
-    var selectElement = document.getElementById('orderTypeFilter');
-    var selectedValue = selectElement.value;
-    getOrdersByType(selectedValue);
-    }
-});

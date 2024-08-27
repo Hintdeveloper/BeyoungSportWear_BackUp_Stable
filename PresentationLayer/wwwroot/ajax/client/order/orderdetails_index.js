@@ -28,9 +28,24 @@ var currentUrl = window.location.href;
 var urlParts = currentUrl.split('/');
 var ID = urlParts[urlParts.length - 1];
 viewDetails(ID);
+function maskPhoneNumber(phoneNumber) {
+    if (phoneNumber && phoneNumber.length > 4) {
+        return phoneNumber.slice(0, 2) + '*****' + phoneNumber.slice(-3);
+    }
+    return phoneNumber;
+}
+
+function maskEmail(email) {
+    if (email) {
+        const [localPart, domain] = email.split('@');
+        const maskedLocalPart = localPart.slice(0, 2) + '********' + localPart.slice(-1);
+        return maskedLocalPart + '@' + domain.replace(/(?<=.{0}).+(?=.{2})/, '*****');
+    }
+    return email;
+}
+
 async function viewDetails(ID) {
     try {
-        //showLoader();
         const response = await fetch(`https://localhost:7241/api/Order/GetByIDAsync/${ID}`);
         if (!response.ok) {
             throw new Error('Error fetching order details');
@@ -41,8 +56,13 @@ async function viewDetails(ID) {
         document.getElementById('modalvoucher').innerText = data.voucherCode || "Không có";
         document.getElementById('modalhexcode').innerText = data.hexCode;
         document.getElementById('modalcusname').innerText = data.customerName;
-        document.getElementById('modalcusphone').innerText = data.customerPhone;
-        document.getElementById('modalemail').innerText = data.customerEmail;
+        if (!jwt) {
+            document.getElementById('modalcusphone').innerText = maskPhoneNumber(data.customerPhone);
+            document.getElementById('modalemail').innerText = maskEmail(data.customerEmail); 
+        } else {
+            document.getElementById('modalcusphone').innerText = data.customerPhone; 
+            document.getElementById('modalemail').innerText = data.customerEmail; 
+        }
         document.getElementById('modalshipaddess').innerText = data.shippingAddress;
         document.getElementById('modalshipaddress2').innerText = data.shippingAddressLine2 || "Không có";
         document.getElementById('modalcosts').innerText = data.cotsts.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
@@ -109,7 +129,7 @@ async function viewDetails(ID) {
 function translatePaymentMethod(method) {
     switch (method) {
         case 0:
-            return 'Chuyển khoản ngân hàng';
+            return 'Chuyển khoản';
         case 1:
             return 'Tiền mặt khi giao hàng';
         default:
@@ -146,7 +166,6 @@ function translateOrderType(type) {
             return type;
     }
 }
-
 function translateOrderStatus(status) {
     switch (status) {
         case 0:
@@ -156,7 +175,7 @@ function translateOrderStatus(status) {
         case 2:
             return 'Đã vận chuyển';
         case 3:
-            return 'Đã giao hàng';
+            return 'Đã hoàn thành';
         case 4:
             return 'Đã hủy';
         case 5:
@@ -165,7 +184,6 @@ function translateOrderStatus(status) {
             return status;
     }
 }
-
 function formatDateTime(dateTimeString) {
     const date = new Date(dateTimeString);
     const options = {
@@ -195,26 +213,6 @@ function formatLink(text) {
     });
     return tempDiv.innerHTML;
 }
-
-function handleUserLinkClick(event) {
-    event.preventDefault();
-    var userID = this.getAttribute('data-user-id');
-    getUserInfoByID(userID);
-}
-
-function addClickEventToUserLinks() {
-    document.querySelectorAll('a[data-user-id]').forEach(link => {
-        link.style.fontWeight = 'bold';
-        link.removeEventListener('click', handleUserLinkClick);
-        link.addEventListener('click', handleUserLinkClick);
-    });
-}
-
-const observer = new MutationObserver(addClickEventToUserLinks);
-observer.observe(document.body, { childList: true, subtree: true });
-
-addClickEventToUserLinks();
-
 function getUserInfoByID(userID) {
     var apiUrl = `https://localhost:7241/api/ApplicationUser/GetInformationUser/${userID}`;
 
@@ -246,4 +244,24 @@ function getUserInfoByID(userID) {
 
     xhr.send();
 }
+
+
+function handleUserLinkClick(event) {
+    event.preventDefault();
+    var userID = this.getAttribute('data-user-id');
+    getUserInfoByID(userID);
+}
+
+function addClickEventToUserLinks() {
+    document.querySelectorAll('a[data-user-id]').forEach(link => {
+        link.style.fontWeight = 'bold';
+        link.removeEventListener('click', handleUserLinkClick);
+        link.addEventListener('click', handleUserLinkClick);
+    });
+}
+
+const observer = new MutationObserver(addClickEventToUserLinks);
+observer.observe(document.body, { childList: true, subtree: true });
+
+addClickEventToUserLinks();
 

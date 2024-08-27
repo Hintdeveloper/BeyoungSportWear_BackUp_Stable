@@ -35,6 +35,69 @@ namespace ExternalInterfaceLayer.Controllers
                 return BadRequest(new { status = "Error", message = "There was an error uploading the Options." });
             }
         }
+        [HttpPost("decrease-quantity")]
+        public async Task<IActionResult> DecreaseQuantity([FromBody] DecreaseQuantityRequest request)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var success = await _IOptionsService.DecreaseQuantityAsync(request.IDOptions, request.QuantityToDecrease);
+                    if (success)
+                    {
+                        return Ok("Số lượng đã được cập nhật.");
+                    }
+                    return BadRequest("Không thể cập nhật số lượng.");
+                }
+                return BadRequest(ModelState);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("increase-quantity")]
+        public async Task<IActionResult> IncreaseQuantityAsync([FromBody] DecreaseQuantityRequest request)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var success = await _IOptionsService.IncreaseQuantityAsync(request.IDOptions, request.QuantityToDecrease);
+                    if (success)
+                    {
+                        return Ok("Số lượng đã được cập nhật.");
+                    }
+                    return BadRequest("Không thể cập nhật số lượng.");
+                }
+                return BadRequest(ModelState);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Đã xảy ra lỗi hệ thống.");
+            }
+        }
         [HttpGet("GetByProductDetailsId/{IDProductDetails}")]
         public async Task<IActionResult> GetByProductDetailsId(Guid IDProductDetails)
         {
@@ -83,13 +146,7 @@ namespace ExternalInterfaceLayer.Controllers
                 return NotFound("Option not found");
             }
         }
-        [HttpGet]
-        [Route("GetProductDetailsByID/{IDOptions}")]
-        public async Task<IActionResult> GetProductDetailsByID(Guid IDOptions)
-        {
-            var variantdata = await _IOptionsService.GetProductDetailsByID(IDOptions);
-            return Ok(variantdata);
-        }
+
         [HttpGet]
         [Route("getall")]
         public async Task<IActionResult> GetAll()
@@ -97,7 +154,6 @@ namespace ExternalInterfaceLayer.Controllers
             var obj = await _IOptionsService.GetAllAsync();
             return Ok(obj);
         }
-
         [HttpGet]
         [Route("getallactive")]
         public async Task<IActionResult> GetAllActive()
@@ -105,7 +161,6 @@ namespace ExternalInterfaceLayer.Controllers
             var obj = await _IOptionsService.GetAllActiveAsync();
             return Ok(obj);
         }
-
         [HttpGet]
         [Route("GetByID/{ID}")]
         public async Task<IActionResult> GetByID(Guid ID)
@@ -117,5 +172,7 @@ namespace ExternalInterfaceLayer.Controllers
             }
             return Ok(obj);
         }
+
+
     }
 }

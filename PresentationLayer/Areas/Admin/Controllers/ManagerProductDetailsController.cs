@@ -5,11 +5,12 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace PresentationLayer.Areas.Admin.Controllers
 {
-    [Authorize(Roles = "Admin,Staff")]
     [Area("admin")]
+    [Authorize(Roles = "Admin,Staff")]
+
     public class ManagerProductDetailsController : Controller
     {
-      
+
         [HttpGet("home/index_productdetails")]
         public async Task<IActionResult> Index()
         {
@@ -21,18 +22,6 @@ namespace PresentationLayer.Areas.Admin.Controllers
             return View();
         }
 
-        [HttpGet("managerupdate_productdetails/{ID}")]
-        public async Task<IActionResult> Update(Guid ID)
-        {
-            return View();
-        }
-
-        [HttpPost("managerupdate_productdetails/{ID}")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Update()
-        {
-            return View();
-        }
         [HttpGet("managerupdate_productdetails_ver1/{ID}")]
         public async Task<IActionResult> Update_Ver_I(Guid ID)
         {

@@ -53,60 +53,60 @@ namespace BusinessLogicLayer.Services.Implements
         }
         public async Task<bool> CreateAsync(OptionsCreateSingleVM request)
         {
-			var checkVariant = await _dbcontext.ProductDetails.FirstOrDefaultAsync(pd => pd.ID == request.IDProductDetails);
-			if (checkVariant == null)
-			{
-				return false; 
-			}
+            var checkVariant = await _dbcontext.ProductDetails.FirstOrDefaultAsync(pd => pd.ID == request.IDProductDetails);
+            if (checkVariant == null)
+            {
+                return false;
+            }
 
-			var checkColor = await _dbcontext.Colors.FirstOrDefaultAsync(c => c.ID == request.IDColor);
-			var checkSize = await _dbcontext.Sizes.FirstOrDefaultAsync(s => s.ID == request.IDSize);
+            var checkColor = await _dbcontext.Colors.FirstOrDefaultAsync(c => c.ID == request.IDColor);
+            var checkSize = await _dbcontext.Sizes.FirstOrDefaultAsync(s => s.ID == request.IDSize);
 
-			if (checkColor == null && !string.IsNullOrEmpty(request.ColorName))
-			{
-				request.IDColor = await EnsureColor(request.ColorName, request.CreateBy);
-			}
-			if (checkSize == null && !string.IsNullOrEmpty(request.SizesName))
-			{
-				request.IDSize = await EnsureSize(request.SizesName, request.CreateBy);
-			}
+            if (checkColor == null && !string.IsNullOrEmpty(request.ColorName))
+            {
+                request.IDColor = await EnsureColor(request.ColorName, request.CreateBy);
+            }
+            if (checkSize == null && !string.IsNullOrEmpty(request.SizesName))
+            {
+                request.IDSize = await EnsureSize(request.SizesName, request.CreateBy);
+            }
 
-			var existingOption = await _dbcontext.Options.FirstOrDefaultAsync(o =>
-				o.IDProductDetails == request.IDProductDetails &&
-				o.IDColor == request.IDColor &&
-				o.IDSize == request.IDSize);
+            var existingOption = await _dbcontext.Options.FirstOrDefaultAsync(o =>
+                o.IDProductDetails == request.IDProductDetails &&
+                o.IDColor == request.IDColor &&
+                o.IDSize == request.IDSize);
 
-			if (existingOption != null)
-			{
-				return false;
-			}
+            if (existingOption != null)
+            {
+                return false;
+            }
 
-			string uploadedImageUrl = null;
-			if (request.ImageURL != null)
-			{
-				uploadedImageUrl = await UploadImageAsync(request.ImageURL);
-			}
+            string uploadedImageUrl = null;
+            if (request.ImageURL != null)
+            {
+                uploadedImageUrl = await UploadImageAsync(request.ImageURL);
+            }
 
-			var newOption = new Options
-			{
-				ID = Guid.NewGuid(),
-				IDProductDetails = request.IDProductDetails,
-				IDColor = request.IDColor,
-				IDSize = request.IDSize,
-				StockQuantity = request.StockQuantity,
-				RetailPrice = request.RetailPrice,
-				Discount = request.Discount,
-				IsActive = request.IsActive,
-				ImageURL =uploadedImageUrl,
-				Status = 1,
-				CreateBy = request.CreateBy,
-			};
+            var newOption = new Options
+            {
+                ID = Guid.NewGuid(),
+                IDProductDetails = request.IDProductDetails,
+                IDColor = request.IDColor,
+                IDSize = request.IDSize,
+                StockQuantity = request.StockQuantity,
+                RetailPrice = request.RetailPrice,
+                Discount = request.Discount,
+                IsActive = request.IsActive,
+                ImageURL = uploadedImageUrl,
+                Status = 1,
+                CreateBy = request.CreateBy,
+            };
 
-			_dbcontext.Options.Add(newOption);
-			await _dbcontext.SaveChangesAsync();
+            _dbcontext.Options.Add(newOption);
+            await _dbcontext.SaveChangesAsync();
 
-			return true;
-		}
+            return true;
+        }
         public async Task<string> UploadImageAsync(IFormFile imageFile)
         {
             if (imageFile == null)
@@ -163,9 +163,47 @@ namespace BusinessLogicLayer.Services.Implements
 
             return obj;
         }
-        public Task<Guid> GetProductDetailsByID(Guid IDOptions)
+        public async Task<bool> DecreaseQuantityAsync(Guid IDOptions, int quantityToDecrease)
         {
-            throw new NotImplementedException();
+            if (quantityToDecrease <= 0)
+            {
+                throw new ArgumentException("Số lượng giảm phải lớn hơn 0.");
+            }
+            var option = await _dbcontext.Options.FindAsync(IDOptions);
+            if (option == null)
+            {
+                return false;
+            }
+
+            if (option.StockQuantity < quantityToDecrease)
+            {
+                throw new InvalidOperationException("Số lượng trong kho không đủ để giảm.");
+            }
+
+            option.StockQuantity -= quantityToDecrease;
+            _dbcontext.Options.Update(option);
+            await _dbcontext.SaveChangesAsync();
+
+            return true;
+        }
+        public async Task<bool> IncreaseQuantityAsync(Guid IDOptions, int quantityToIncrease)
+        {
+            if (quantityToIncrease <= 0)
+            {
+                throw new ArgumentException("Số lượng tăng phải lớn hơn 0.");
+            }
+
+            var option = await _dbcontext.Options.FindAsync(IDOptions);
+            if (option == null)
+            {
+                return false;
+            }
+
+            option.StockQuantity += quantityToIncrease;
+            _dbcontext.Options.Update(option);
+            await _dbcontext.SaveChangesAsync();
+
+            return true;
         }
         public async Task<bool> RemoveAsync(Guid ID, string IDUserdelete)
         {
@@ -300,7 +338,7 @@ namespace BusinessLogicLayer.Services.Implements
                 try
                 {
                     var option = await _dbcontext.Options
-                        .Include(o => o.ProductDetails)  
+                        .Include(o => o.ProductDetails)
                         .FirstOrDefaultAsync(o => o.ID == IDOptions);
 
                     if (option == null)

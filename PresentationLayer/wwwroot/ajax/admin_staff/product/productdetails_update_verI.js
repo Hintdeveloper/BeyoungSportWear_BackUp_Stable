@@ -27,82 +27,100 @@ document.addEventListener('DOMContentLoaded', function () {
     var currentUrl = window.location.href;
     var urlParts = currentUrl.split('/');
     var ID = urlParts[urlParts.length - 1];
-    //
+
     const btnSuccessUpdate = document.getElementById('btn_success_update');
     btnSuccessUpdate.addEventListener('click', function (event) {
         event.preventDefault();
 
-        var productData = {
-            ModifiedBy: userId,
-            ProductName: document.getElementById('product_name').value,
-            CategoryName: document.getElementById('category_name').value,
-            ManufacturersName: document.getElementById('manufacture_name').value,
-            MaterialName: document.getElementById('material_name').value,
-            BrandName: document.getElementById('brand_name').value,
-            Style: document.getElementById('Style').value,
-            Origin: document.getElementById('Origin').value,
-            Description: document.getElementById('Description').value,
-            ImagePaths: [],
-            NewOptions: gatherOptionsData(ID)
-        };
-
-        const imageUpload = document.getElementById('ImagePaths');
-        productData.ImagePaths = getImagePaths(imageUpload);
-        function getImagePaths(input) {
-            const files = input.files;
-            const imagePaths = [];
-
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i];
-                const objectUrl = URL.createObjectURL(file);
-                imagePaths.push(objectUrl);
-            }
-
-            return imagePaths;
-        }
-
         Swal.fire({
-            title: 'Đang xử lý',
-            text: 'Vui lòng chờ trong khi lưu sản phẩm...',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
+            title: 'Xác nhận lưu',
+            text: 'Bạn có chắc chắn muốn lưu các thay đổi này?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Lưu',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                var productData = {
+                    ModifiedBy: userId,
+                    ProductName: document.getElementById('product_name').value,
+                    CategoryName: document.getElementById('category_name').value,
+                    ManufacturersName: document.getElementById('manufacture_name').value,
+                    MaterialName: document.getElementById('material_name').value,
+                    BrandName: document.getElementById('brand_name').value,
+                    Style: document.getElementById('Style').value,
+                    Origin: document.getElementById('Origin').value,
+                    Description: document.getElementById('Description').value,
+                    ImagePaths: [],
+                    NewOptions: gatherOptionsData(ID)
+                };
+
+                const imageUpload = document.getElementById('ImagePaths');
+                productData.ImagePaths = getImagePaths(imageUpload);
+                console.log('imageUpload', imageUpload)
+                console.log('productData.ImagePaths', productData.ImagePaths)
+
+                function getImagePaths(input) {
+                    const files = input.files;
+                    const imagePaths = [];
+
+                    for (let i = 0; i < files.length; i++) {
+                        const file = files[i];
+                        const objectUrl = URL.createObjectURL(file);
+                        imagePaths.push(objectUrl);
+                    }
+
+                    return imagePaths;
+                }
+
+                Swal.fire({
+                    title: 'Đang xử lý',
+                    text: 'Vui lòng chờ trong khi lưu sản phẩm...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                updateProduct(ID, productData).then(() => {
+                    return uploadImages(ID, imageUpload.files);
+                }).then(uploadedImageUrls => {
+                    console.log('Ảnh đã tải lên:', uploadedImageUrls);
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Thành công',
+                        text: 'Sản phẩm và ảnh đã được cập nhật thành công!'
+                    }).then(() => {
+                        window.location.href = '/home/index_productdetails';
+                    });
+                    console.log(productData, imageUpload);
+
+                }).catch(error => {
+                    console.error('Đã xảy ra lỗi:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi',
+                        text: `Đã xảy ra lỗi trong quá trình cập nhật sản phẩm hoặc tải ảnh: ${error}`
+                    });
+                    console.log(productData, imageUpload);
+
+                });
             }
         });
-
-        updateProduct(ID, productData).then(() => {
-            return uploadImages(ID, imageUpload.files);
-        }).then(uploadedImageUrls => {
-            console.log('Ảnh đã tải lên:', uploadedImageUrls);
-            Swal.fire({
-                icon: 'success',
-                title: 'Thành công',
-                text: 'Sản phẩm và ảnh đã được cập nhật thành công!'
-            }).then(() => {
-                window.location.href = '/home/index_productdetails';
-            });
-        }).catch(error => {
-            console.error('Đã xảy ra lỗi:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Lỗi',
-                text: `Đã xảy ra lỗi trong quá trình cập nhật sản phẩm hoặc tải ảnh: ${error}`
-            });
-        });
-
-        console.log(productData, imageUpload);
-        console.log(productData.NewOptions);
     });
+
     const addColorButton = document.getElementById('addColorButton');
     addColorButton.addEventListener('click', function (event) {
         event.preventDefault();
         addColor();
     });
+
     const addSizeButton = document.getElementById('addSizeButton');
     addSizeButton.addEventListener('click', function (event) {
         event.preventDefault();
         addSize();
     });
+
     if (ID) {
         getProductDetailsById(ID);
     } else {
@@ -177,14 +195,13 @@ function updateTable() {
     colors.forEach(color => {
         sizes.forEach(size => {
             const match = dataMap.find(item => item.color === color && item.size === size);
-            console.log(match)
             const row = document.createElement('tr');
             const imagePreviewId = `imagePreview-${color}-${size}`;
             row.innerHTML = `
                <td class="image-preview-options" id="${imagePreviewId}">
                     <div class="image-container">
                         <img id="${imagePreviewId}_img" src="${match ? match.imageURL : ''}" alt="Image Preview" style="width: 40px; height: 40px; object-fit: cover; display: ${match ? 'block' : 'none'};">
-                        <button id="${imagePreviewId}_button" type="button" style="display: ${match ? 'none' : 'block'};">Thêm ảnh</button>
+                        <button id="${imagePreviewId}_button" type="button" style="display: ${match};">Thêm ảnh</button>
                     </div>
                     <input type="file" id="${imagePreviewId}_fileInput" style="display: none;" accept="image/*">
                 </td>
@@ -204,6 +221,28 @@ function updateTable() {
                 </td>
             `;
             tableBody.appendChild(row);
+
+            document.getElementById(`${imagePreviewId}_button`).addEventListener('click', function () {
+                document.getElementById(`${imagePreviewId}_fileInput`).click();
+            });
+
+            document.getElementById(`${imagePreviewId}_fileInput`).addEventListener('change', function (event) {
+                const input = event.target;
+                const imgElement = document.getElementById(`${imagePreviewId}_img`);
+                if (input.files && input.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        imgElement.src = e.target.result;
+                        imgElement.style.display = 'block';
+                        document.getElementById(`${imagePreviewId}_button`).style.display = 'none';
+
+                        if (match) {
+                            match.imageURL = e.target.result; 
+                        }
+                    };
+                    reader.readAsDataURL(input.files[0]);
+                }
+            });
         });
     });
 }
@@ -251,7 +290,6 @@ function removeRow(button) {
 function getProductDetailsById(ID) {
     var xhr = new XMLHttpRequest();
     xhr.open('GET', `https://localhost:7241/api/ProductDetails/GetByIDAsyncVer_1/${ID}`, true);
-    xhr.setRequestHeader('Authorization', 'Bearer ' + jwt);
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4) {
             if (xhr.status === 200) {
@@ -276,7 +314,6 @@ function getProductDetailsById(ID) {
                     isActive: option.isActive,
                     stockQuantity: option.stockQuantity
                 }));
-                console.log('data',data)
                 updateProductImages(data.imageVM);
                 updateColors();
                 updateSizes();
@@ -311,7 +348,7 @@ function toggleStatus(id, currentStatus) {
     var xhr = new XMLHttpRequest();
     xhr.open("POST", "https://localhost:7241/api/Options/UpdateIsActive", true);
     xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.setRequestHeader('Authorization', 'Bearer ' + jwt);
+
     xhr.onload = function () {
         if (xhr.status === 200) {
             const button = document.querySelector(`button[data-option-id='${id}']`);
@@ -357,7 +394,6 @@ document.addEventListener("DOMContentLoaded", function () {
     function loadData(url, selectId, defaultText) {
         var xhr = new XMLHttpRequest();
         xhr.open("GET", url, true);
-        xhr.setRequestHeader('Authorization', 'Bearer ' + jwt);
         xhr.onreadystatechange = function () {
             if (xhr.readyState === 4 && xhr.status === 200) {
                 var data = JSON.parse(xhr.responseText);
@@ -602,8 +638,6 @@ async function uploadImages(IDProductDetails, product_images) {
     formData.append('CreateBy', userId);
     formData.append('Status', 1);
 
-    console.log(productId);
-
     return new Promise((resolve, reject) => {
         var xhr = new XMLHttpRequest();
         xhr.open('POST', 'https://localhost:7241/api/images/upload_images', true);
@@ -611,9 +645,15 @@ async function uploadImages(IDProductDetails, product_images) {
             if (xhr.readyState === 4) {
                 if (xhr.status === 200) {
                     console.log('Ảnh đã được tải lên thành công');
-                    var response = JSON.parse(xhr.responseText);
-                    var imagePaths = response.uploadedImageUrls;
-                    resolve(imagePaths);
+                    try {
+                        var response = JSON.parse(xhr.responseText);
+                        console.log('Phản hồi từ API:', response);
+                        var imagePaths = response.uploadedImageUrls || [];
+                        resolve(imagePaths);
+                    } catch (e) {
+                        console.error('Lỗi khi phân tích phản hồi API:', e);
+                        reject('Lỗi khi phân tích phản hồi API');
+                    }
                 } else {
                     reject(xhr.responseText || 'Lỗi khi tải lên ảnh');
                 }

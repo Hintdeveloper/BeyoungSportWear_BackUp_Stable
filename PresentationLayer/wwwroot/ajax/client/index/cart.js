@@ -1,9 +1,7 @@
 ﻿let cartDataList = [];
-
 function getJwtFromCookie() {
     return getCookieValue('jwt');
 }
-
 function getCookieValue(cookieName) {
     const cookies = document.cookie.split(';');
     for (let cookie of cookies) {
@@ -14,7 +12,6 @@ function getCookieValue(cookieName) {
     }
     return null;
 }
-
 function getUserIdFromJwt(jwt) {
     try {
         const tokenPayload = JSON.parse(atob(jwt.split('.')[1]));
@@ -24,13 +21,12 @@ function getUserIdFromJwt(jwt) {
         return null;
     }
 }
-
+const jwt = getJwtFromCookie();
+const userId = getUserIdFromJwt(jwt);
+console.log('userId', userId);
 function manageCart() {
-    const jwt = getJwtFromCookie();
-    let apiUrl;
-
     if (jwt) {
-        const userId = getUserIdFromJwt(jwt);
+
         if (userId) {
             loadCartFromServer(userId);
         } else {
@@ -41,67 +37,92 @@ function manageCart() {
         loadCartFromCookies();
     }
 }
-
-function loadCartFromServer(userId) {
+async function createCartIfNotExists(userId) {
     const apiUrl = `https://localhost:7241/api/Cart/cart/user/${userId}`;
-        const xhr = new XMLHttpRequest();
-        xhr.open('GET', apiUrl, true);
-        xhr.onload = function () {
-            if (xhr.status === 200) {
-                const data = JSON.parse(xhr.responseText);
-                console.log('cart', data);
-                const cartId = data[0].id;
-                console.log('idcart', cartId);
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', apiUrl, true);
 
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            const data = JSON.parse(xhr.responseText);
+            if (data && data.length > 0) {
+                const cartId = data[0].id;
+                console.log('Giỏ hàng đã tồn tại. ID giỏ hàng:', cartId);
                 getCartDetails(cartId);
             } else {
-                console.error('Có lỗi xảy ra khi gọi API.', xhr.responseText);
+                console.log('Người dùng chưa có giỏ hàng, tạo giỏ hàng mới...');
+                createNewCart(userId);
+                getCartDetails(cartId);
             }
-        };
-        xhr.onerror = function () {
-            console.error('Có lỗi xảy ra khi gọi API.');
-        };
-        xhr.send();
-    }
+        } else {
+            console.error('Có lỗi xảy ra khi gọi API.', xhr.responseText);
+        }
+    };
 
-function loadCartFromCookies() {
-    const cartData = getCookieValue('cart');
-    if (cartData) {
-        const cartDataList = JSON.parse(cartData);
-        const promises = cartDataList.map(product => {
-            const optionUrl = `https://localhost:7241/api/Options/GetByID/${product.idOptions}`;
-            return new Promise((resolve, reject) => {
-                const xhr = new XMLHttpRequest();
-                xhr.open('GET', optionUrl, true);
-                xhr.onload = function () {
-                    if (xhr.status === 200) {
-                        const optionData = JSON.parse(xhr.responseText);
-                        product.colorName = optionData.colorName;
-                        product.productName = optionData.productName;
-                        product.retailPrice = optionData.retailPrice;
-                        product.sizeName = optionData.sizesName;
-                        product.imageURL = optionData.imageURL;
-                        resolve(); // Hoàn thành yêu cầu
-                    } else {
-                        console.error('Có lỗi xảy ra khi gọi API.', xhr.responseText);
-                        reject(); // Thất bại yêu cầu
-}
-                };
-                xhr.send();
-            });
-        });
+    xhr.onerror = function () {
+        console.error('Có lỗi xảy ra khi gọi API.');
+    };
 
-        Promise.all(promises).then(() => {
-            displayCartCookies(cartDataList);
-        }).catch(error => {
-            console.error('Có lỗi xảy ra khi lấy dữ liệu giỏ hàng:', error);
-        });
-    }
+    xhr.send();
 }
-function saveCartToCookies() {
-    document.cookie = `cart=${encodeURIComponent(JSON.stringify(cartDataList))}; path=/; max-age=86400`;
-}
+function createNewCart(userId) {
+    const createCartUrl = 'https://localhost:7241/api/Cart/CartCreate';
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', createCartUrl, true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
 
+    const requestBody = {
+        description: "Giỏ hàng mới",
+        idUser: userId,
+        status: 1
+    };
+
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            const response = JSON.parse(xhr.responseText);
+            if (response.status === "Success") {
+                console.log('Giỏ hàng được tạo thành công.');
+                loadCartFromServer(userId);
+            } else {
+                console.error('Không thể tạo giỏ hàng:', response.message);
+            }
+        } else {
+            console.error('Có lỗi xảy ra khi tạo giỏ hàng.', xhr.responseText);
+        }
+    };
+
+    xhr.onerror = function () {
+        console.error('Có lỗi xảy ra khi gọi API.');
+    };
+
+    xhr.send(JSON.stringify(requestBody));
+}
+function loadCartFromServer(userId) {
+    const apiUrl = `https://localhost:7241/api/Cart/cart/user/${userId}`;
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', apiUrl, true);
+
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            const data = JSON.parse(xhr.responseText);
+            console.log('cart', data);
+            const cartId = data[0].id;
+            console.log('ID giỏ hàng:', cartId);
+            getCartDetails(cartId);
+        } else if (xhr.status === 404) {
+            console.error('Không tìm thấy API hoặc người dùng không có giỏ hàng.');
+            createNewCart(userId);
+        } else {
+            console.error('Có lỗi xảy ra khi gọi API.', xhr.responseText);
+        }
+    };
+
+    xhr.onerror = function () {
+        console.error('Có lỗi xảy ra khi gọi API.');
+    };
+
+    xhr.send();
+}
 function getCartDetails(cartId) {
     const apiUrl = `https://localhost:7241/api/CartOptions/GetAllByCartIDAsync/${cartId}`;
     const xhr = new XMLHttpRequest();
@@ -120,7 +141,43 @@ function getCartDetails(cartId) {
     };
     xhr.send();
 }
+function loadCartFromCookies() {
+    const cartData = getCookieValue('cart');
+    if (cartData) {
+        const cartDataList = JSON.parse(cartData);
+        const promises = cartDataList.map(product => {
+            const optionUrl = `https://localhost:7241/api/Options/GetByID/${product.idOptions}`;
+            return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('GET', optionUrl, true);
+                xhr.onload = function () {
+                    if (xhr.status === 200) {
+                        const optionData = JSON.parse(xhr.responseText);
+                        product.colorName = optionData.colorName;
+                        product.productName = optionData.productName;
+                        product.retailPrice = optionData.retailPrice;
+                        product.sizeName = optionData.sizesName;
+                        product.imageURL = optionData.imageURL;
+                        resolve();
+                    } else {
+                        console.error('Có lỗi xảy ra khi gọi API.', xhr.responseText);
+                        reject();
+                    }
+                };
+                xhr.send();
+            });
+        });
 
+        Promise.all(promises).then(() => {
+            displayCartCookies(cartDataList);
+        }).catch(error => {
+            console.error('Có lỗi xảy ra khi lấy dữ liệu giỏ hàng:', error);
+        });
+    }
+}
+function saveCartToCookies() {
+    document.cookie = `cart=${encodeURIComponent(JSON.stringify(cartDataList))}; path=/; max-age=86400`;
+}
 function displayCart(cartData) {
     cartDataList = cartData;
     console.log('cartData', cartData)
@@ -132,6 +189,7 @@ function displayCart(cartData) {
     if (cartData && cartData.length > 0) {
         cartData.forEach(item => {
             console.log('data cart', item);
+
             const itemElement = document.createElement('tr');
             itemElement.innerHTML = `
                 <td class="product__cart__item">
@@ -140,7 +198,7 @@ function displayCart(cartData) {
                     </div>
                     <div class="product__cart__item__text">
                         <h6>${item.productName}</h6><small>Phân loại: ${item.colorName} - ${item.sizeName}</small>
-                        <h5 style="color: red;">${item.unitPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) }</h5>
+                        <h5 style="color: red;">${item.unitPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</h5>
                     </div>
                 </td>
                 <td class="quantity__item">
@@ -150,8 +208,8 @@ function displayCart(cartData) {
                         </div>
                     </div>
                 </td>
-                <td class="cart__price">${item.unitPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) }</td>
-                <td class="total__price">${item.totalPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) }</td>
+                <td class="cart__price">${item.unitPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</td>
+                <td class="total__price">${item.totalPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</td>
                 <td class="cart__close">
                     <button
                         type="button"
@@ -211,8 +269,8 @@ function displayCartCookies(cartData) {
                     <button
                         type="button"
                         class="btn-delete"
-                        data-id-cart="${item.idCart}" 
                         data-id-options="${item.idOptions}" 
+                        id="btn_delete_cart_cookies"
                         style="background-color: #f44336; color: white; border: none; padding: 8px 16px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; margin: 4px 2px; cursor: pointer; border-radius: 4px;">
                         Xóa
                     </button>
@@ -222,12 +280,13 @@ function displayCartCookies(cartData) {
         });
 
         document.getElementById('total_amount').innerText = `Tổng cộng: ${totalAmount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}`;
+        document.getElementById('btn_checkout').disabled = false;
     } else {
         cartItemsContainer.innerHTML = '<li class="header-cart-item flex-w flex-t m-b-12">Giỏ hàng trống</li>';
+        document.getElementById('total_amount').innerText = 'Tổng cộng: 0';
         document.getElementById('btn_checkout').disabled = true;
     }
 }
-
 document.addEventListener('DOMContentLoaded', function () {
     manageCart();
 
@@ -235,7 +294,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (checkoutButton) {
         checkoutButton.addEventListener('click', function (event) {
             if (cartDataList.length === 0) {
-            event.preventDefault();
+                event.preventDefault();
                 Swal.fire({
                     icon: 'error',
                     title: 'Giỏ hàng rỗng!',
@@ -243,19 +302,36 @@ document.addEventListener('DOMContentLoaded', function () {
                     confirmButtonText: 'OK'
                 });
             } else {
-            const encodedCartData = encodeURIComponent(JSON.stringify(cartDataList));
-            const checkoutUrl = `checkout_user?data=${encodedCartData}`;
-
-            window.location.href = checkoutUrl;
+                const encodedCartData = encodeURIComponent(JSON.stringify(cartDataList));
+                const checkoutUrl = `checkout_user?data=${encodedCartData}`;
+                window.location.href = checkoutUrl;
             }
         });
     }
 
     document.addEventListener('click', function (event) {
-        if (event.target && event.target.classList.contains('btn-delete')) {
-            const idCart = event.target.getAttribute('data-id-cart');
-            const idOptions = event.target.getAttribute('data-id-options');
+        const target = event.target;
 
+        if (target && target.id === 'btn_delete_cart_cookies') {
+            const idOptions = target.getAttribute('data-id-options');
+            Swal.fire({
+                title: 'Xác nhận xóa',
+                text: 'Bạn có chắc chắn muốn xóa tùy chọn này khỏi giỏ hàng?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Xóa',
+                cancelButtonText: 'Hủy',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    deleteCartOptionCookies(idOptions);
+                } else {
+                    console.log('Xóa tùy chọn bị hủy.');
+                }
+            });
+        } else if (target && target.classList.contains('btn-delete')) {
+            const idCart = target.getAttribute('data-id-cart');
+            const idOptions = target.getAttribute('data-id-options');
             Swal.fire({
                 title: 'Xác nhận xóa',
                 text: 'Bạn có chắc chắn muốn xóa tùy chọn này khỏi giỏ hàng?',
@@ -274,7 +350,33 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 });
+function deleteCartOptionCookies(idOptions) {
+    const cartCookie = getCookieValue('cart');
+    let cartDataList = cartCookie ? JSON.parse(cartCookie) : [];
 
+    const indexToDelete = cartDataList.findIndex(item => item.idOptions === idOptions);
+    if (indexToDelete !== -1) {
+        cartDataList.splice(indexToDelete, 1);
+
+        document.cookie = `cart=${encodeURIComponent(JSON.stringify(cartDataList))}; path=/; max-age=${60 * 60 * 24 * 7}`;
+
+        Swal.fire({
+            title: 'Thành công!',
+            text: 'Sản phẩm đã được xóa khỏi giỏ hàng.',
+            icon: 'success',
+            confirmButtonText: 'OK'
+        }).then(() => {
+            displayCartCookies(cartDataList);
+        });
+    } else {
+        Swal.fire({
+            title: 'Lỗi!',
+            text: 'Không tìm thấy sản phẩm trong giỏ hàng.',
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+    }
+}
 function deleteCartOption(idCart, idOptions) {
     const xhr = new XMLHttpRequest();
     const url = `https://localhost:7241/api/CartOptions/Delete/${idCart}/${idOptions}`;
@@ -303,7 +405,7 @@ function deleteCartOption(idCart, idOptions) {
                 console.error('Lỗi khi xóa tùy chọn:', xhr.statusText);
                 Swal.fire({
                     title: 'Lỗi!',
-                    text: 'Đã xảy ra lỗi khi xóa tùy chọn. Vui lòng thử lại.',
+                    text: 'Đã xảy ra lỗi khi xóa tùy chọn.',
                     icon: 'error',
                     confirmButtonText: 'OK'
                 });
@@ -311,30 +413,78 @@ function deleteCartOption(idCart, idOptions) {
         }
     };
 
+    xhr.onerror = function () {
+        console.error('Có lỗi xảy ra khi gọi API.');
+        Swal.fire({
+            title: 'Lỗi!',
+            text: 'Không thể kết nối đến máy chủ.',
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+    };
+
     xhr.send();
 }
-
 function updateTotalAmount() {
     let totalAmount = 0;
-    const cartItemsContainer = document.getElementById('data_cart_table');
-    cartItemsContainer.querySelectorAll('tr').forEach(row => {
-        const totalPriceCell = row.querySelector('.total__price');
-        if (totalPriceCell) {
-            const priceText = totalPriceCell.innerText;
-            const totalPrice = parseFloat(priceText.replace(/\./g, '').replace(/[^0-9.-]/g, ''));
-            totalAmount += totalPrice;
-        }
+
+    cartDataList.forEach(item => {
+        totalAmount += item.totalPrice;
     });
 
     document.getElementById('total_amount').innerText = `Tổng cộng: ${totalAmount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}`;
+    saveCartToCookies();
 }
+async function addToCartFromCookies(idcart) {
+    const cartCookie = getCookieValue('cart');
+    const jwtCookie = getCookieValue('jwt');
+    if (!cartCookie || !jwtCookie) {
+        console.error('Cookies không hợp lệ hoặc không tồn tại.');
+        return;
+    }
 
+    const cartItems = JSON.parse(cartCookie);
+    if (!cartCookie || !jwtCookie) {
+        console.error('Cookies không hợp lệ hoặc không tồn tại.');
+        return;
+    }
+
+    for (const item of cartItems) {
+        const requestBody = {
+            createBy: userId,
+            idOptions: item.idOptions,
+            idCart: idcart,
+            quantity: item.quantity,
+        };
+        console.log('requestBody', requestBody)
+
+        try {
+            const response = await fetch('https://localhost:7241/api/CartOptions/AddToCart', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${jwtCookie}`
+                },
+                body: JSON.stringify(requestBody)
+            });
+
+            if (response.ok) {
+                console.log('Sản phẩm đã được thêm vào giỏ hàng thành công.');
+                document.cookie = 'cart=; path=/; max-age=0';
+            } else {
+                console.error('Có lỗi xảy ra khi thêm sản phẩm vào giỏ hàng.', await response.text());
+            }
+        } catch (error) {
+            console.error('Có lỗi xảy ra khi gọi API.', error);
+        }
+    }
+}
 document.addEventListener('DOMContentLoaded', function () {
     const updateCartBtn = document.getElementById('update-cart-btn');
 
     if (updateCartBtn) {
         updateCartBtn.addEventListener('click', function (event) {
-            event.preventDefault(); 
+            event.preventDefault();
             updateCart();
         });
     }
@@ -347,7 +497,41 @@ function updateCart() {
             Swal.fire({
                 icon: 'error',
                 title: 'Lỗi!',
-                    text: 'Đã xảy ra lỗi khi xóa tùy chọn.',
+                text: 'Số lượng sản phẩm không hợp lệ.',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+    }
+
+    cartItems.forEach(item => {
+        const xhr = new XMLHttpRequest();
+        const apiUrl = `https://localhost:7241/api/CartOptions/${item.idCart}/${item.idOptions}`;
+        xhr.open('PUT', apiUrl, true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                if (xhr.status === 200) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Cập nhật thành công!',
+                        text: 'Giỏ hàng đã được cập nhật.',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        manageCart();
+                    });
+                } else {
+                    let errorMessage = xhr.responseText;
+                    if (xhr.responseText) {
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            errorMessage = response.message || errorMessage;
+                        } catch (e) {
+                            console.error('Error parsing response:', e);
+                        }
+                    }
+                    Swal.fire({
                         icon: 'error',
                         title: 'Lỗi!',
                         text: errorMessage,
@@ -359,10 +543,7 @@ function updateCart() {
         };
 
         xhr.onerror = function () {
-        console.error('Có lỗi xảy ra khi gọi API.');
             Swal.fire({
-            title: 'Lỗi!',
-            text: 'Không thể kết nối đến máy chủ.',
                 icon: 'error',
                 title: 'Lỗi!',
                 text: 'Có lỗi xảy ra trong quá trình gửi yêu cầu.',
@@ -371,19 +552,25 @@ function updateCart() {
             console.error('Network Error:', xhr.statusText);
         };
 
-    xhr.send();
+        const requestBody = JSON.stringify({
+            modifiedBy: userId,
+            quantity: item.quantity
+        });
+
+        xhr.send(requestBody);
+    });
 }
 function getCartItems() {
     const items = [];
     const rows = document.querySelectorAll('#data_cart_table tr');
 
-function updateTotalAmount() {
-    let totalAmount = 0;
+    rows.forEach(row => {
+        const idCart = row.querySelector('[data-id-cart]').getAttribute('data-id-cart');
+        const idOptions = row.querySelector('[data-id-options]').getAttribute('data-id-options');
+        const quantity = parseInt(row.querySelector('input').value, 10);
 
-    cartDataList.forEach(item => {
-        totalAmount += item.totalPrice;
+        items.push({ idCart, idOptions, quantity });
     });
 
-    document.getElementById('total_amount').innerText = `Tổng cộng: ${totalAmount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}`;
-    saveCartToCookies();
+    return items;
 }

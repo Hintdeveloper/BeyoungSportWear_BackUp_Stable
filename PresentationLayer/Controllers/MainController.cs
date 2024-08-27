@@ -26,6 +26,11 @@ namespace PresentationLayer.Controllers
         {
             return View();
         }
-
+        [HttpGet]
+        [Route("contact_hotline")]
+        public async Task<IActionResult> Contact()
+        {
+            return View();
+        }
     }
 }

@@ -23,23 +23,23 @@ function getUserIdFromJwt(jwt) {
 }
 const jwt = getJwtFromCookie();
 const userId = getUserIdFromJwt(jwt);
-
 function removeDiacritics(str) {
     return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").normalize("NFC");
 }
-
 function getInitials(str) {
     return str.split(' ').map(word => word.charAt(0)).join('').toUpperCase();
 }
-
 function generateKeyCode(productName, categoryName) {
     let normalizedProductName = removeDiacritics(productName);
     let normalizedCategoryName = removeDiacritics(categoryName);
-    let keyPart = getInitials(normalizedProductName + " " + normalizedCategoryName);
+
+    let productPart = getInitials(normalizedProductName, 4).substring(0, 3);
+    let categoryPart = getInitials(normalizedCategoryName, 2).substring(0, 2);
+    let keyPart = `${productPart}${categoryPart}`;
+
     let randomPart = Math.floor(Math.random() * 9000) + 1000;
     return `${keyPart}-${randomPart}`.toUpperCase();
 }
-
 document.addEventListener('DOMContentLoaded', function () {
     const productNameInput = document.getElementById('product_name');
     const categoryNameInput = document.getElementById('category_name');
@@ -55,7 +55,6 @@ document.addEventListener('DOMContentLoaded', function () {
     productNameInput.addEventListener('input', updateKeyCode);
     categoryNameInput.addEventListener('input', updateKeyCode);
 });
-
 document.addEventListener('DOMContentLoaded', function () {
     const productForm = document.getElementById('productForm');
     productForm.addEventListener('submit', function (event) {
@@ -75,7 +74,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var product_description = document.getElementById("product_description").value;
         var product_images = document.getElementById("image-upload").files;
         var productId = guid();
-       
+
         if (!product_product || !product_category || !product_manufacture || !product_material || !select_brand || !product_style || !product_origin || !product_description) {
             Swal.fire({
                 icon: 'error',
@@ -84,7 +83,20 @@ document.addEventListener('DOMContentLoaded', function () {
             });
             return;
         }
-
+        const imageUploadInput = document.getElementById('image-upload');
+        const isImageValid = validateImageUpload(imageUploadInput);
+        if (!isImageValid) {
+            return;
+        }
+        const optionsData = await createOptionsData();
+        if (optionsData.length === 0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: 'Vui lòng thêm ít nhất một phân loại sản phẩm!',
+            });
+            return;
+        }
         Swal.fire({
             title: 'Xác nhận',
             text: 'Bạn có chắc chắn muốn lưu sản phẩm này?',
@@ -105,7 +117,9 @@ document.addEventListener('DOMContentLoaded', function () {
                         }
                     });
 
-                    const optionsData = await createOptionsData();
+                  
+
+                    const barcodeUrl = await getBarcode(keycode);
 
                     await saveProduct({
                         CreateBy: userId,
@@ -120,6 +134,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         Origin: product_origin,
                         Description: product_description,
                         IsActive: true,
+                        BarCode: barcodeUrl,
                         ImagePaths: [],
                         OptionsCreateVM: optionsData,
                     });
@@ -144,7 +159,42 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     });
+    async function getBarcode(keyCode) {
+        if (!keyCode) {
+            console.error('KeyCode không hợp lệ.');
+            return '';
+        }
 
+        const url = 'https://localhost:7241/api/Barcode/generate_barcode/' + keyCode;
+
+        return new Promise((resolve, reject) => {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', url, true);
+            xhr.setRequestHeader('Accept', '*/*');
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        try {
+                            var response = JSON.parse(xhr.responseText);
+                            console.log('Barcode URL:', response.barcode);
+                            resolve(response.barcode);
+                        } catch (error) {
+                            reject('Lỗi phân tích dữ liệu JSON: ' + error.message);
+                        }
+                    } else {
+                        reject(xhr.responseText || 'Có lỗi xảy ra: ' + xhr.statusText);
+                    }
+                }
+            };
+
+            xhr.onerror = function () {
+                reject('Lỗi khi gửi yêu cầu');
+            };
+
+            xhr.send();
+        });
+    }
     async function saveProduct(productData) {
         console.log(productData)
         return new Promise((resolve, reject) => {
@@ -152,8 +202,6 @@ document.addEventListener('DOMContentLoaded', function () {
             var url = 'https://localhost:7241/api/ProductDetails/productdetails_create';
             xhr.open('POST', url, true);
             xhr.setRequestHeader('Content-Type', 'application/json');
-            xhr.setRequestHeader("Authorization", "Bearer " + jwt);
-
             xhr.onreadystatechange = function () {
                 if (xhr.readyState === 4) {
                     if (xhr.status === 200) {
@@ -171,7 +219,6 @@ document.addEventListener('DOMContentLoaded', function () {
             xhr.send(JSON.stringify(productData));
         });
     }
-
     async function uploadImages(productId, product_images) {
         if (product_images.length === 0) {
             console.error('Không có tệp nào để tải lên.');
@@ -217,7 +264,6 @@ document.addEventListener('DOMContentLoaded', function () {
             xhr.send(formData);
         });
     }
-
     async function createOptionsData() {
         const optionsData = [];
         const rows = document.getElementById('classificationBody').getElementsByTagName('tr');
@@ -230,7 +276,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 const soLuong = cells[4].querySelector('input').value;
                 const imageElement = cells[0].querySelector('img');
                 const imageSrc = imageElement ? imageElement.src : '';
-
+                if (!imageElement) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi',
+                        text: 'Vui lòng chọn hình ảnh cho tất cả các phân loại!',
+                    });
+                    return;
+                }
                 const uploadedImageUrl = await uploadImageSingle(imageSrc);
 
                 const option = {
@@ -251,7 +304,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         return optionsData;
     }
-
     async function uploadImageSingle(imageSrc) {
         if (!imageSrc) {
             console.error('Không có tệp nào để tải lên.');
@@ -283,17 +335,14 @@ document.addEventListener('DOMContentLoaded', function () {
             xhr.send(formData);
         });
     }
-
     const addColorButton = document.getElementById('addColorButton');
     addColorButton.addEventListener('click', function () {
         addColor();
     });
-
     const addSizeButton = document.getElementById('addSizeButton');
     addSizeButton.addEventListener('click', function () {
         addSize();
     });
-
     function guid() {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
             var r = Math.random() * 16 | 0,
@@ -389,8 +438,8 @@ function updateTable() {
                 </td>
                 <td>${color}</td>
                 <td>${size}</td>
-                <td><input type="text" placeholder="Nhập giá bán"></td>
-                <td><input type="text" placeholder="0"></td>
+                <td><input type="text" id="retal_price" placeholder="Nhập giá bán"></td>
+                <td><input type="text" id="quantity" placeholder="0"></td>
                 <td><button class="remove-button" onclick="removeRow(this)">Xóa</button></td>
             `;
             tableBody.appendChild(row);
@@ -399,8 +448,11 @@ function updateTable() {
             fileInput.addEventListener('change', function (event) {
                 handleImageUpload(event, imagePreviewId);
             });
-
-            const soLuongInput = row.querySelector('input[type="text"][placeholder="0"]');
+            const retal_priceInput = document.getElementById('retal_price');
+            retal_priceInput.addEventListener('blur', function () {
+                validatePrice(retal_priceInput);
+            });
+            const soLuongInput = document.getElementById('quantity');
             soLuongInput.addEventListener('blur', function () {
                 validateQuantity(soLuongInput);
             });
@@ -411,7 +463,6 @@ document.addEventListener("DOMContentLoaded", function () {
     function loadData(url, selectId, defaultText) {
         var xhr = new XMLHttpRequest();
         xhr.open("GET", url, true);
-        xhr.setRequestHeader("Authorization", "Bearer " + jwt);
         xhr.onreadystatechange = function () {
             if (xhr.readyState === 4 && xhr.status === 200) {
                 var data = JSON.parse(xhr.responseText);
@@ -435,7 +486,6 @@ document.addEventListener("DOMContentLoaded", function () {
         };
         xhr.send();
     }
-
     function addChangeListener(selectId, inputId) {
         var selectElement = document.getElementById(selectId);
         var inputElement = document.getElementById(inputId);
@@ -468,34 +518,51 @@ document.addEventListener("DOMContentLoaded", function () {
     loadData("https://localhost:7241/api/Category/GetAllActive", 'product_category', '-- Chọn danh mục --');
     addChangeListener('product_category', 'category_name');
 });
-function validateQuantity(inputElement) {
-    const value = inputElement.value.trim();
+function validateQuantity(input) {
+    const value = input.value.trim();
     const isValid = /^[0-9]*$/.test(value);
 
     if (!isValid || parseInt(value) < 0) {
+        input.style.borderColor = 'red';
         Swal.fire({
             icon: 'error',
             title: 'Lỗi!',
             text: 'Số lượng không được nhập chữ hoặc số âm.',
         });
-        inputElement.value = '';
+        input.value = '';
+    }
+    else {
+        input.style.borderColor = '';
     }
 }
-
-function validateCostPrice(giaNhapInput, giaBanInput) {
-    giaNhapInput.addEventListener('blur', function () {
-        const value = giaNhapInput.value.trim();
-        const isValid = /^[0-9]*$/.test(value);
-
-        if (!isValid || parseFloat(giaNhapInput.value) < 0) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Lỗi!',
-                text: 'Giá nhập không được nhập chữ hoặc số âm.',
-            });
-            giaNhapInput.value = '';
-        }
-    });
+function validatePrice(input) {
+    const value = input.value.trim();
+    if (!/^\d+(\.\d{1,2})?$/.test(value) || parseFloat(value) < 0) {
+        input.style.borderColor = 'red';
+        Swal.fire({
+            icon: 'error',
+            title: 'Lỗi',
+            text: 'Giá bán không hợp lệ. Vui lòng nhập giá hợp lệ (số dương, không chứa ký tự đặc biệt).'
+        });
+        input.value = '';
+    } else {
+        input.style.borderColor = '';
+    }
+}
+function validateImageUpload(input) {
+    const files = input.files;
+    if (files.length === 0) {
+        input.style.borderColor = 'red';
+        Swal.fire({
+            icon: 'error',
+            title: 'Lỗi',
+            text: 'Vui lòng chọn một tệp hình ảnh để tải lên.'
+        });
+        return false;
+    } else {
+        input.style.borderColor = ''; 
+        return true; 
+    }
 }
 function handleImageUpload(event, imagePreviewId) {
     const file = event.target.files[0];
@@ -519,7 +586,6 @@ function handleImageUpload(event, imagePreviewId) {
 
     imagePreviewElement.appendChild(imgElement);
 }
-
 function removeRow(button) {
     const row = button.parentElement.parentElement;
     const color = row.cells[1].textContent;
@@ -577,7 +643,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 allowOutsideClick: false,
                 allowEscapeKey: false
             });
-            return; 
+            return;
         }
 
         for (var i = 0; i < files.length; i++) {
