@@ -34,6 +34,7 @@ namespace ExternalInterfaceLayer.Controllers
             var obj = await _ICategoryService.GetAllActiveAsync();
             return Ok(obj);
         }
+        [AllowAnonymous]
         [HttpGet]
         [Route("GetByID/{ID}")]
         public async Task<IActionResult> GetByID(Guid ID)
