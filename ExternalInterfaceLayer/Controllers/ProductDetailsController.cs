@@ -1,17 +1,10 @@
-﻿using BusinessLogicLayer.Services.Implements;
-using BusinessLogicLayer.Services.Interface;
-using BusinessLogicLayer.Viewmodels.Brand;
-using BusinessLogicLayer.Viewmodels.Manufacturer;
-using BusinessLogicLayer.Viewmodels.Material;
+﻿using BusinessLogicLayer.Services.Interface;
 using BusinessLogicLayer.Viewmodels;
 using BusinessLogicLayer.Viewmodels.ProductDetails;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using DataAccessLayer.Entity;
 using BusinessLogicLayer.Viewmodels.Options;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
-using System.Drawing;
 
 namespace ExternalInterfaceLayer.Controllers
 {

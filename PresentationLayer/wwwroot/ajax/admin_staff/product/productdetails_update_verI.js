@@ -210,15 +210,17 @@ function updateTable() {
                 <td>${size}</td>
                 <td><input type="text" value="${match ? match.retailPrice : ''}" placeholder="Nhập giá bán"></td>
                 <td><input type="text" value="${match ? match.stockQuantity : ''}" placeholder="0"></td>
-                <td>
-                    ${match ? `
-                        <button type="button" class="toggle-button" onclick="toggleStatus('${match.id}', ${match.isActive})">
-                            <i class="${match.isActive ? 'fas fa-ban' : 'fas fa-check-circle text-success'}"></i>
-                        </button>
-                    ` : `
-                        <button class="remove-button" onclick="removeRow(this)">Xóa</button>
-                    `}
-                </td>
+             <td>
+                ${match ? `
+                    <button type="button" class="toggle-button btn ${match.isActive ? 'btn-danger' : 'btn-success'}" data-option-id="${match.id}" data-isactive="${match.isActive}" onclick="toggleStatus('${match.id}', ${match.isActive})">
+                        ${match.isActive ? 'Ngừng hoạt động' : 'Hoạt động'}
+                    </button>
+                ` : `
+                    <button class="remove-button btn btn-danger" onclick="removeRow(this)">Xóa</button>
+                `}
+            </td>
+
+
             `;
             tableBody.appendChild(row);
 
@@ -340,55 +342,78 @@ document.body.addEventListener('click', function (event) {
 function toggleStatus(id, currentStatus) {
     const newStatus = !currentStatus;
 
-    var data = {
-        idEntity: id,
-        isActive: newStatus
-    };
+    // Xác nhận hành động bằng SweetAlert2
+    Swal.fire({
+        title: 'Xác nhận thay đổi trạng thái',
+        text: `Bạn muốn ${newStatus ? 'kích hoạt' : 'vô hiệu hóa'} tùy chọn này?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Có, thay đổi!',
+        cancelButtonText: 'Hủy'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            var data = {
+                idEntity: id,
+                isActive: newStatus
+            };
 
-    var xhr = new XMLHttpRequest();
-    xhr.open("POST", "https://localhost:7241/api/Options/UpdateIsActive", true);
-    xhr.setRequestHeader("Content-Type", "application/json");
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "https://localhost:7241/api/Options/UpdateIsActive", true);
+            xhr.setRequestHeader("Content-Type", "application/json");
 
-    xhr.onload = function () {
-        if (xhr.status === 200) {
-            const button = document.querySelector(`button[data-option-id='${id}']`);
-            const icon = button.querySelector('i');
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    // Tìm nút với thuộc tính data-option-id
+                    const button = document.querySelector(`button[data-option-id='${id}']`);
 
-            button.setAttribute('data-isactive', newStatus);
+                    if (button) { // Kiểm tra xem button có tồn tại không
+                        // Cập nhật trạng thái của nút
+                        if (newStatus) {
+                            button.classList.remove('btn-success');
+                            button.classList.add('btn-danger');
+                            button.textContent = 'Ngừng hoạt động';
+                        } else {
+                            button.classList.remove('btn-danger');
+                            button.classList.add('btn-success');
+                            button.textContent = 'Hoạt động';
+                        }
 
-            if (newStatus) {
-                icon.className = 'fas fa-ban';
-                icon.classList.remove('text-success');
-            } else {
-                icon.className = 'fas fa-check-circle text-success';
-            }
+                        // Cập nhật thuộc tính data-isactive của nút
+                        button.setAttribute('data-isactive', newStatus);
+                    } else {
+                        console.error(`Nút với id '${id}' không tìm thấy.`);
+                    }
 
-            Swal.fire({
-                icon: 'success',
-                title: 'Thành công',
-                text: 'Đã cập nhật trạng thái thành công.'
-            }).then(() => {
-                console.log("Đã cập nhật thành công trạng thái isActive có id: " + id);
-            });
-        } else {
-            Swal.fire({
-                icon: 'error',
-                title: 'Lỗi',
-                text: 'Đã xảy ra lỗi khi cập nhật trạng thái.'
-            });
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Thành công',
+                        text: 'Đã cập nhật trạng thái thành công.'
+                    }).then(() => {
+                        console.log("Đã cập nhật thành công trạng thái isActive có id: " + id);
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi',
+                        text: 'Đã xảy ra lỗi khi cập nhật trạng thái.'
+                    });
+                }
+            };
+
+            xhr.onerror = function () {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi kết nối',
+                    text: 'Đã xảy ra lỗi kết nối khi gửi yêu cầu.'
+                });
+                console.error("Đã xảy ra lỗi kết nối khi gửi yêu cầu cập nhật trạng thái isActive có id: " + id);
+            };
+
+            xhr.send(JSON.stringify(data));
         }
-    };
-
-    xhr.onerror = function () {
-        Swal.fire({
-            icon: 'error',
-            title: 'Lỗi kết nối',
-            text: 'Đã xảy ra lỗi kết nối khi gửi yêu cầu.'
-        });
-        console.error("Đã xảy ra lỗi kết nối khi gửi yêu cầu cập nhật trạng thái isActive có id: " + id);
-    };
-
-    xhr.send(JSON.stringify(data));
+    });
 }
 document.addEventListener("DOMContentLoaded", function () {
     function loadData(url, selectId, defaultText) {

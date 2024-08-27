@@ -1,4 +1,9 @@
-﻿function displayData(data) {
+﻿function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+}
+function displayData(data) {
     const tableBody = document.getElementById('table_productdetails');
     tableBody.innerHTML = '';
 
@@ -24,9 +29,6 @@
                 <img src="${productdetails.imagePaths[0]}" alt="Ảnh sản phẩm" width="60px;">
             </td>
             <td>${productdetails.totalQuantity}</td>
-            <td>
-                ${productdetails.totalQuantity >= 1 ? '<span class="badge bg-success">Còn hàng</span>' : '<span class="badge bg-danger">Hết hàng</span>'}
-            </td>
             <td>${priceToShow}</td>
             <td>${productdetails.isActive == true ? '<span class="badge bg-success">Đang bán</span>' : '<span class="badge bg-danger">Đã ngừng bán</span>'}</td>
 
@@ -49,13 +51,22 @@
 function fetchData() {
     var xhr = new XMLHttpRequest();
     xhr.open('GET', 'https://localhost:7241/api/ProductDetails/GetAll', true);
+    var token = getCookie('jwt');
+
+    if (token) {
+        xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+    } else {
+        console.error('JWT token not found in cookies.');
+        return;
+    }
+
     xhr.onreadystatechange = function () {
         if (xhr.readyState == 4) {
             if (xhr.status == 200) {
                 var data = JSON.parse(xhr.responseText);
                 displayData(data);
             } else {
-                console.error('Error fetching data:', xhr.statusText);
+                console.error('Error fetching data:', xhr.responseText);
             }
         }
     };
