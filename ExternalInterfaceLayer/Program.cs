@@ -1,5 +1,6 @@
 ﻿using BusinessLogicLayer.Services.Implements;
 using BusinessLogicLayer.Services.Interface;
+using BusinessLogicLayer.Services.SignalR;
 using BusinessLogicLayer.Viewmodels;
 using BusinessLogicLayer.Viewmodels.VietQR;
 using CloudinaryDotNet;
@@ -9,7 +10,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Net.WebSockets;
 using System.Text;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
@@ -19,9 +22,10 @@ builder.Services.AddApplication();
 
 var mailSetting = builder.Configuration.GetSection("MailSettings");
 builder.Services.Configure<MailSettings>(mailSetting);
+builder.Services.AddTransient<IBarcodeGeneratorService, BarcodeGeneratorService>();
+builder.Services.AddTransient<IEmailSenderService, SendMailService>();
 builder.Services.AddTransient<IOrderHistoryService, OrderHistoryService>();
 builder.Services.AddTransient<IVnPayService, VnPayService>();
-builder.Services.AddTransient<IBarcodeGeneratorService, BarcodeGeneratorService>();
 builder.Services.AddTransient<ICartOptionsService, CartOptionsService>();
 builder.Services.AddTransient<IStatisticsService, StatisticsService>();
 builder.Services.AddTransient<ICategoryService, CategoryService>();
@@ -41,9 +45,7 @@ builder.Services.AddTransient<IBrandService, BrandService>();
 builder.Services.AddTransient<IMaterialService, MaterialService>();
 builder.Services.AddTransient<IColorService, ColorService>();
 builder.Services.AddTransient<IApplicationUserService, ApplicationUserService>();
-builder.Services.AddTransient<IEmailSenderService, SendMailService>();
 builder.Services.AddTransient<ApplicationDBContext>();
-builder.Services.AddTransient<IVoucherMServiece,VoucherMServiece>();    
 
 builder.Services.Configure<VietQRSettings>(builder.Configuration.GetSection("VietQR"));
 builder.Services.AddHttpClient<IVietQRService, VietQRService>();
@@ -51,7 +53,7 @@ builder.Services.AddHttpClient<IVietQRService, VietQRService>();
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDBContext>()
     .AddDefaultTokenProviders();
-var cloudinaryAccount = new Account("drv4cstnl", "818812395582614", "HvaCHQdfLUBn5pB90ayzUpCqqmk");
+var cloudinaryAccount = new Account("dqcxurnpa", "335141472712284", "fMAGyNyS5uwTVvoWKqaDwThUxtE");
 var cloudinary = new Cloudinary(cloudinaryAccount);
 builder.Services.AddSingleton(cloudinary);
 
@@ -83,14 +85,17 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("ClientPolicy", policy => policy.RequireRole("Client"));
 });
 
+
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", builder =>
-    {
-        builder.AllowAnyOrigin()
-            .AllowAnyHeader()
-            .AllowAnyMethod();
-    });
+    options.AddPolicy("AllowAll",
+        builder =>
+        {
+            builder.WithOrigins("https://localhost:7065")
+                   .AllowAnyHeader()
+                   .AllowAnyMethod()
+                   .AllowCredentials();
+        });
 });
 
 builder.Services.AddSwaggerGen(c =>
@@ -123,7 +128,7 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
+builder.Services.AddSignalR();
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -134,11 +139,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
-
 app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
+app.MapHub<ProductHub>("/productHub");
 app.Run();
