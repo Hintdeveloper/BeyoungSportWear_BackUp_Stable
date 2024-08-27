@@ -24,6 +24,7 @@
     </PackageReference>
     <PackageReference Include="Quartz" Version="3.9.0" />
     <PackageReference Include="VNPayPackage" Version="2.1.0" />
+    <PackageReference Include="ZXing.Net" Version="0.16.9" />
   </ItemGroup>
 
   <ItemGroup>

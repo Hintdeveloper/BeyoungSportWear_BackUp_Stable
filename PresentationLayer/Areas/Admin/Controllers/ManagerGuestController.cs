@@ -26,7 +26,6 @@ namespace PresentationLayer.Areas.Admin.Controllers
                     var token = handler.ReadJwtToken(jwtToken);
 
                     List<UserDataVM> users = null;
-
                     // Kiểm tra từng tiêu chí và gọi các phương thức tương ứng
                     if (!string.IsNullOrEmpty(email))
                     {
