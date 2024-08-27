@@ -26,6 +26,7 @@ builder.Services.AddTransient<IBarcodeGeneratorService, BarcodeGeneratorService>
 builder.Services.AddTransient<IEmailSenderService, SendMailService>();
 builder.Services.AddTransient<IOrderHistoryService, OrderHistoryService>();
 builder.Services.AddTransient<IVnPayService, VnPayService>();
+builder.Services.AddTransient<IBarcodeGeneratorService, BarcodeGeneratorService>();
 builder.Services.AddTransient<ICartOptionsService, CartOptionsService>();
 builder.Services.AddTransient<IStatisticsService, StatisticsService>();
 builder.Services.AddTransient<ICategoryService, CategoryService>();
@@ -145,5 +146,8 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+<<<<<<< HEAD
 app.MapHub<ProductHub>("/productHub");
+=======
+>>>>>>> faa311025cf410e685c531063ac7abdf01f77af4
 app.Run();

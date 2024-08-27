@@ -92,7 +92,7 @@ namespace BusinessLogicLayer.Services.Implements
         {
             await _userManager.SetAuthenticationTokenAsync(user, _configuration["JWT:Issuer"], "JWT", token);
         }
-        private async Task<Response> SendConfirmationEmailAsync(string email, Uri callbackUri)
+        private async Task<Response> SendConfirmationEmailAsync(string email, Uri callbackUri, string userPassword)
         {
             try
             {
@@ -100,7 +100,7 @@ namespace BusinessLogicLayer.Services.Implements
                 {
                     From = new MailAddress(_mailSettings.Mail, _mailSettings.DisplayName),
                     Subject = "Xác nhận địa chỉ email",
-                    Body = $"Vui lòng xác nhận địa chỉ email của bạn bằng cách nhấp vào <a href='{callbackUri}'>đây</a>",
+                    Body = $"Vui lòng xác nhận địa chỉ email của bạn bằng cách nhấp vào <a href='{callbackUri}'>đây.</a> Mật khẩu của bạn là: {userPassword}",
                     IsBodyHtml = true
                 };
 
@@ -309,6 +309,17 @@ namespace BusinessLogicLayer.Services.Implements
                         Message = "The password and confirmation password do not match."
                     };
                 }
+                int userAge = DateTime.Now.Year - registerUser.DateOfBirth.Year;
+                if (userAge < 18 || userAge > 65)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        StatusCode = 400,
+                        Message = "Age is not valid"
+                    };
+
+                }
 
                 var newUser = new ApplicationUser
                 {
@@ -386,7 +397,7 @@ namespace BusinessLogicLayer.Services.Implements
                     var callbackUrl = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{host}/Account/ConfirmEmail?userId={newUser.Id}&code={emailConfirmationToken}";
 
                     var callbackUri = new Uri(callbackUrl);
-                    await SendConfirmationEmailAsync(newUser.Email, callbackUri);
+                    await SendConfirmationEmailAsync(newUser.Email, callbackUri, registerUser.Password);
 
                     await transaction.CommitAsync();
 
@@ -474,45 +485,45 @@ namespace BusinessLogicLayer.Services.Implements
             user.DateOfBirth = userUpdateVM.DateOfBirth ?? user.DateOfBirth;
 
             // Cập nhật thông tin địa chỉ nếu có thay đổi
-            if (userUpdateVM.AddressUpdateVM != null)
-            {
-                // Tìm địa chỉ của người dùng hiện tại
-                var address = user.Addresss?.FirstOrDefault(a =>
-                    a.City == userUpdateVM.AddressUpdateVM.City &&
-                    a.DistrictCounty == userUpdateVM.AddressUpdateVM.DistrictCounty &&
-                    a.Commune == userUpdateVM.AddressUpdateVM.Commune); 
+            //if (userUpdateVM.AddressUpdateVM != null)
+            //{
+            //    // Tìm địa chỉ của người dùng hiện tại
+            //    var address = user.Addresss?.FirstOrDefault(a =>
+            //        a.City == userUpdateVM.AddressUpdateVM.City &&
+            //        a.DistrictCounty == userUpdateVM.AddressUpdateVM.DistrictCounty &&
+            //        a.Commune == userUpdateVM.AddressUpdateVM.Commune); 
 
-                if (address == null)
-                {
-                    // Nếu người dùng chưa có địa chỉ, tạo địa chỉ mới
-                    address = new Address
-                    {
-                        IDUser = user.Id,
-                        FirstAndLastName = userUpdateVM.FirstAndLastName ?? user.FirstAndLastName,
-                        PhoneNumber = userUpdateVM.PhoneNumber ?? user.PhoneNumber,
-                        Gmail = userUpdateVM.Email ?? user.Email,
-                        City = userUpdateVM.AddressUpdateVM.City,
-                        DistrictCounty = userUpdateVM.AddressUpdateVM.DistrictCounty,
-                        Commune = userUpdateVM.AddressUpdateVM.Commune,
-                        SpecificAddress = userUpdateVM.AddressUpdateVM.SpecificAddress,
-                        Status = 1,
-                        ModifiedBy = user.Id,
-                        CreateBy = user.Id,
-                        ID = Guid.NewGuid() // Sử dụng một giá trị GUID mới để đảm bảo khóa chính là duy nhất
-                    };
-                    _dbContext.Address.Add(address);
-                }
-                else
-                {
-                    // Nếu người dùng đã có địa chỉ, cập nhật địa chỉ hiện tại
-                    address.City = userUpdateVM.AddressUpdateVM.City ?? address.City;
-                    address.DistrictCounty = userUpdateVM.AddressUpdateVM.DistrictCounty ?? address.DistrictCounty;
-                    address.Commune = userUpdateVM.AddressUpdateVM.Commune ?? address.Commune;
-                    address.SpecificAddress = userUpdateVM.AddressUpdateVM.SpecificAddress ?? address.SpecificAddress;
-                    address.Status = 1; // Cập nhật trạng thái nếu cần
-                    address.ModifiedBy = user.Id;
-                }
-            }
+            //    if (address == null)
+            //    {
+            //        // Nếu người dùng chưa có địa chỉ, tạo địa chỉ mới
+            //        address = new Address
+            //        {
+            //            IDUser = user.Id,
+            //            FirstAndLastName = userUpdateVM.FirstAndLastName ?? user.FirstAndLastName,
+            //            PhoneNumber = userUpdateVM.PhoneNumber ?? user.PhoneNumber,
+            //            Gmail = userUpdateVM.Email ?? user.Email,
+            //            City = userUpdateVM.AddressUpdateVM.City,
+            //            DistrictCounty = userUpdateVM.AddressUpdateVM.DistrictCounty,
+            //            Commune = userUpdateVM.AddressUpdateVM.Commune,
+            //            SpecificAddress = userUpdateVM.AddressUpdateVM.SpecificAddress,
+            //            Status = 1,
+            //            ModifiedBy = user.Id,
+            //            CreateBy = user.Id,
+            //            ID = Guid.NewGuid() // Sử dụng một giá trị GUID mới để đảm bảo khóa chính là duy nhất
+            //        };
+            //        _dbContext.Address.Add(address);
+            //    }
+            //    else
+            //    {
+            //        // Nếu người dùng đã có địa chỉ, cập nhật địa chỉ hiện tại
+            //        address.City = userUpdateVM.AddressUpdateVM.City ?? address.City;
+            //        address.DistrictCounty = userUpdateVM.AddressUpdateVM.DistrictCounty ?? address.DistrictCounty;
+            //        address.Commune = userUpdateVM.AddressUpdateVM.Commune ?? address.Commune;
+            //        address.SpecificAddress = userUpdateVM.AddressUpdateVM.SpecificAddress ?? address.SpecificAddress;
+            //        address.Status = 1; // Cập nhật trạng thái nếu cần
+            //        address.ModifiedBy = user.Id;
+            //    }
+            //}
             if (userUpdateVM.Images != null)
             {
                 var uploadParams = new ImageUploadParams()

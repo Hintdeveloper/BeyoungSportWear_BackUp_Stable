@@ -57,41 +57,49 @@
                 // Tạo FormData từ form
                 var formData = new FormData(this);
 
-                // Gửi yêu cầu AJAX
-                fetch('@Url.Action("Edit")', {
-                    method: 'POST',
-                    body: formData
-                })
-                    .then(response => {
-                        if (response.ok) {
-                            // Nếu server trả về redirect, xử lý thông báo thành công
-                            return response.text(); // Đọc phản hồi dưới dạng văn bản
+                // Tạo một yêu cầu XHR mới
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", '@Url.Action("Edit")', true);
+
+                xhr.onload = function () {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        var response = JSON.parse(xhr.responseText);
+
+                        if (response.isSuccess) { // Giả sử phản hồi có cấu trúc với thuộc tính isSuccess
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Thành công!',
+                                text: 'Kích thước đã được cập nhật thành công'
+                            }).then(() => {
+                                window.location.href = '@Url.Action("Index")';
+                            });
                         } else {
-                            // Nếu có lỗi, đọc phản hồi dưới dạng văn bản và hiển thị thông báo lỗi
-                            return response.text().then(text => {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Lỗi!',
-                                    text: text || 'Có lỗi xảy ra khi gửi yêu cầu.'
-                                });
-                                throw new Error(text);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Lỗi!',
+                                text: 'Đã xảy ra lỗi: ' + response.errorMessage || 'Có lỗi xảy ra khi cập nhật kích thước.'
                             });
                         }
-                    })
-                    .then(text => {
-                        // Nếu phản hồi thành công, hiển thị thông báo thành công
+                    } else {
                         Swal.fire({
-                            icon: 'success',
-                            title: 'Thành công!',
-                            text: 'Danh mục hàng đã được tạo thành công'
-                        }).then(() => {
-                            // Chuyển hướng sau khi hiển thị thông báo thành công
-                            window.location.href = '@Url.Action("Index")';
+                            icon: 'error',
+                            title: 'Lỗi!',
+                            text: xhr.responseText || 'Có lỗi xảy ra khi gửi yêu cầu.'
                         });
-                    })
-                    .catch(error => {
-                        console.error("Fetch error:", error.message);
+                    }
+                };
+
+                xhr.onerror = function () {
+                    // Hiển thị lỗi nếu có vấn đề xảy ra trong quá trình gửi yêu cầu
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi!',
+                        text: 'Có lỗi xảy ra khi gửi yêu cầu.'
                     });
+                };
+
+                // Gửi yêu cầu với dữ liệu từ form
+                xhr.send(formData);
             }
         });
 

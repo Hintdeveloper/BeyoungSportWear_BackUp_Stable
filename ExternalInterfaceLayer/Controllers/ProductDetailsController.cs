@@ -19,6 +19,7 @@ namespace ExternalInterfaceLayer.Controllers
         {
             _IProductDetailsService = IProductDetailsService;
         }
+        [Authorize(Roles = "Admin,Staff")]
         [HttpPost]
         [Route("productdetails_create")]
         public async Task<IActionResult> Create([FromBody] ProductDetailsCreateVM request)
@@ -33,6 +34,7 @@ namespace ExternalInterfaceLayer.Controllers
                 return BadRequest(new { status = "Error", message = "There was an error uploading the productDetails." });
             }
         }
+        [AllowAnonymous]
         [HttpGet("GetByProductDetailsId/{IDProductDetails}")]
         public async Task<IActionResult> GetByProductDetailsId(Guid IDProductDetails)
         {
@@ -53,6 +55,7 @@ namespace ExternalInterfaceLayer.Controllers
             var obj = await _IProductDetailsService.GetAllAsync(pageIndex, pageSize);
             return Ok(obj);
         }
+        [Authorize(Roles = "Admin,Staff")]
         [HttpPost("UpdateIsActive")]
         public async Task<IActionResult> UpdateIsActive([FromBody] UpdateIsActiveRequest request)
         {
@@ -104,6 +107,7 @@ namespace ExternalInterfaceLayer.Controllers
             }
             return Ok(obj);
         }
+        [Authorize(Roles = "Admin,Staff")]
         [HttpPut]
         [Route("Update/{ID}")]
         public async Task<IActionResult> Update(Guid ID, [FromBody] ProductDetailsUpdateVM request)
@@ -118,6 +122,7 @@ namespace ExternalInterfaceLayer.Controllers
 
             return NotFound();
         }
+        [Authorize(Roles = "Admin,Staff")]
         [HttpDelete("{ID}/{IDUserDelete}")]
         public async Task<IActionResult> Remove(Guid ID, string IDUserDelete)
         {
@@ -128,6 +133,7 @@ namespace ExternalInterfaceLayer.Controllers
             }
             return NotFound();
         }
+        [AllowAnonymous]
         [HttpPost("search")]
         public ActionResult<IEnumerable<Product>> Search([FromBody] List<SearchCondition> conditions)
         {
@@ -141,6 +147,7 @@ namespace ExternalInterfaceLayer.Controllers
             return Ok(result);
         }
 
+        [AllowAnonymous]
         [HttpGet("GetProductDetails_IDNameAsync/ids")]
         public async Task<IActionResult> GetProductDetails_IDNameAsync()
         {
@@ -154,39 +161,40 @@ namespace ExternalInterfaceLayer.Controllers
                 return StatusCode(500, new { message = ex.Message });
             }
         }
-		[HttpGet("GetOptionsByProductDetailsId/{IDProductDetails}")]
-		public async Task<ActionResult<List<OptionsVM>>> GetOptionsByProductDetailsIdAsync(Guid IDProductDetails)
-		{
-			try
-			{
-				var options = await _IProductDetailsService.GetOptionProductDetailsByIDAsync(IDProductDetails);
-				return Ok(options);
-			}
-			catch (Exception ex)
-			{
-				return StatusCode(500, $"Internal server error: {ex.Message}");
-			}
-		}
-    
-    [AllowAnonymous]
-		[HttpGet]
-		[Route("GetProductDetailInfo/{IDProductDetails}")]
-		public async Task<IActionResult> GetProductDetailInfo(Guid IDProductDetails, [FromQuery] string size, [FromQuery] string color)
-		{
-			try
-			{
-				var productDetail = await _IProductDetailsService.GetProductDetailInfo(IDProductDetails, size, color);
-				return Ok(productDetail);
-			}
-			catch (KeyNotFoundException ex)
-			{
-				return NotFound(new { message = ex.Message });
-			}
-		}
+        [AllowAnonymous]
+        [HttpGet("GetOptionsByProductDetailsId/{IDProductDetails}")]
+        public async Task<ActionResult<List<OptionsVM>>> GetOptionsByProductDetailsIdAsync(Guid IDProductDetails)
+        {
+            try
+            {
+                var options = await _IProductDetailsService.GetOptionProductDetailsByIDAsync(IDProductDetails);
+                return Ok(options);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpGet]
+        [Route("GetProductDetailInfo/{IDProductDetails}")]
+        public async Task<IActionResult> GetProductDetailInfo(Guid IDProductDetails, [FromQuery] string size, [FromQuery] string color)
+        {
+            try
+            {
+                var productDetail = await _IProductDetailsService.GetProductDetailInfo(IDProductDetails, size, color);
+                return Ok(productDetail);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+        }
         [AllowAnonymous]
         [HttpGet]
         [Route("products/price-range")]
-        public async Task<IActionResult> GetProductsByPriceRangeAsync(/*Guid IDProductDetails,*/ [FromQuery]decimal minPrice, [FromQuery]decimal maxPrice)
+        public async Task<IActionResult> GetProductsByPriceRangeAsync(/*Guid IDProductDetails,*/ [FromQuery] decimal minPrice, [FromQuery] decimal maxPrice)
         {
             if (minPrice > maxPrice)
             {
