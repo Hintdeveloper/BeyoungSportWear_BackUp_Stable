@@ -369,6 +369,8 @@ document.getElementById('customerPhoneNumber').addEventListener('blur', function
 function searchCustomerByPhoneNumber(phoneNumber) {
     const xhr = new XMLHttpRequest();
     xhr.open('GET', `https://localhost:7241/api/ApplicationUser/GetUsersByPhoneNumber?phoneNumber=${phoneNumber}`, true);
+    xhr.setRequestHeader('Authorization', `Bearer ${getJwtFromCookie()}`);
+
 
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4) {

@@ -904,9 +904,35 @@ namespace BusinessLogicLayer.Services.Implements
             return query;
         }
 
-        public Task<List<ProductDetailsVM>> GetProductsByPriceRangeAsync(decimal minPrice, decimal maxPrice)
+        public async Task<List<ProductDetailsVM>> GetProductsByPriceRangeAsync(decimal minPrice, decimal maxPrice)
         {
-            throw new NotImplementedException();
+            var products = await _dbcontext.ProductDetails
+                                             .Include(p => p.Products)
+                                             .Include(p => p.Options)
+                                             .Include(p => p.Images)
+                                             .Include(p => p.Category)
+                                             .Where(p => p.Options.Any(opt => opt.RetailPrice >= minPrice && opt.RetailPrice <= maxPrice))
+                                             .ToListAsync();
+
+            return products.Select(p => new ProductDetailsVM
+            {
+                ID = p.ID,
+                ProductName = p.Products != null ? p.Products.Name : string.Empty,
+                SmallestPrice = p.Options != null && p.Options.Any() ? p.Options.Min(opt => opt.RetailPrice) : 0,
+                BiggestPrice = p.Options != null && p.Options.Any() ? p.Options.Max(opt => opt.RetailPrice) : 0,
+                ImagePaths = p.Images != null ? p.Images.Where(m => m.Status == 1).Select(m => m.Path).ToList() : new List<string>(),
+                KeyCode = p.KeyCode,
+                IDCategory = p.IDCategory,
+                IDProduct = p.IDProduct,
+                CreateBy = p.CreateBy,
+                CategoryName = p.Category.Name,
+                Description = p.Description,
+                Style = p.Style,
+                Origin = p.Origin,
+                IsActive = p.IsActive,
+                //Barcode = p.BarCode,
+                Status = p.Status,
+            }).ToList();
         }
     }
 }
