@@ -23,7 +23,7 @@ function getUserIdFromJwt(jwt) {
 }
 const jwt = getJwtFromCookie();
 const userId = getUserIdFromJwt(jwt);
-
+console.log('userId', userId);
 function createOrderAfterPayment() {
     const orderData = JSON.parse(getCookie('orderData'));
     if (!orderData) {
@@ -76,7 +76,7 @@ function createOrderAfterPayment() {
                         window.location.href = '/';
                     }
                 });
-                eraseCookie('orderData');
+                document.cookie = 'orderData=; path=/; max-age=0';
             } else {
                 console.error('Error:', xhr.responseText);
                 Swal.fire({
@@ -135,10 +135,6 @@ function getCookie(name) {
         if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
     }
     return null;
-}
-
-function eraseCookie(name) {
-    document.cookie = name + '=; Max-Age=-99999999;';
 }
 
 function getParameterByName(name) {

@@ -26,15 +26,16 @@
                 const response = JSON.parse(xhr.responseText);
                 const { token, role } = response;
 
-                document.cookie = `jwt=${token}; path=/`;
-
+                const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+                const expires = new Date(Date.now() + thirtyDays).toUTCString();
+                document.cookie = `jwt=${token}; expires=${expires}; path=/`;
                 Swal.fire({
                     icon: 'success',
                     title: 'Đăng nhập thành công!',
                     showConfirmButton: false,
                     timer: 1500
                 }).then(() => {
-                    if (role === 'Admin' || role == 'Staff') {
+                    if (role === 'Admin') {
                         window.location.href = '/admin/home/index';
                     } else {
                         window.location.href = '/main';
@@ -239,7 +240,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 });
-
 document.getElementById('btn_register').addEventListener('click', function () {
     Swal.fire({
         title: 'Xác nhận',
@@ -256,7 +256,6 @@ document.getElementById('btn_register').addEventListener('click', function () {
 });
 
 function registerUser() {
-
     var formData = new FormData();
 
     formData.append('Username', document.getElementById('username').value);
@@ -279,9 +278,23 @@ function registerUser() {
         formData.append('Images', fileInput.files[0]);
     }
 
+
+    Swal.fire({
+        title: 'Đang xử lý...',
+        text: 'Vui lòng chờ trong giây lát.',
+        icon: 'info',
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
     var xhr = new XMLHttpRequest();
     xhr.open('POST', 'https://localhost:7241/api/ApplicationUser/Register?role=client', true);
     xhr.onload = function () {
+        Swal.close(); 
+
         if (xhr.status >= 200 && xhr.status < 300) {
             Swal.fire({
                 title: 'Thành công!',
@@ -289,7 +302,7 @@ function registerUser() {
                 icon: 'success',
                 confirmButtonText: 'OK'
             }).then(() => {
-                window.location.href = '/login'; 
+                window.location.href = '/login';
             });
         } else {
             Swal.fire({
@@ -298,19 +311,21 @@ function registerUser() {
                 icon: 'error',
                 confirmButtonText: 'OK'
             });
-            console.log(xhr.responseText)
-
+            console.log(xhr.responseText);
         }
     };
     xhr.onerror = function () {
+        Swal.close();
+
         Swal.fire({
             title: 'Lỗi!',
             text: 'Có lỗi xảy ra trong quá trình gửi yêu cầu.',
             icon: 'error',
             confirmButtonText: 'OK'
         });
-        console.log(xhr.responseText)
+        console.log(xhr.responseText);
     };
-    console.log(formData)
+
+    console.log(formData);
     xhr.send(formData);
 }

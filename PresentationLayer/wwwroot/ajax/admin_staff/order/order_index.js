@@ -25,8 +25,6 @@ const jwt = getJwtFromCookie();
 const userId = getUserIdFromJwt(jwt);
 
 
-
-
 async function fetchOrder() {
     try {
         const response = await fetch('https://localhost:7241/api/Order/allactive');
@@ -40,12 +38,15 @@ async function fetchOrder() {
     } finally {
     }
 }
-function navigateToUpdatePage(productId) {
-    window.location.href = `/managerupdate_order/${productId}`;
+function navigateToUpdatePage(ID) {
+    window.location.href = `/manager_orderstatus_verII/${ID}`;
+}
+
+function navigateToUpdateOrderStatus(ID) {
+    window.location.href = `/manager_orderstatus_verII/${ID}`;
 }
 async function viewDetails(IDOrder) {
     try {
-        //showLoader();
         const response = await fetch(`https://localhost:7241/api/Order/GetByIDAsync/${IDOrder}`);
         if (!response.ok) {
             throw new Error('Error fetching order details');
@@ -65,9 +66,11 @@ async function viewDetails(IDOrder) {
         document.getElementById('modalpaymentmethod').innerText = translatePaymentMethod(data.paymentMethod);
         document.getElementById('modalpaymentstatus').innerText = translatePaymentStatus(data.paymentStatus);
         document.getElementById('modalshippingmethod').innerText = translateShippingMethod(data.shippingMethod);
-        document.getElementById('modalorderstatus').innerText = translateOrderStatus(data.orderStatus);
+        document.getElementById('modalorderstatus').innerHTML =
+            `<span class="badge ${translateOrderStatus(data.orderStatus).class}">
+                ${translateOrderStatus(data.orderStatus).text}
+            </span>`;
         document.getElementById('modalordertype').innerText = translateOrderType(data.orderType);
-
         const orderBody = document.getElementById('orderBody');
         if (orderBody) {
             orderBody.innerHTML = '';
@@ -115,12 +118,9 @@ async function viewDetails(IDOrder) {
         } else {
             console.error('Không tìm thấy phần tử có id "orderhistory_body" trong DOM.');
         }
-
-        //$('#OrderModal').modal('show');
     } catch (error) {
         console.error('Error fetching order details:', error.message);
     } finally {
-        //hideLoader();
     }
 }
 function translatePaymentMethod(method) {
@@ -166,19 +166,19 @@ function translateOrderType(type) {
 function translateOrderStatus(status) {
     switch (status) {
         case 0:
-            return 'Chưa giải quyết';
+            return { text: 'Chưa giải quyết', class: 'bg-secondary' };
         case 1:
-            return 'Đang xử lý';
+            return { text: 'Đang xử lý', class: 'bg-warning' };
         case 2:
-            return 'Đã vận chuyển';
+            return { text: 'Đã vận chuyển', class: 'bg-primary' };
         case 3:
-            return 'Đã giao hàng';
+            return { text: 'Đã hoàn thành', class: 'bg-success' };
         case 4:
-            return 'Đã hủy';
+            return { text: 'Đã hủy', class: 'bg-danger' };
         case 5:
-            return 'Đã trả lại';
+            return { text: 'Đã trả lại', class: 'bg-info' };
         default:
-            return status;
+            return { text: status, class: 'bg-secondary' };
     }
 }
 function formatDateTime(dateTimeString) {
@@ -195,7 +195,6 @@ function formatDateTime(dateTimeString) {
 
     return date.toLocaleString('vi-VN', options) + ` ${period}`;
 }
-
 fetchOrder();
 function formatLink(text) {
     var tempDiv = document.createElement('div');
@@ -261,13 +260,60 @@ function getUserInfoByID(userID) {
 function orderList(order) {
     const orderListBody = document.getElementById('orderListBody');
     orderListBody.innerHTML = '';
-    orders.forEach(order => {
-        const isCancelled = order.orderStatus === 3 || order.orderStatus === 4;
 
     if (Array.isArray(order)) {
         order.forEach(item => {
-            const isCancelled = item.trackingCheck === true || item.orderStatus === 4;
+            console.log(item.orderStatus)
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td width="10"><input type="checkbox" name="check1" value="${item.id}"></td>
+                <td>${item.hexCode}</td>
+                <td>${item.customerName}</td>
+                <td>${item.customerPhone}</td>
+                <td>${formatDateTime(item.createDate)}</td>
+                <td>${translatePaymentMethod(item.paymentMethod)}</td>
+                <td>${item.totalAmount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</td>
+                <td><span class="badge bg-success">${translateOrderType(item.orderType)}</span></td>
+                <td>
+                    <span class="badge ${translateOrderStatus(item.orderStatus).class}">
+                    ${translateOrderStatus(item.orderStatus).text}
+                    </span>
+                </td>
+                <td>
+                ${item.orderStatus === 0 ? `
+                    <button class="btn" type="button" onclick="updateOrderStatus('1', '${item.id}')">
+                        <i class="fas fa-hourglass-start"> Xác nhận đơn</i>
+                    </button>
+                ` : ''}
 
+                ${item.orderStatus === 1 ? `
+                    <button class="btn" type="button" onclick="updateOrderStatus('2', '${item.id}')">
+                        <i class="fas fa-truck"> Vận chuyển</i>
+                    </button>
+                ` : ''}
+                ${item.orderStatus === 2 ? `
+                    <button class="btn" type="button" onclick="updateOrderStatus('3', '${item.id}')">
+                        <i class="fas fa-box"> Đã giao hàng</i>
+                    </button>
+                ` : ''}
+                 ${item.orderStatus === 0 || item.orderStatus === 1 ? `
+                    <button class="btn btn-danger btn-sm cancel" type="button" onclick="cancelOrder('${item.id}')" title="Hủy đơn hàng">
+                        <i class="fas fa-times-circle"></i> Hủy đơn
+                    </button>
+                ` : ''}
+                <button class="btn btn-primary btn-sm edit" type="button" onclick="navigateToUpdatePage('${item.id}')" title="Sửa">
+                    <i class="fa fa-cog"></i>
+                </button>
+                <button class="btn btn-primary btn-sm view" data-toggle="modal" data-target="#OrderModal" type="button" onclick="viewDetails('${item.id}')" title="Chi tiết">
+                    <i class="fas fa-eye"></i>
+                </button>               
+                </td>
+
+            `;
+            orderListBody.appendChild(row);
+        });
+    } else {
+        console.log(item.orderStatus)
         const row = document.createElement('tr');
         row.innerHTML = `
                 <td width="10"><input type="checkbox" name="check1" value="${item.id}"></td>
@@ -278,57 +324,45 @@ function orderList(order) {
                 <td>${translatePaymentMethod(item.paymentMethod)}</td>
                 <td>${item.totalAmount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</td>
                 <td><span class="badge bg-success">${translateOrderType(item.orderType)}</span></td>
-                <td><span class="badge bg-success">${translateOrderStatus(item.orderStatus)}</span></td>
-             <td>
-                    <button class="btn btn-primary btn-sm trash" onclick="markAsTrackingCheck('${item.id}', '${userId}')" type="button" ${isCancelled ? "disabled" : ""}>
-                    <i class="fa fa-check"></i>
-                </button>
-                    <button class="btn btn-danger btn-sm trash" type="button" data-id="${item.id}" id="cancelOrderButton">
-                        <i class="fa fa-ban"></i>
+                 <td>
+                    <span class="badge ${translateOrderStatus(item.orderStatus).class}">
+                    ${translateOrderStatus(item.orderStatus).text}
+                    </span>
+                </td>
+                <td>
+                <!-- Hiển thị nút và icon dựa trên trạng thái đơn hàng -->
+                ${item.orderStatus === 0 ? `
+                    <button class="btn" type="button" onclick="updateOrderStatus('1', '${item.id}')">
+                        <i class="fas fa-hourglass-start"> Xác nhận đơn hàng</i>
                     </button>
-                    <button class="btn btn-primary btn-sm edit" type="button" onclick="navigateToUpdatePage('${item.id}')" title="Sửa">
-                    <i class="fa fa-edit"></i>
-                </button>
-                    <button class="btn btn-primary btn-sm view" data-toggle="modal" data-target="#OrderModal" type="button" onclick="viewDetails('${item.id}')" title="Chi tiết">
-                    <i class="fas fa-eye"></i>
-                </button>
-            </td>
-        `;
-        orderListBody.appendChild(row);
-    });
-    } else {
-        const item = order;
-        const isCancelled = item.trackingCheck === true || item.orderStatus === 4;
+                ` : ''}
 
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td width="10"><input type="checkbox" name="check1" value="${item.id}"></td>
-            <td>${item.hexCode}</td>
-            <td>${item.customerName}</td>
-            <td>${item.customerPhone}</td>
-            <td>${formatDateTime(item.createDate)}</td>
-            <td>${translatePaymentMethod(item.paymentMethod)}</td>
-            <td>${item.totalAmount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</td>
-            <td><span class="badge bg-success">${translateOrderType(item.orderType)}</span></td>
-            <td><span class="badge bg-success">${translateOrderStatus(item.orderStatus)}</span></td>
-            <td>
-                <button class="btn btn-primary btn-sm trash" onclick="markAsTrackingCheck('${item.id}', '${userId}')" type="button" ${isCancelled ? "disabled" : ""}>
-                    <i class="fa fa-check"></i>
-                </button>
-                <button class="btn btn-danger btn-sm trash" type="button" data-id="${item.id}" id="cancelOrderButton">
-                    <i class="fa fa-ban"></i>
-                </button>
+                ${item.orderStatus === 1 ? `
+                    <button class="btn" type="button" onclick="updateOrderStatus('2', '${item.id}')">
+                        <i class="fas fa-truck"> Đã vận chuyển</i>
+                    </button>
+                ` : ''}
+                ${item.orderStatus === 2 ? `
+                    <button class="btn" type="button" onclick="updateOrderStatus('3', '${item.id}')">
+                        <i class="fas fa-box"> Đã giao hàng</i>
+                    </button>
+                ` : ''}
+                 ${item.orderStatus === 0 || item.orderStatus === 1 ? `
+                    <button class="btn btn-danger btn-sm cancel" type="button" onclick="cancelOrder('${item.id}')" title="Hủy đơn hàng">
+                        <i class="fas fa-times-circle"></i> Hủy đơn
+                    </button>
+                ` : ''}
                 <button class="btn btn-primary btn-sm edit" type="button" onclick="navigateToUpdatePage('${item.id}')" title="Sửa">
                     <i class="fa fa-edit"></i>
                 </button>
                 <button class="btn btn-primary btn-sm view" data-toggle="modal" data-target="#OrderModal" type="button" onclick="viewDetails('${item.id}')" title="Chi tiết">
                     <i class="fas fa-eye"></i>
-                </button>
-            </td>
-        `;
+                </button>               
+                </td>
+
+            `;
         orderListBody.appendChild(row);
-}
-let currentOrderId = null;
+    }
 
     document.querySelectorAll('.trash').forEach(button => {
         button.addEventListener('click', function () {
@@ -337,32 +371,146 @@ let currentOrderId = null;
         });
     });
 }
-function markAsTrackingCheck(orderId, userId) {
-    const xhr = new XMLHttpRequest();
-    const url = `https://localhost:7241/api/Order/MarkAsTrackingCheckAsync/${orderId}/${userId}`;
-    xhr.open("PUT", url, true);
-    xhr.setRequestHeader("Accept", "*/*");
+function updateOrderStatus(status, idorder) {
+    const statusMap = {
+        0: '',
+        1: 'Xác nhận đơn hàng',
+        2: 'Vận chuyển',
+        3: 'Đã giao hàng',
+        4: 'Hủy đơn'
+    };
 
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4) {
-            if (xhr.status === 200) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Thành công',
-                    text: 'Đơn hàng đã được đánh dấu thành công!'
-                }).then(() => {
-                    fetchOrder(); 
-                });
-            } else {
+    const vietnameseStatus = statusMap[status];
+    Swal.fire({
+        title: 'Xác nhận',
+        text: `Bạn có chắc chắn muốn cập nhật trạng thái đơn hàng thành "${vietnameseStatus}" không?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Có',
+        cancelButtonText: 'Hủy'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: 'Đang xử lý',
+                text: 'Vui lòng chờ trong khi cập nhật đơn hàng...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            const apiUrl = `https://localhost:7241/api/Order/UpdateOrderStatus/${idorder}`;
+            var xhr = new XMLHttpRequest();
+            xhr.open('PUT', apiUrl, true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+
+            xhr.onload = function () {
+                Swal.close(); // Đóng thông báo chờ khi phản hồi từ máy chủ nhận được
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    let response;
+                    try {
+                        response = JSON.parse(xhr.responseText);
+                    } catch (e) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Lỗi!',
+                            text: 'Phản hồi không phải là JSON hợp lệ.',
+                            confirmButtonText: 'OK'
+                        });
+                        console.error('Error parsing JSON:', e);
+                        return;
+                    }
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Thành công!',
+                        text: `Trạng thái đơn hàng đã được cập nhật thành "${vietnameseStatus}".`,
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        Swal.fire({
+                            title: 'Chuyển hướng',
+                            text: 'Bạn có muốn chuyển đến trang chi tiết của đơn hàng này không?',
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonColor: '#3085d6',
+                            cancelButtonColor: '#d33',
+                            confirmButtonText: 'Có',
+                            cancelButtonText: 'Không'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                window.location.href = `/manager_orderstatus_verII/${idorder}`;
+                            } else {
+                                const updatedStatus = response.orderStatus;
+                                element.innerHTML = getOrderStatusButtons(updatedStatus, idorder);
+                            }
+                        });
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi!',
+                        text: 'Có lỗi xảy ra khi cập nhật trạng thái đơn hàng.',
+                        confirmButtonText: 'OK'
+                    });
+                    console.error('Error:', xhr.statusText);
+                }
+            };
+
+            xhr.onerror = function () {
+                Swal.close(); // Đóng thông báo chờ nếu có lỗi mạng xảy ra
                 Swal.fire({
                     icon: 'error',
-                    title: 'Lỗi',
-                    text: 'Có lỗi xảy ra khi đánh dấu đơn hàng.' + xhr.responseText,  
+                    title: 'Lỗi!',
+                    text: 'Có lỗi xảy ra khi gửi yêu cầu.',
+                    confirmButtonText: 'OK'
                 });
-            }
+                console.error('Network Error:', xhr.statusText);
+            };
+
+            xhr.send(JSON.stringify({
+                status: status,
+                idUser: userId
+            }));
         }
+    });
+}
+
+function getOrderStatusButtons(orderStatus, idorder) {
+    const statusButtons = {
+        0: `
+            <button class="btn" type="button" onclick="updateOrderStatus('1', '${idorder}', this.parentElement)">
+                <i class="fas fa-hourglass-start"> Xác nhận đơn hàng</i>
+            </button>
+        `,
+        1: `
+            <button class="btn" type="button" onclick="updateOrderStatus('2', '${idorder}', this.parentElement)">
+                <i class="fas fa-truck"> Đã vận chuyển</i>
+            </button>
+        `,
+        2: `
+            <button class="btn" type="button" onclick="updateOrderStatus('3', '${idorder}', this.parentElement)">
+                <i class="fas fa-box"> Đã giao hàng</i>
+            </button>
+        `,
+        3: '',
+        4: `
+            <button class="btn btn-danger btn-sm cancel" type="button" onclick="updateOrderStatus('4', '${idorder}', this.parentElement)" title="Hủy đơn hàng">
+                <i class="fas fa-times-circle"></i> Hủy đơn
+            </button>
+        `
     };
-    xhr.send();
+
+    return `
+        ${statusButtons[orderStatus]}
+        <button class="btn btn-primary btn-sm edit" type="button" onclick="navigateToUpdatePage('${idorder}')" title="Sửa">
+            <i class="fa fa-edit"></i>
+        </button>
+        <button class="btn btn-primary btn-sm view" data-toggle="modal" data-target="#OrderModal" type="button" onclick="viewDetails('${idorder}')" title="Chi tiết">
+            <i class="fas fa-eye"></i>
+        </button>
+    `;
 }
 function cancelOrder(orderId) {
     Swal.fire({
@@ -426,14 +574,14 @@ function searchOrder() {
         return;
     }
 
-            var xhr = new XMLHttpRequest();
+    var xhr = new XMLHttpRequest();
     var url = `https://localhost:7241/api/Order/GetByHexCode/${encodeURIComponent(hexCode)}`;
 
     xhr.open('GET', url, true);
     xhr.setRequestHeader('Accept', 'application/json');
 
-            xhr.onload = function () {
-                if (xhr.status >= 200 && xhr.status < 300) {
+    xhr.onload = function () {
+        if (xhr.status >= 200 && xhr.status < 300) {
             try {
                 var response = JSON.parse(xhr.responseText);
                 orderList(Array.isArray(response) ? response : [response]);
@@ -445,36 +593,33 @@ function searchOrder() {
                 });
             } catch (e) {
                 console.error('Lỗi phân tích phản hồi:', xhr.responseText);
-                    Swal.fire({
+                Swal.fire({
                     title: 'Lỗi',
                     text: 'Lỗi khi phân tích phản hồi.',
                     icon: 'error'
-                    });
+                });
             }
-                } else {
+        } else {
             console.error('Lỗi khi lấy đơn hàng theo mã hex. Mã trạng thái:', xhr.responseText);
-                    Swal.fire({
+            Swal.fire({
                 title: 'Lỗi',
                 text: 'Không thể lấy đơn hàng. Vui lòng thử lại sau.',
                 icon: 'error'
-                    });
-                    console.error('Error:', xhr.statusText);
-                }
-            };
+            });
+        }
+    };
 
-            xhr.onerror = function () {
+    xhr.onerror = function () {
         console.error('Yêu cầu thất bại. Lỗi mạng.');
-                Swal.fire({
+        Swal.fire({
             title: 'Lỗi mạng',
             text: 'Không thể thực hiện yêu cầu. Vui lòng kiểm tra kết nối mạng của bạn.',
             icon: 'error'
-                });
-                console.error('Network Error:', xhr.statusText);
-            };
+        });
+    };
 
     xhr.send();
 }
-
 function getOrdersByType(orderType) {
     var xhr = new XMLHttpRequest();
     var url = 'https://localhost:7241/api/Order/GetByOrderType/' + orderType;
@@ -491,17 +636,15 @@ function getOrdersByType(orderType) {
                 console.log(response);
             } else {
                 console.error('Có lỗi xảy ra: ' + xhr.status);
+            }
         }
-    });
-}
     };
 
     xhr.send();
-            }
+}
 
 function filterOrders() {
     var selectElement = document.getElementById('orderTypeFilter');
     var selectedValue = selectElement.value;
     getOrdersByType(selectedValue);
-    }
-});
+}

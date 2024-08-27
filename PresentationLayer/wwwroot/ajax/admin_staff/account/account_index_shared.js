@@ -25,7 +25,24 @@
         }
     }
 
+    function isJwtExpired(jwt) {
+        try {
+            const tokenPayload = JSON.parse(atob(jwt.split('.')[1]));
+            const expirationTime = tokenPayload.exp * 1000; 
+            return Date.now() > expirationTime;
+        } catch (error) {
+            console.error('Error parsing JWT expiration:', error);
+            return true; 
+        }
+    }
+
     const jwt = getJwtFromCookie();
+
+    if (!jwt || isJwtExpired(jwt)) {
+        window.location.href = '/login';
+        return;
+    }
+
     const userId = getUserIdFromJwt(jwt);
 
     async function fetchUserInfo() {
@@ -50,6 +67,9 @@
 
         } catch (error) {
             console.error('Fetch error:', error);
+            if (error.message.includes('401')) {
+                window.location.href = '/login'; 
+            }
         }
     }
 

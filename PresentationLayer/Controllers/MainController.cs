@@ -9,7 +9,12 @@ namespace PresentationLayer.Controllers
         {
             _logger = logger;
         }
-
+        [HttpGet]
+        [Route("contact_hotline")]
+        public async Task<IActionResult> Contact()
+        {
+            return View();
+        }
         [HttpGet]
         public async Task<IActionResult> Index()
         {
