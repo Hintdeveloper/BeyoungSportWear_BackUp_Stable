@@ -1,138 +1,534 @@
-﻿@{
-    ViewData["Title"] = "Index_Ver_2";
+﻿﻿@{
+    ViewData["Title"] = "Index_Ver_II";
     Layout = "~/Areas/Admin/Views/Shared/_layoutAdmin.cshtml";
 }
+
 <style>
-    .order-table {
-        width: 100%;
-        border-collapse: collapse;
+    body {
+        background-color: #f5f5f5;
+        font-family: 'Open Sans', sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+
+    .container {
+        margin: 50px auto;
+        max-width: 900px;
+    }
+
+    .card {
+        background-color: #fff;
+        border: 1px solid #ddd;
+        border-radius: 0.25rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+
+    .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #ddd;
+        padding: 15px 20px;
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .card-body {
+        padding: 20px;
+    }
+
+    .track {
+        border-radius: 0.25rem;
+        display: flex;
+        height: 7px;
+        margin: 50px 0 60px;
+        position: relative;
+    }
+
+        .track .step {
+            flex-grow: 1;
+            margin-top: -18px;
+            position: relative;
+            text-align: center;
+        }
+
+            .track .step.active::before {
+                background: #4CAF50;
+                content: "";
+                height: 7px;
+                left: 0;
+                position: absolute;
+                top: 18px;
+                width: 100%;
+                z-index: -1;
+            }
+
+            .track .step::before {
+                background: #ddd;
+                content: "";
+                height: 7px;
+                left: 0;
+                position: absolute;
+                top: 18px;
+                width: 100%;
+                z-index: -1;
+            }
+
+        .track .icon {
+            background: #ddd;
+            border-radius: 50%;
+            display: inline-block;
+            height: 40px;
+            line-height: 40px;
+            position: relative;
+            width: 40px;
+            z-index: 1;
+        }
+
+        .track .step.active .icon {
+            background: #ff5722;
+        }
+
+        .track .text {
+            color: #6c757d;
+            display: block;
+            margin-top: 7px;
+            position: relative;
+        }
+
+        .track .step.active .text {
+            color: #000;
+            font-weight: 500;
+        }
+
+    .itemside {
+        display: flex;
+        margin-bottom: 15px;
+    }
+
+        .itemside .aside {
+            flex-shrink: 0;
+            margin-right: 15px;
+        }
+
+        .itemside .info {
+            flex-grow: 1;
+            padding-left: 15px;
+        }
+
+    .img-sm {
+        border: 1px solid #ddd;
+        border-radius: 0.25rem;
+        height: 80px;
+        padding: 7px;
+        width: 80px;
+    }
+
+    .itemside .title {
+        color: #212529;
+        display: block;
+        font-weight: 500;
+        margin-bottom: 5px;
+    }
+
+    .itemside .text-muted {
+        color: #6c757d;
+    }
+
+    .btn {
+        border-radius: 0.25rem;
+        color: #ffffff;
+        font-weight: 500;
+        padding: 10px 15px;
+        text-decoration: none;
+        display: inline-block;
+        margin-right: 10px;
+    }
+
+    .btn-warning {
+        background-color: #ff5722;
+        border-color: #ff5722;
+    }
+
+        .btn-warning:hover {
+            background-color: #e64a19;
+            border-color: #e64a19;
+        }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        border-color: #6c757d;
+    }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+            border-color: #545b62;
+        }
+
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+
+        .btn-primary:hover {
+            background-color: #0069d9;
+            border-color: #0062cc;
+        }
+
+    hr {
+        border: 0;
+        border-top: 1px solid #eee;
         margin: 20px 0;
     }
 
-        .order-table th, .order-table td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-
-        .order-table th {
-            background-color: #f2f2f2;
-            font-weight: bold;
-        }
-
-        .order-table tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-
-        .order-table tr:hover {
-            background-color: #f1f1f1;
-        }
-
-    .arrow {
-        font-size: 30px;
-        color: #ccc;
-        margin: 0px;
+    .icon-text {
+        margin-left: 5px;
+        vertical-align: middle;
+        color: #212529;
     }
 
-    .order-status {
-        display: flex;
-        justify-content: space-around;
-        align-items: center;
-        padding: 20px;
-        border: 2px solid #ccc;
-        border-radius: 5px;
-    }
-
-    .status-item {
-        text-align: center;
-        margin: 10px;
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 10px;
-        cursor: pointer;
-        transition: background-color 0.3s, border-color 0.3s;
-    }
-
-    .status-icon {
-        font-size: 50px;
-        width: 100px;
-        height: 60px;
+    .contact-info {
         display: flex;
         align-items: center;
-        justify-content: center;
-        margin-bottom: 10px;
     }
 
-    .pending {
-        color: #ffc107;
+        .contact-info i {
+            margin-right: 5px;
+            color: #ff5722;
+        }
+
+    ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
     }
 
-    .processing {
-        color: #007bff;
+    .step {
+        position: relative;
+        transform: translateY(18px);
     }
 
-    .shipped {
-        color: #17a2b8;
+    .no-connector::before {
+        background: none !important;
     }
 
-    .delivered {
-        color: #28a745;
+    .step.no-right-connector::before {
+        width: 50%;
     }
 
-    .cancelled {
-        color: #dc3545;
+    .step.no-right-connector .connector,
+    .step.no-connector .connector {
+        display: none;
     }
 
-    .selected {
-        background-color: #94bdec;
-        border-color: #0056b3;
-        color: white !important;
+    .step:last-child .connector {
+        display: none;
     }
+
+    .step.active ~ .pointer {
+        display: block;
+    }
+
+    #step-4 .pointer {
+        display: none;
+    }
+
+    #step-3 .pointer {
+        display: block;
+    }
+
+    .track .icon {
+        background: #ddd;
+        border-radius: 50%;
+        display: inline-block;
+        height: 40px;
+        line-height: 40px;
+        position: relative;
+        width: 40px;
+        z-index: 1;
+    }
+
+    .track .step.cancelled .icon {
+        position: relative;
+    }
+
+        .track .step.cancelled .icon::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            border-top: 2px solid red;
+            transform: rotate(-45deg);
+            z-index: 2;
+        }
+
+    .track .step.active .icon {
+        background: #4CAF50;
+    }
+
+    .track .step.cancelled .icon {
+        background: #f44336;
+    }
+
+        .track .step.cancelled .icon i {
+            color: #fff;
+        }
+
+    .track .step:not(.active).cancelled .icon::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 100%;
+        height: 2px;
+        background: red;
+        transform: translate(-50%, -50%) rotate(45deg);
+    }
+
 </style>
-
 <div class="app-title">
     <ul class="app-breadcrumb breadcrumb side">
         <li class="breadcrumb-item active"><a href="#"><b>Danh sách trạng thái đơn hàng</b></a></li>
     </ul>
     <div id="clock"></div>
 </div>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-<div class="order-status">
-    <div class="status-item" data-status="Pending" value="0">
-        <i class="fas fa-hourglass-start status-icon pending"></i>
-        <div>Chưa giải quyết</div>
-    </div>        
-    <i class="fas fa-arrow-right arrow"></i>
 
-    <div class="status-item" data-status="Processing" value="1">
-        <i class="fas fa-spinner status-icon processing"></i>
-        <div>Đang xử lý</div>
-    </div>        
-    <i class="fas fa-arrow-right arrow"></i>
+<article class="card">
+    <div class="card-body">
+        <h5><label>Mã đơn hàng</label> <label id="hexcode"></label> </h5>
+        <article class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="col contact-info">
+                            <i class="fa fa-user icon"></i>
+                            <strong class="label">Người nhận hàng:</strong>
+                            <input type="text" class="form-control" style="width: 70%; height: 21px;" id="customer_name" />
+                        </div>
 
-    <div class="status-item" data-status="Shipped" value="2">
-        <i class="fas fa-truck status-icon shipped"></i>
-        <div>Đã vận chuyển</div>
-    </div>        
-    <i class="fas fa-arrow-right arrow"></i>
+                        <div class="col contact-info">
+                            <i class="fa fa-phone icon"></i>
+                            <strong class="label">Số điện thoại:</strong>
+                            <input type="text" class="form-control" style="width: 70%; height: 21px;" id="customer_phone" />
+                        </div>
 
-    <div class="status-item" data-status="Delivered" value="3">
-        <i class="fas fa-check-circle status-icon delivered"></i>
-        <div>Đã giao hàng</div>
-    </div>        
-    
+                        <div class="col contact-info">
+                            <i class="fa fa-envelope icon"></i>
+                            <strong class="label">Email:</strong>
+                            <input type="email" class="form-control" style="width: 70%; height: 21px;" id="customer_gmail" />
+                        </div>
 
-    <div class="status-item" data-status="Cancelled" value="4">
-        <i class="fas fa-ban status-icon cancelled"></i>
-        <div>Đã bị hủy</div>
+                        <div class="col contact-info">
+                            <i class="fa fa-money-bill-wave icon"></i>
+                            <strong class="label">Giá trị đơn hàng:</strong>
+                            <span class="icon-text" id="total_price">(<small id="costs"></small>)</span>
+                        </div>
+
+                    </div>
+                    <div class="col-md-6">
+
+                        <div class="col contact-info">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <strong class="label">Địa chỉ giao hàng:</strong>
+                            <span class="icon-text" id="shippingadress"></span>
+                        </div>
+
+                        <div class="col contact-info">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <strong class="label">Địa chỉ cụ thể:</strong>
+                            <input type="text" class="form-control" style="width: 70%; height: 21px;" id="shippingadress2" />
+                        </div>
+
+                        <div class="col contact-info">
+                            <i class="fa fa-credit-card icon"></i>
+                            <strong class="label">Trạng thái thanh toán:</strong>
+                            <span class="icon-text" id="paymentstatus"></span>
+                        </div>
+
+                        <div class="col contact-info">
+                            <i class="fas fa-info-circle icon"></i>
+                            <strong class="label">Trạng thái đơn hàng:</strong>
+                            <span class="icon-text" id="orderstatus"></span>
+                        </div>
+
+                        <div class="col contact-info">
+                            <i class="fas fa-truck icon"></i>
+                            <strong class="label">Phương thức giao hàng:</strong>
+                            <span class="icon-text" id="shippingmethod"></span>
+                        </div>
+
+                        <div class="col contact-info">
+                            <i class="fas fa-tags icon"></i>
+                            <strong class="label">Loại đơn hàng:</strong>
+                            <span class="icon-text" id="orrdertype"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </article>
+        <div class="track" id="track">
+            <div class="step" id="step-0">
+                <span class="icon">
+                    <i class="fa fa-check"></i>
+                </span>
+                <small class="text">Đặt hàng thành công</small>
+                <small class="time" id="time_success">--:--, --/--/----</small>
+            </div>
+            <div class="step" id="step-1">
+                <span class="icon">
+                    <i class="fa fa-clock"></i>
+                </span>
+                <small class="text">Đơn đang xử lý</small>
+                <small class="time" id="time_processing">--:--, --/--/----</small>
+            </div>
+            <div class="connector"></div>
+            <div class="step" id="step-2" ">
+                <span class="icon">
+                    <i class="fa fa-truck"></i>
+                </span>
+                <small class="text">Đã vận chuyển</small>
+                <small class="time" id="time_ship">--:--, --/--/----</small>
+            </div>
+            <div class="step no-right-connector" id="step-3">
+                <span class="icon">
+                    <i class="fa fa-box"></i>
+                </span>
+                <small class="text">Hoàn thành</small>
+                <small class="time" id="time_done">--:--, --/--/----</small>
+            </div>
+            <div class="step no-connector" id="cancel-order">
+                <span class="icon">
+                    <i class="fa fa-times"></i>
+                </span>
+                <small class="text">Đã bị hủy</small>
+                <small class="time" id="time_cancel">--:--, --/--/----</small>
+            </div>
+            <div id="pointer" class="pointer"></div>
+        </div>
+
+        <br>
+        <div id="button_update_status_container">
+            <p>Cập nhật trạng thái đơn hàng:</p>
+            <div id="button_update_status"></div>
+        </div>
+        <hr>
+
+        <div class="col-md-12">
+            <h3 class="text-center mb-4">Danh sách sản phẩm trong đơn hàng</h3>
+            <ul class="row" style="list-style-type: none; padding: 0; margin: 0;" id="product_list">
+            </ul>
+        </div>
+
+        <hr>
+        <button class="btn btn-secondary" type="button" id="btn_printf_order_pdf">In đơn</button>
+        <button class="btn btn-primary" type="button" id="btn_update_order">Cập nhật đơn hàng</button>
+    </div>
+</article>
+
+<!-- Modal -->
+<div class="modal fade" id="orderHistoryModal">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="order-history" id="orderHistorySection">
+                <h2>Lịch sử đơn hàng</h2>
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr>
+                            <th class="col-2" style="border-bottom: 2px solid #ddd; padding: 8px;">Ngày thay đổi</th>
+                            <th class="col-4" style="border-bottom: 2px solid #ddd; padding: 8px;">Lịch sử chỉnh sửa</th>
+                            <th class="col-4" style="border-bottom: 2px solid #ddd; padding: 8px;">Chi tiết chỉnh sửa</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orderhistory_body">
+                        <!-- Dữ liệu sẽ được thêm vào đây bằng JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
-<div>
-    <input type="text" id="searchHexCode" placeholder="Nhập mã HexCode">
-    <button onclick="searchOrder()">Tìm kiếm</button>
-</div>
-<div id="order-list" class="order-list">
 
+<div class="modal fade" id="editUserModal">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Thông Tin Người Chỉnh Sửa</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <img id="userImage" src="" alt="User Image" class="img-fluid">
+                    </div>
+                    <div class="col-md-8">
+                        <p><strong>UserName:</strong> <span id="userName"></span></p>
+                        <p><strong>Họ và Tên:</strong> <span id="firstAndLastName"></span></p>
+                        <p><strong>Số điện thoại:</strong> <span id="userPhoneNumber"></span></p>
+                        <p><strong>Gmail:</strong> <span id="userEmail"></span></p>
+                        <p><strong>Chức vụ:</strong> <span id="roleName"></span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-<script src="~/ajax/admin_staff/order/manager_order_status.js"></script>
+<div class="modal fade" id="editAddressModal" tabindex="-1" aria-labelledby="editAddressModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editAddressModalLabel">Sửa thông tin người nhận hàng</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editAddressForm">
+                    <div class="mb-3">
+                        <label for="recipientName" class="form-label">Tên người nhận</label>
+                        <input type="text" class="form-control" id="recipientName" value="">
+                    </div>
+                    <div class="mb-3">
+                        <label for="phoneNumber" class="form-label">Số điện thoại</label>
+                        <input type="text" class="form-control" id="phoneNumber" value="">
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" value="">
+                    </div>
+                    <div class="mb-3 row">
+                        <div class="col-md-4">
+                            <label for="city" class="form-label">Tỉnh/Thành phố</label>
+                            <select id="city" class="form-control">
+                                <option value="">Chọn tỉnh/thành phố</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="district" class="form-label">Quận/Huyện</label>
+                            <select id="district" class="form-control">
+                                <option value="">Chọn quận/huyện</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="ward" class="form-label">Phường/Xã</label>
+                            <select id="ward" class="form-control">
+                                <option value="">Chọn phường/xã</option>
+                            </select>
+                        </div>
+                    </div>
 
+                    <div class="mb-3">
+                        <label for="street" class="form-label">Địa chỉ cụ thể</label>
+                        <input type="text" class="form-control" id="street" value="32/84/57 số 7">
+                    </div>
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary">Lưu thay đổi</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/ajax/admin_staff/order/manager_order_update_status_verII.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

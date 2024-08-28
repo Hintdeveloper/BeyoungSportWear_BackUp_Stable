@@ -48,7 +48,7 @@ namespace ExternalInterfaceLayer.Controllers
             return Ok(orderHistory);
         }
 
-     
+
         [HttpDelete("{ID}")]
         public async Task<IActionResult> Remove(Guid ID, string idUserDelete)
         {

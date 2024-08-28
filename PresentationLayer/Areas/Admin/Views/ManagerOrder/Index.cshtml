@@ -159,21 +159,22 @@
         <option value="1">Đặt hàng tại cửa hàng</option>
     </select>
     <button onclick="filterOrders()">Lọc</button>
+    
+    <select id="orderStatusFilter">
+
+        <option value="0">Chưa giải quyết</option>
+        <option value="1">Chờ xử lý</option>
+        <option value="2">Chờ vận chuyển</option>
+        <option value="3">Đã hoàn thành</option>
+        <option value="4">Đã Hủy</option>
+    </select>
+    <button onclick="filterOrdersStatus()">Lọc</button>
 </div>
 
 <div class="row">
     <div class="col-md-12">
         <div class="tile">
             <div class="tile-body">
-                <div class="row element-button">
-                    <div class="col-sm-2">
-                        <a class="btn btn-excel btn-sm"
-                           href="/manager_orderstatus" title="Quản lý trạng thái">
-                            <i class="fas fa-cog status-icon"></i>
-                            Quản lý trạng thái
-                        </a>
-                    </div>
-                </div>
 
                 <table class="table table-hover table-bordered" id="sampleTable">
                     <thead>
@@ -319,3 +320,5 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/2.0.8/css/dataTables.bootstrap5.min.css">
+@* <script type="text/javascript" src="https://cdn.datatables.net/2.0.8/js/dataTables.bootstrap5.min.js"></script>
+ *@

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using CloudinaryDotNet.Actions;
 using CloudinaryDotNet;
 using static DataAccessLayer.Entity.Base.EnumBase;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ExternalInterfaceLayer.Controllers
 {
@@ -25,7 +26,10 @@ namespace ExternalInterfaceLayer.Controllers
         [Route("create")]
         public async Task<IActionResult> AddAsync([FromBody] OrderCreateVM request, bool printInvoice = false)
         {
-            if (request == null) return BadRequest();
+            if (request == null)
+            {
+                return BadRequest(new { status = "Error", message = "Request cannot be null." });
+            }
 
             var result = await _orderService.CreateAsync(request);
 
@@ -33,10 +37,17 @@ namespace ExternalInterfaceLayer.Controllers
             {
                 if (printInvoice)
                 {
-                    var pdfBytes = CreatePdfBytes(request);
-                    var filePath = SavePdfToServer(pdfBytes, request.HexCode);
+                    try
+                    {
+                        var pdfBytes = await CreatePdfBytes(request.HexCode);
+                        var filePath = SavePdfToServer(pdfBytes, request.HexCode);
 
-                    return Ok(new { status = "Success", message = "Successfully saved order and printed invoice.", pdfUrl = filePath });
+                        return Ok(new { status = "Success", message = "Successfully saved order and printed invoice.", pdfUrl = filePath });
+                    }
+                    catch (Exception ex)
+                    {
+                        return StatusCode(500, new { status = "Error", message = $"Failed to generate or save PDF: {ex.Message}" });
+                    }
                 }
                 else
                 {
@@ -45,64 +56,202 @@ namespace ExternalInterfaceLayer.Controllers
             }
             else
             {
-                return BadRequest();
+                return BadRequest(new { status = "Error", message = result.ErrorMessage });
             }
         }
+
         private string SavePdfToServer(byte[] pdfBytes, string hexCode)
         {
-            var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Invoices");
+            var downloadsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
             var fileName = $"{hexCode}_Invoice.pdf";
-            var filePath = Path.Combine(folderPath, fileName);
+            var filePath = Path.Combine(downloadsPath, fileName);
 
-            if (!Directory.Exists(folderPath))
+            if (!Directory.Exists(downloadsPath))
             {
-                Directory.CreateDirectory(folderPath);
+                Directory.CreateDirectory(downloadsPath);
             }
 
             System.IO.File.WriteAllBytes(filePath, pdfBytes);
 
-            return $"/Invoices/{fileName}";
+            return fileName;
         }
-        private byte[] CreatePdfBytes(OrderCreateVM orderData)
+        private async Task<byte[]> CreatePdfBytes(string hexcode)
         {
-            using (MemoryStream memoryStream = new MemoryStream())
+            try
             {
-                Document doc = new Document(PageSize.A4, 50, 50, 25, 25);
-                PdfWriter.GetInstance(doc, memoryStream);
-                doc.Open();
-
-                doc.Add(new iTextSharp.text.Paragraph("Hóa đơn bán hàng", new Font(Font.FontFamily.HELVETICA, 18, Font.BOLD)));
-                doc.Add(new iTextSharp.text.Paragraph("\n"));
-                doc.Add(new iTextSharp.text.Paragraph($"Mã đơn hàng: {orderData.HexCode}"));
-                doc.Add(new iTextSharp.text.Paragraph($"Khách hàng: {orderData.CustomerName}"));
-                doc.Add(new iTextSharp.text.Paragraph($"Số điện thoại: {orderData.CustomerPhone}"));
-                doc.Add(new iTextSharp.text.Paragraph($"Email: {orderData.CustomerEmail}"));
-                doc.Add(new iTextSharp.text.Paragraph($"Địa chỉ nhận hàng: {orderData.ShippingAddress}"));
-                doc.Add(new iTextSharp.text.Paragraph($"Ngày giao hàng: {orderData.ShipDate.ToString("dd/MM/yyyy")}"));
-                doc.Add(new iTextSharp.text.Paragraph($"Tổng chi phí: {orderData.TotalAmount}"));
-                doc.Add(new iTextSharp.text.Paragraph($"Ghi chú: {orderData.Notes}"));
-                doc.Add(new iTextSharp.text.Paragraph("\n"));
-                doc.Add(new iTextSharp.text.Paragraph("Chi tiết đơn hàng", new Font(Font.FontFamily.HELVETICA, 16, Font.BOLD)));
-                PdfPTable table = new PdfPTable(4) { WidthPercentage = 100 };
-                table.SetWidths(new float[] { 1, 3, 1, 1 });
-                table.AddCell("Tên sản phẩm");
-                table.AddCell("Số lượng");
-                table.AddCell("Giá bán");
-                table.AddCell("Tổng giá");
-                foreach (var detail in orderData.OrderDetailsCreateVM)
+                using (MemoryStream memoryStream = new MemoryStream())
                 {
-                    table.AddCell(detail.IDOptions.ToString());
-                    table.AddCell(detail.Quantity.ToString());
-                    table.AddCell(detail.UnitPrice.ToString());
-                    table.AddCell(detail.TotalAmount.ToString());
-                }
-                doc.Add(table);
-                doc.Close();
+                    Document doc = new Document(PageSize.A4.Rotate(), 50, 50, 25, 25);
+                    PdfWriter.GetInstance(doc, memoryStream);
+                    doc.Open();
+                    var orderData = await _orderService.GetByHexCodeAsync(hexcode);
 
-                return memoryStream.ToArray();
+                    if (orderData == null)
+                    {
+                        throw new Exception("Order data is null.");
+                    }
+
+                    var titleFont = new Font(Font.FontFamily.HELVETICA, 18, Font.BOLD, BaseColor.BLACK);
+                    var subTitleFont = new Font(Font.FontFamily.HELVETICA, 16, Font.BOLD, BaseColor.GRAY);
+                    var normalFont = new Font(BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED), 12, Font.NORMAL, BaseColor.BLACK);
+
+                    var icon = GetIcon("https://res.cloudinary.com/dqcxurnpa/image/upload/v1723411106/BeyoungSportWear/ImageProduct/Options/iir3kywpd1qfj6zepptp.png");
+
+                    doc.Add(icon);
+                    doc.Add(new iTextSharp.text.Paragraph("Sales Invoice", titleFont));
+                    doc.Add(new iTextSharp.text.Paragraph("\n"));
+
+                    doc.Add(new iTextSharp.text.Paragraph($"Order Code: {ViString.RemoveSign4VietnameseString(orderData.HexCode)}", normalFont));
+                    doc.Add(new iTextSharp.text.Paragraph($"Customer: {ViString.RemoveSign4VietnameseString(orderData.CustomerName)}", normalFont));
+                    doc.Add(new iTextSharp.text.Paragraph($"Phone Number: {ViString.RemoveSign4VietnameseString(orderData.CustomerPhone)}", normalFont));
+                    doc.Add(new iTextSharp.text.Paragraph($"Email: {ViString.RemoveSign4VietnameseString(orderData.CustomerEmail)}", normalFont));
+                    doc.Add(new iTextSharp.text.Paragraph($"Payment Status: {ViString.RemoveSign4VietnameseString(orderData.PaymentStatus.ToString())}", normalFont));
+                    doc.Add(new iTextSharp.text.Paragraph($"Shipping Address: {ViString.RemoveSign4VietnameseString(orderData.ShippingAddress)}", normalFont));
+                    doc.Add(new iTextSharp.text.Paragraph($"Delivery Date: {orderData.ShipDate.ToString("dd/MM/yyyy")}", normalFont));
+
+                    var totalAmountText = Currency.FormatCurrency(orderData.TotalAmount.ToString());
+                    var totalAmountInWords = ViString.RemoveSign4VietnameseString(Currency.NumberToText((double)orderData.TotalAmount, true));
+                    doc.Add(new iTextSharp.text.Paragraph($"Total Cost: {totalAmountText} ({totalAmountInWords})", normalFont));
+                    doc.Add(new iTextSharp.text.Paragraph($"Notes: {ViString.RemoveSign4VietnameseString(orderData.Notes)}", normalFont));
+                    doc.Add(new iTextSharp.text.Paragraph("\n"));
+
+                    doc.Add(new iTextSharp.text.Paragraph("Order Details", subTitleFont));
+
+                    PdfPTable table = new PdfPTable(5) { WidthPercentage = 100 };
+                    table.SetWidths(new float[] { 1, 3, 1, 2, 2 });
+
+                    table.AddCell(CreateCell("Image", Element.ALIGN_CENTER, true));
+                    table.AddCell(CreateCell("Product Name", Element.ALIGN_CENTER, true));
+                    table.AddCell(CreateCell("Quantity", Element.ALIGN_CENTER, true));
+                    table.AddCell(CreateCell("Unit Price", Element.ALIGN_CENTER, true));
+                    table.AddCell(CreateCell("Total Price", Element.ALIGN_CENTER, true));
+
+                    foreach (var detail in orderData.OrderDetailsVM)
+                    {
+                        var image = iTextSharp.text.Image.GetInstance(new Uri(detail.ImageURL));
+                        image.ScaleToFit(40f, 40f);
+
+                        PdfPCell imageCell = new PdfPCell(image)
+                        {
+                            HorizontalAlignment = Element.ALIGN_CENTER,
+                            VerticalAlignment = Element.ALIGN_MIDDLE,
+                            Border = Rectangle.BOX,
+                            BorderWidth = 1f, // Độ rộng viền
+                            BorderColor = BaseColor.BLACK, // Màu sắc viền
+                            Padding = 5f // Khoảng cách từ viền đến nội dung
+                        };
+
+
+                        PdfPCell productCell = new PdfPCell(new iTextSharp.text.Paragraph(
+                        $"{ViString.RemoveSign4VietnameseString(detail.ProductName)}\nSize: {detail.SizeName}\nColor: {detail.ColorName}",
+                        new Font(BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED), 10, Font.NORMAL, BaseColor.BLACK)))
+                        {
+                            HorizontalAlignment = Element.ALIGN_LEFT,
+                            VerticalAlignment = Element.ALIGN_TOP,
+                            Border = Rectangle.BOX,
+                            BorderWidth = 1f,
+                            BorderColor = BaseColor.BLACK
+                        };
+
+                        PdfPCell unitpriceCell = new PdfPCell(new iTextSharp.text.Paragraph(
+                        $"{Currency.FormatCurrency(detail.UnitPrice.ToString())}\n {ViString.RemoveSign4VietnameseString(Currency.NumberToText((double)detail.UnitPrice, true))}",
+                        new Font(BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED), 10, Font.NORMAL, BaseColor.BLACK)))
+                        {
+                            HorizontalAlignment = Element.ALIGN_LEFT,
+                            VerticalAlignment = Element.ALIGN_TOP,
+                            Border = Rectangle.BOX,
+                            BorderWidth = 1f,
+                            BorderColor = BaseColor.BLACK
+                        };
+
+                        PdfPCell totalCell = new PdfPCell(new iTextSharp.text.Paragraph(
+                        $"{Currency.FormatCurrency(detail.TotalAmount.ToString())}\n {ViString.RemoveSign4VietnameseString(Currency.NumberToText((double)detail.TotalAmount, true))}",
+                        new Font(BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED), 10, Font.NORMAL, BaseColor.BLACK)))
+                        {
+                            HorizontalAlignment = Element.ALIGN_LEFT,
+                            VerticalAlignment = Element.ALIGN_TOP,
+                            Border = Rectangle.BOX,
+                            BorderWidth = 1f,
+                            BorderColor = BaseColor.BLACK
+                        };
+
+                        table.AddCell(imageCell);
+                        table.AddCell(productCell);
+                        table.AddCell(detail.Quantity.ToString());
+                        table.AddCell(unitpriceCell);
+                        table.AddCell(totalCell);
+                    }
+
+                    doc.Add(table);
+
+                    AddFooter(doc);
+
+                    doc.Close();
+
+                    return memoryStream.ToArray();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error creating PDF: {ex.Message}");
+                throw;
             }
         }
 
+        private iTextSharp.text.Image GetIcon(string iconUrl)
+        {
+            var image = iTextSharp.text.Image.GetInstance(new Uri(iconUrl));
+            image.ScaleToFit(60f, 60f);
+            image.Alignment = Element.ALIGN_CENTER; // Căn giữa theo chiều ngang
+
+            return image;
+        }
+        private void AddFooter(Document doc)
+        {
+            PdfPTable footerTable = new PdfPTable(1) { WidthPercentage = 100 };
+            footerTable.SetWidths(new float[] { 1 });
+
+            PdfPCell footerCell = new PdfPCell(new iTextSharp.text.Phrase("Thank you for your business!", new Font(Font.FontFamily.HELVETICA, 10, Font.ITALIC, BaseColor.GRAY)))
+            {
+                HorizontalAlignment = Element.ALIGN_CENTER,
+                Border = Rectangle.NO_BORDER
+            };
+            footerTable.AddCell(footerCell);
+
+            doc.Add(footerTable);
+        }
+
+        private PdfPCell CreateCell(string text, int alignment, bool isHeader = false)
+        {
+            var font = isHeader ? new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, BaseColor.WHITE) : new Font(BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED), 10, Font.NORMAL, BaseColor.BLACK);
+            var cell = new PdfPCell(new iTextSharp.text.Phrase(text, font))
+            {
+                HorizontalAlignment = alignment,
+                Padding = 5,
+                BackgroundColor = isHeader ? BaseColor.GRAY : BaseColor.WHITE
+            };
+            return cell;
+        }
+        [HttpGet("printf_order_pdf/{hexCode}")]
+        public async Task<IActionResult> GeneratePdf(string hexCode)
+        {
+            try
+            {
+                var pdfBytes = await CreatePdfBytes(hexCode);
+                if (pdfBytes == null)
+                {
+                    return NotFound("Order not found or PDF creation failed.");
+                }
+
+                var fileName = SavePdfToServer(pdfBytes, hexCode);
+
+                return Ok(new { FileName = fileName, FileBytes = pdfBytes });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
         [HttpGet]
         [Route("GetOrderDetailsByID/{ID_Order}")]
         public async Task<IActionResult> GetOrderDetailsByID(Guid ID_Order)
@@ -122,13 +271,13 @@ namespace ExternalInterfaceLayer.Controllers
             return Ok(order);
         }
 
-        [HttpGet("GetByStatus")]
+        [HttpGet("GetByStatus/{orderStatus}")]
         public async Task<IActionResult> GetByStatus(OrderStatus OrderStatus)
         {
             var orders = await _orderService.GetByStatusAsync(OrderStatus);
             if (orders == null || orders.Count == 0)
             {
-                return NotFound();
+                return NotFound("Không có đơn hàng nào");
             }
             return Ok(orders);
         }
@@ -205,7 +354,7 @@ namespace ExternalInterfaceLayer.Controllers
         [HttpPut("UpdateOrderStatus/{orderId}")]
         public async Task<IActionResult> UpdateOrderStatus(Guid orderId, [FromBody] UpdateOrderStatusRequest request)
         {
-            if (request == null || request.Status==null || string.IsNullOrEmpty(request.IDUser))
+            if (request == null || string.IsNullOrEmpty(request.ToString()) || string.IsNullOrEmpty(request.IDUser))
             {
                 return BadRequest("Invalid request data");
             }

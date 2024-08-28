@@ -407,45 +407,15 @@ function updateOrderStatus(status, idorder) {
             xhr.setRequestHeader('Content-Type', 'application/json');
 
             xhr.onload = function () {
-                Swal.close(); // Đóng thông báo chờ khi phản hồi từ máy chủ nhận được
+                Swal.close();
                 if (xhr.status >= 200 && xhr.status < 300) {
-                    let response;
-                    try {
-                        response = JSON.parse(xhr.responseText);
-                    } catch (e) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Lỗi!',
-                            text: 'Phản hồi không phải là JSON hợp lệ.',
-                            confirmButtonText: 'OK'
-                        });
-                        console.error('Error parsing JSON:', e);
-                        return;
-                    }
-
                     Swal.fire({
                         icon: 'success',
                         title: 'Thành công!',
                         text: `Trạng thái đơn hàng đã được cập nhật thành "${vietnameseStatus}".`,
                         confirmButtonText: 'OK'
                     }).then(() => {
-                        Swal.fire({
-                            title: 'Chuyển hướng',
-                            text: 'Bạn có muốn chuyển đến trang chi tiết của đơn hàng này không?',
-                            icon: 'question',
-                            showCancelButton: true,
-                            confirmButtonColor: '#3085d6',
-                            cancelButtonColor: '#d33',
-                            confirmButtonText: 'Có',
-                            cancelButtonText: 'Không'
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                window.location.href = `/manager_orderstatus_verII/${idorder}`;
-                            } else {
-                                const updatedStatus = response.orderStatus;
-                                element.innerHTML = getOrderStatusButtons(updatedStatus, idorder);
-                            }
-                        });
+                        window.location.reload();
                     });
                 } else {
                     Swal.fire({
@@ -459,7 +429,7 @@ function updateOrderStatus(status, idorder) {
             };
 
             xhr.onerror = function () {
-                Swal.close(); // Đóng thông báo chờ nếu có lỗi mạng xảy ra
+                Swal.close();
                 Swal.fire({
                     icon: 'error',
                     title: 'Lỗi!',
@@ -647,4 +617,51 @@ function filterOrders() {
     var selectElement = document.getElementById('orderTypeFilter');
     var selectedValue = selectElement.value;
     getOrdersByType(selectedValue);
+}
+
+
+function getOrdersByStatus(orderType) {
+    var xhr = new XMLHttpRequest();
+    var url = 'https://localhost:7241/api/Order/GetByStatus/' + orderType;
+
+    xhr.open('GET', url, true);
+    xhr.setRequestHeader('accept', '*/*');
+
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === XMLHttpRequest.DONE) {
+
+            if (xhr.status === 200) {
+                var response = JSON.parse(xhr.responseText);
+
+                if (response.length === 0) {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Không có kết quả',
+                        text: 'Không có đơn hàng nào phù hợp với tiêu chí lọc.',
+                    });
+                    orderResultsDiv.innerHTML = 'Không có đơn hàng nào phù hợp với tiêu chí lọc.';
+                } else {
+                    orderList(Array.isArray(response) ? response : [response]);
+                    orderResultsDiv.innerHTML = ''; // Xóa nội dung cũ nếu có
+                }
+
+                console.log(response);
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi!',
+                    text: 'Không có đơn hàng nào phù hợp với tiêu chí lọc.',
+                });
+                console.error('Có lỗi xảy ra: ' + xhr.statusText);
+            }
+        }
+    };
+
+    xhr.send();
+}
+
+function filterOrdersStatus() {
+    var selectElement = document.getElementById('orderStatusFilter');
+    var selectedValue = selectElement ? selectElement.value : '';
+    getOrdersByStatus(selectedValue);
 }

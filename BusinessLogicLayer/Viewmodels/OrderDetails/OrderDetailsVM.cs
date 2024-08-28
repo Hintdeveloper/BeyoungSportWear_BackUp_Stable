@@ -14,6 +14,7 @@ namespace BusinessLogicLayer.Viewmodels.OrderDetails
         public string ProductName { get; set; } = null!;
         public string? SizeName { get; set; }
         public string? ColorName { get; set; }
+        public string ImageURL { get; set; }
         public int Quantity { get; set; } // Số lượng sản phẩm
         public decimal UnitPrice { get; set; } // Giá của một đơn vị sản phẩm
         public decimal? Discount { get; set; } // Mức giảm giá (nếu có)

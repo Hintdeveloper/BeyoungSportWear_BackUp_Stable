@@ -280,7 +280,7 @@ function printf_order_pdf(hexCode) {
             xhr.responseType = 'json';
 
             xhr.onload = function () {
-                Swal.close(); 
+                Swal.close();
 
                 if (xhr.status === 200) {
                     var response = xhr.response;
@@ -295,7 +295,7 @@ function printf_order_pdf(hexCode) {
             };
 
             xhr.onerror = function () {
-                Swal.close(); 
+                Swal.close();
 
                 Swal.fire({
                     icon: 'error',
@@ -491,7 +491,7 @@ document.getElementById('btn_update_order').addEventListener('click', function (
             };
 
             xhr.onerror = function () {
-                Swal.close(); 
+                Swal.close();
                 Swal.fire({
                     title: 'Lỗi!',
                     text: 'Có lỗi kết nối đến máy chủ.',
