@@ -13,12 +13,11 @@ namespace BusinessLogicLayer.Services.Interface
         public Task<List<OptionsVM>> GetAllActiveAsync();
         public Task<OptionsVM> GetByIDAsync(Guid ID);
         public Task<bool> CreateAsync(OptionsCreateSingleVM request);
-        //public Task<bool> UpdateIsActiveAsync(Guid IDOptions, bool isActive);
         public Task<bool> RemoveAsync(Guid ID, string IDUserdelete);
         public Task<bool> UpdateAsync(Guid ID, OptionsUpdateVM request);
-        public Task<Guid> GetProductDetailsByID(Guid IDOptions);
         public Task<OptionsVM> FindIDOptionsAsync(Guid IDProductDetails, string size, string color);
         public Task<List<OptionsVM>> GetOptionsByProductDetailsIdAsync(Guid IDProductDetails);
-
+        public Task<bool> DecreaseQuantityAsync(Guid IDOptions, int quantityToDecrease);
+        public Task<bool> IncreaseQuantityAsync(Guid IDOptions, int quantityToIncrease);
     }
 }

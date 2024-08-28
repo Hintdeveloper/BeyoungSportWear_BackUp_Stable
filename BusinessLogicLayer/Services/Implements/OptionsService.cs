@@ -329,5 +329,49 @@ namespace BusinessLogicLayer.Services.Implements
                 }
             }
         }
+
+        public async Task<bool> DecreaseQuantityAsync(Guid IDOptions, int quantityToDecrease)
+        {
+            if (quantityToDecrease <= 0)
+            {
+                throw new ArgumentException("Số lượng giảm phải lớn hơn 0.");
+            }
+            var option = await _dbcontext.Options.FindAsync(IDOptions);
+            if (option == null)
+            {
+                return false;
+            }
+
+            if (option.StockQuantity < quantityToDecrease)
+            {
+                throw new InvalidOperationException("Số lượng trong kho không đủ để giảm.");
+            }
+
+            option.StockQuantity -= quantityToDecrease;
+            _dbcontext.Options.Update(option);
+            await _dbcontext.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<bool> IncreaseQuantityAsync(Guid IDOptions, int quantityToIncrease)
+        {
+            if (quantityToIncrease <= 0)
+            {
+                throw new ArgumentException("Số lượng tăng phải lớn hơn 0.");
+            }
+
+            var option = await _dbcontext.Options.FindAsync(IDOptions);
+            if (option == null)
+            {
+                return false;
+            }
+
+            option.StockQuantity += quantityToIncrease;
+            _dbcontext.Options.Update(option);
+            await _dbcontext.SaveChangesAsync();
+
+            return true;
+        }
     }
 }

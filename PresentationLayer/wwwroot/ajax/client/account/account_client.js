@@ -261,7 +261,20 @@ function editAddress(addressId) {
         var saveButton = document.getElementById('saveButton');
         saveButton.innerHTML = 'Cập nhật';
         saveButton.onclick = function () {
-            updateAddress(address.id); // Hàm cập nhật địa chỉ
+            Swal.fire({
+                title: 'Bạn có chắc chắn?',
+                text: "Thông tin của bạn sẽ được cập nhật.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Cập nhật',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    updateAddress(address.id); // Hàm cập nhật địa chỉ
+                }
+            });
             $('#updateAddressModal').modal('hide');
 
         };
@@ -297,8 +310,18 @@ function updateAddress(addressId) {
     xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4 && xhr.status === 200) {
-            $('#addAddressModal').modal('hide');
-            loadUserAddresses(userId); // Tải lại danh sách địa chỉ
+            Swal.fire({
+                icon: 'success',
+                title: 'Thành công!',
+                text: 'Địa chỉ đã được cập nhật thành công.',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                document.getElementById('addAddressModal').classList.remove('show');
+                document.getElementById('addAddressModal').style.display = 'none';
+                document.body.classList.remove('modal-open');
+                document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+                loadUserAddresses(userId);
+            });
         } else if (xhr.readyState === 4) {
             console.error('Error updating address:', xhr.responseText);
             alert('Đã xảy ra lỗi khi cập nhật địa chỉ. Vui lòng thử lại sau.');

@@ -87,7 +87,7 @@ namespace ExternalInterfaceLayer.Controllers
         [Route("GetProductDetailsByID/{IDOptions}")]
         public async Task<IActionResult> GetProductDetailsByID(Guid IDOptions)
         {
-            var variantdata = await _IOptionsService.GetProductDetailsByID(IDOptions);
+            var variantdata = await _IOptionsService.GetOptionsByProductDetailsIdAsync(IDOptions);
             return Ok(variantdata);
         }
         [HttpGet]
@@ -116,6 +116,69 @@ namespace ExternalInterfaceLayer.Controllers
                 return NotFound();
             }
             return Ok(obj);
+        }
+        [HttpPost("decrease-quantity")]
+        public async Task<IActionResult> DecreaseQuantity([FromBody] DecreaseQuantityRequest request)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var success = await _IOptionsService.DecreaseQuantityAsync(request.IDOptions, request.QuantityToDecrease);
+                    if (success)
+                    {
+                        return Ok("Số lượng đã được cập nhật.");
+                    }
+                    return BadRequest("Không thể cập nhật số lượng.");
+                }
+                return BadRequest(ModelState);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("increase-quantity")]
+        public async Task<IActionResult> IncreaseQuantityAsync([FromBody] DecreaseQuantityRequest request)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var success = await _IOptionsService.IncreaseQuantityAsync(request.IDOptions, request.QuantityToDecrease);
+                    if (success)
+                    {
+                        return Ok("Số lượng đã được cập nhật.");
+                    }
+                    return BadRequest("Không thể cập nhật số lượng.");
+                }
+                return BadRequest(ModelState);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Đã xảy ra lỗi hệ thống.");
+            }
         }
     }
 }
