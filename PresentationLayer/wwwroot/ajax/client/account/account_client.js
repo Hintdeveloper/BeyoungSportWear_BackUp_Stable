@@ -93,18 +93,21 @@ function loadUserAddresses(userId) {
             var addressList = document.getElementById('address-list');
             addressList.innerHTML = '';
 
+            // Lưu danh sách địa chỉ vào biến toàn cục để có thể sử dụng lại sau này
+            window.userAddresses = data;
             data.forEach(function (address) {
                 var addressItem = document.createElement('li');
                 addressItem.classList.add('address-item');
                 addressItem.innerHTML = `
                     <div class="address-details">
                         <strong id="name_address">${address.firstAndLastName}</strong> |
-                        <strong id="phonenumber_address">${address.phoneNumber}</strong><small style="color:red;"> ${address.isDefault ? '(Mặc định)' : ''}</small>
+                        <strong id="phonenumber_address">${address.phoneNumber}</strong>
+                        <small style="color:red;"> ${address.isDefault ? '(Mặc định)' : ''}</small>
                         <br>
                         <span id="address">${address.specificAddress}, ${address.commune}, ${address.districtCounty}, ${address.city}</span>
                     </div>
                     <div class="address-actions">
-                        <button class="btn-update btn btn-warning btn-sm trash" onclick="updateAddress('${address.id}')"> 
+                        <button class="btn-update btn btn-warning btn-sm trash" onclick="editAddress('${address.id}')" type="button"> 
                             <i class="fas fa-pencil-alt"></i>
                         </button>
                         <button class="btn btn-danger btn-sm trash" onclick="deleteAddress('${address.id}')" type="button">
@@ -143,6 +146,167 @@ document.getElementById('logoutButton').addEventListener('click', function (even
         }
     });
 });
+function updateUser() {
+
+    var formData = new FormData();
+
+    // Cập nhật các trường thông tin cá nhân
+    formData.append('firstAndLastName', document.getElementById('name_user_1').value);
+    formData.append('email', document.getElementById('gmail').value);
+    formData.append('phoneNumber', document.getElementById('inputPhone').value);
+
+    // Cập nhật giới tính
+    var genderRadios = document.getElementsByName('Gender');
+    var selectedGender;
+    for (var i = 0; i < genderRadios.length; i++) {
+        if (genderRadios[i].checked) {
+            selectedGender = genderRadios[i].value;
+            break;
+        }
+    }
+    formData.append('gender', selectedGender);
+
+    // Cập nhật ngày sinh
+    formData.append('dateOfBirth', document.getElementById('inputBirthday').value);
+
+    // Cập nhật hình ảnh nếu có
+    var fileInput = document.querySelector('input[name="imageFile"]');
+    if (fileInput.files.length > 0) {
+        formData.append('images', fileInput.files[0]);
+    }
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('PUT', `https://localhost:7241/api/ApplicationUser/UpdateUser/${userId}`, true);
+    xhr.setRequestHeader('Authorization', 'Bearer ' + jwt);
+
+    xhr.onload = function () {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            Swal.fire({
+                title: 'Thành công!',
+                text: 'Cập nhật tài khoản thành công.',
+                icon: 'success',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                window.location.href = '/login';
+            });
+        } else {
+            Swal.fire({
+                title: 'Lỗi!',
+                text: 'Có lỗi xảy ra trong quá trình cập nhật.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+            console.log(xhr.responseText)
+
+        }
+    };
+    xhr.onerror = function () {
+        Swal.fire({
+            title: 'Lỗi!',
+            text: 'Có lỗi xảy ra trong quá trình gửi yêu cầu.',
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+        console.log(xhr.responseText)
+    };
+    console.log(formData)
+    xhr.send(formData);
+}
+document.getElementById('updateButton').addEventListener('click', function (event) {
+    event.preventDefault();
+
+    Swal.fire({
+        title: 'Bạn có chắc chắn?',
+        text: "Thông tin của bạn sẽ được cập nhật.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Cập nhật',
+        cancelButtonText: 'Hủy'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Gọi hàm updateUser ở đây
+            updateUser();
+        }
+    });
+});
+function editAddress(addressId) {
+    // Tìm địa chỉ dựa vào addressId từ danh sách đã tải
+    var address = window.userAddresses.find(function (item) {
+        return item.id === addressId;
+    });
+
+    if (address) {
+        // Điền dữ liệu địa chỉ vào modal
+        document.getElementById('firstAndLastName').value = address.firstAndLastName;
+        document.getElementById('phoneNumber').value = address.phoneNumber;
+        document.getElementById('gmail').value = address.gmail || ''; // nếu gmail không tồn tại
+        // Gán giá trị cho dropdown Tỉnh thành (City)
+        var cityDropdown = document.getElementById('city');
+        cityDropdown.value = address.city;
+
+        // Gán giá trị cho dropdown Quận huyện (District)
+        var districtDropdown = document.getElementById('district');
+        districtDropdown.value = address.districtCounty;
+
+        // Gán giá trị cho dropdown Xã phường (Ward)
+        var wardDropdown = document.getElementById('ward');
+        wardDropdown.value = address.commune;
+
+        document.getElementById('specificAddress').value = address.specificAddress;
+        document.getElementById('IsDefault').checked = address.isDefault;
+
+        // Thay đổi nút Lưu thành Cập Nhật
+        var saveButton = document.getElementById('saveButton');
+        saveButton.innerHTML = 'Cập nhật';
+        saveButton.onclick = function () {
+            updateAddress(address.id); // Hàm cập nhật địa chỉ
+            $('#updateAddressModal').modal('hide');
+
+        };
+
+        // Hiển thị modal
+        $('#updateAddressModal').modal('show');
+    } else {
+        console.error('Address not found for ID:', addressId);
+        Swal.fire({
+            title: 'NOT FOUND!',
+            text: 'Không thấy địa chỉ',
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+    }
+}
+function updateAddress(addressId) {
+    var updatedAddress = {
+        firstAndLastName: document.getElementById('firstAndLastName').value,
+        phoneNumber: document.getElementById('phoneNumber').value,
+        gmail: document.getElementById('gmail').value,
+        city: document.getElementById('city').value,
+        districtCounty: document.getElementById('district').value,
+        commune: document.getElementById('ward').value,
+        specificAddress: document.getElementById('specificAddress').value,
+        isDefault: document.getElementById('IsDefault').checked,
+        IDUser: userId,
+        ModifiedBy: userId
+    };
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('PUT', `https://localhost:7241/api/Address/UpdateAddress/${addressId}`, true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+            $('#addAddressModal').modal('hide');
+            loadUserAddresses(userId); // Tải lại danh sách địa chỉ
+        } else if (xhr.readyState === 4) {
+            console.error('Error updating address:', xhr.responseText);
+            alert('Đã xảy ra lỗi khi cập nhật địa chỉ. Vui lòng thử lại sau.');
+        }
+    };
+    xhr.send(JSON.stringify(updatedAddress));
+}
+
 function saveAddress() {
     const firstAndLastName = document.getElementById('firstAndLastName').value;
     const phoneNumber = document.getElementById('phoneNumber').value;
