@@ -45,6 +45,7 @@ builder.Services.AddTransient<IBrandService, BrandService>();
 builder.Services.AddTransient<IMaterialService, MaterialService>();
 builder.Services.AddTransient<IColorService, ColorService>();
 builder.Services.AddTransient<IApplicationUserService, ApplicationUserService>();
+builder.Services.AddTransient<IVoucherMServiece, VoucherMServiece>();
 builder.Services.AddTransient<ApplicationDBContext>();
 
 builder.Services.Configure<VietQRSettings>(builder.Configuration.GetSection("VietQR"));
