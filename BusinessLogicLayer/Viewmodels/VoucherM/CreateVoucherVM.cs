@@ -37,6 +37,7 @@ namespace BusinessLogicLayer.Viewmodels.VoucherM
 
         [Required(ErrorMessage = "Số lượng không được để trống")]
         [Range(1, 9999, ErrorMessage = "Số lượng phải lớn hơn 0 và nhỏ hơn 10000")]
+        [Numeric(ErrorMessage = "Số lượng phải là số nguyên")]
         public int Quantity { get; set; }
 
         [Required(ErrorMessage = "Phương thức giảm giá không được để trống")]

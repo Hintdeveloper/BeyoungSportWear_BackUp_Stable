@@ -177,4 +177,27 @@ namespace BusinessLogicLayer.Viewmodels.VoucherM
             return ValidationResult.Success;
         }
     }
+    public class NumericAttribute : ValidationAttribute
+    {
+        public override bool IsValid(object value)
+        {
+            if (value == null)
+            {
+                return false;
+            }
+
+            // Kiểm tra nếu giá trị là số nguyên
+            if (int.TryParse(value.ToString(), out _))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public override string FormatErrorMessage(string name)
+        {
+            return $"Trường {name} phải là số nguyên.";
+        }
+    }
 }

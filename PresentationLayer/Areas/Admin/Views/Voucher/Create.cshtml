@@ -14,12 +14,12 @@
         @TempData["SuccessMessage"]
     </div>
 }
-@if (TempData["ErrorMessage"] != null)
+@* @if (TempData["ErrorMessage"] != null)
 {
     <div class="alert alert-danger">
         @TempData["ErrorMessage"]
     </div>
-}
+} *@
 <div class="row">
     <div class="col-md-12">
         <form asp-action="Create" method="post" onsubmit="return validateForm()">
