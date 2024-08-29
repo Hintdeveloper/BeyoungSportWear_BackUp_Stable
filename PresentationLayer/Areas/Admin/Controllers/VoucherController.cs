@@ -127,7 +127,7 @@ namespace PresentationLayer.Areas.Admin.Controllers
             {
 
                 var errorMessage = await response.Content.ReadAsStringAsync();
-                TempData["ErrorMessage"] = $"Error: {errorMessage}";
+                //TempData["ErrorMessage"] = $"Error: {errorMessage}";
                 //ModelState.AddModelError(string.Empty, $"Error: {errorMessage}");
 
                 // Khởi tạo lại ViewBag.Users khi trả về View
@@ -319,7 +319,7 @@ namespace PresentationLayer.Areas.Admin.Controllers
             else
             {
                 var errorMessage = await response.Content.ReadAsStringAsync();
-                TempData["ErrorMessage"] = $"Error: {errorMessage}";
+                //TempData["ErrorMessage"] = $"Error: {errorMessage}";
 
                 // Reload data if update fails
                 var usersUrl = "https://localhost:7241/api/VoucherM/getallClient";
