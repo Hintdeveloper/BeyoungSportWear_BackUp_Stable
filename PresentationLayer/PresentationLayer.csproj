@@ -7,6 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="wwwroot\ajax\address.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="wwwroot\ajax\address.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\ajax\address.js" />
     <None Include="wwwroot\js\createvoucher.js" />
   </ItemGroup>
 
