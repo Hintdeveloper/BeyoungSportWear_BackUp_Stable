@@ -146,4 +146,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.MapHub<ProductHub>("/productHub");
+app.MapHub<VoucherHub>("/voucherHub");
 app.Run();

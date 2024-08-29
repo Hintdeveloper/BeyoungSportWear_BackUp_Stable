@@ -74,7 +74,7 @@
                 Số tiền giảm
             </th>
             <th>
-                Trạng thái hoạt động 2
+                Trạng thái hoạt động
             </th>
 
             
@@ -139,42 +139,14 @@
                         <text>Không xác định</text>
                     }
                 </td>
-                @* <td>
-                    @if (item.IsActive.HasValue)
-                    {
-                        switch (item.IsActive.Value)
-                        {
-                            case StatusVoucher.HasntStartedYet:
-                                <span>Chưa bắt đầu</span>
-                                break;
-                            case StatusVoucher.IsBeginning:
-                                <span>Đang diễn ra</span>
-                                break;
-                            case StatusVoucher.Finished:
-                                <span>Đã kết thúc</span>
-                                break;
-                        }
-                    }
-                </td> *@
-                <td>
+                <td class="status-cell">
                     @(item.IsActive == StatusVoucher.HasntStartedYet ? "Chưa bắt đầu" : item.IsActive == StatusVoucher.IsBeginning ? "Đang diễn ra" : "Đã kết thúc")
                 </td>
-                
+               
                 <td>
-                    @if (item.IsActive != StatusVoucher.Finished)
-                    {
-                        <a asp-action="UpdateVoucherUser" asp-controller="Voucher" asp-route-id="@item.ID" class="btn btn-primary btn-sm edit" title="Sửa">
-                            <i class="fas fa-edit"></i>
-                        </a>
-                    }
-
-                    
-                    <a asp-action="Detail" asp-controller="Voucher" asp-route-id="@item.ID" class="btn btn-primary btn-sm view" type="button" title="Xem chi tiết">
-                        <i class="fas fa-eye"></i>
-                    </a>
-                    
-
-                    <form asp-action="ToggleStatus" asp-controller="Voucher" asp-route-id="@item.ID" method="post" id="toggleForm-@item.ID" style="display:inline;">
+                    <a asp-action="UpdateVoucherUser" asp-route-id="@item.ID" class="btn btn-warning">Edit</a> |
+                    <a asp-action="Detail" asp-route-id="@item.ID" class="btn btn-info">Details</a> |
+                <form asp-action="ToggleStatus" asp-controller="Voucher" asp-route-id="@item.ID" method="post" id="toggleForm-@item.ID" style="display:inline;">
                         <input type="hidden" name="id" value="@item.ID" />
 
                         <input style="display: none;" type="checkbox" id="toggle-@item.ID" onchange="toggleVoucherStatus('@item.ID');"
@@ -188,8 +160,11 @@
             </tr>
             count++;
         }
+        <button onclick="refreshVoucherStatus()">Refresh Status</button>
     </tbody>
 </table>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.7/signalr.min.js"></script>
+
 <script type="text/javascript">
     const StatusVoucher = {
         HasntStartedYet: 0,
@@ -237,23 +212,25 @@
 
     function refreshVoucherStatus() {
         $.ajax({
-            url: 'https://localhost:7241/api/VoucherM/getall',
+            url: 'https://localhost:7241/api/VoucherM/getall?_=' + new Date().getTime(),
             type: 'GET',
             success: function (data) {
+                console.log("Data from API:", data); // Kiểm tra dữ liệu trả về
+
                 data.forEach(function (item) {
-                    const statusText = item.IsActive === StatusVoucher.HasntStartedYet ? 'Chưa bắt đầu' :
-                        item.IsActive === 1 ? 'Đang diễn ra' :
+                    const statusText = item.isActive === 0 ? 'Chưa bắt đầu' :
+                        item.isActive === 1 ? 'Đang diễn ra' :
                             'Đã kết thúc';
 
-                    const $row = $(`#voucherTable tbody tr[data-id="${item.ID}"]`);
+                    const $row = $(`#voucherTable tbody tr[data-id="${item.id}"]`);
 
                     if ($row.length) {
-                        $row.find('td:nth-child(10)').text(statusText);
+                        $row.find('td:nth-child(11)').text(statusText); // Cập nhật nội dung cột trạng thái
 
                         const $toggle = $row.find('input[type="checkbox"]');
                         const $toggleIcon = $row.find('.fas');
 
-                        if (item.IsActive !== 2) {
+                        if (item.isActive !== 2) {
                             $toggle.prop('checked', true);
                             $toggleIcon.removeClass('fa-toggle-off').addClass('fa-toggle-on');
                         } else {
@@ -270,6 +247,7 @@
     }
 
 
-    setInterval(autoUpdateVoucherStatus, 500);
-    setInterval(refreshVoucherStatus,1000);
+
+    setInterval(autoUpdateVoucherStatus, 5000);
+    setInterval(refreshVoucherStatus,5000);
 </script>

@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using BusinessLogicLayer.Services.Interface;
+using BusinessLogicLayer.Services.SignalR;
 using BusinessLogicLayer.Viewmodels.Voucher;
 using BusinessLogicLayer.Viewmodels.VoucherM;
 using DataAccessLayer.Application;
 using DataAccessLayer.Entity;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System;
@@ -19,16 +21,18 @@ namespace BusinessLogicLayer.Services.Implements
 {
     public class VoucherMServiece :IVoucherMServiece
     {
+        private readonly IHubContext<VoucherHub> _hubContext;
         private readonly ApplicationDBContext _dbcontext;
         private readonly IMapper _mapper;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
-        public VoucherMServiece(ApplicationDBContext ApplicationDBContext, IMapper mapper, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
+        public VoucherMServiece(ApplicationDBContext ApplicationDBContext, IMapper mapper, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IHubContext<VoucherHub> hubContext)
         {
             _dbcontext = ApplicationDBContext;
             _mapper = mapper;
             _userManager = userManager;
             _roleManager = roleManager;
+            _hubContext = hubContext;
         }
         public async Task<bool> Create(CreateVoucherVM request)
         {
@@ -285,7 +289,7 @@ namespace BusinessLogicLayer.Services.Implements
 
             foreach (var voucher in vouchers)
             {
-
+                var oldStatus = voucher.IsActive;
                 if (voucher.IsActive != StatusVoucher.Finished)
                 {
                     if (voucher.Quantity == 0)
@@ -304,10 +308,15 @@ namespace BusinessLogicLayer.Services.Implements
                     {
                         voucher.IsActive = StatusVoucher.IsBeginning;
                     }
+                    if (oldStatus != voucher.IsActive)
+                    {
+                        await _hubContext.Clients.All.SendAsync("ReceiveVoucherStatusUpdate", voucher.ID, voucher.IsActive);
+                    }
                 }
             }
 
             // Lưu các thay đổi vào cơ sở dữ liệu
+            
             await _dbcontext.SaveChangesAsync();
         }
 

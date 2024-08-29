@@ -143,76 +143,7 @@ namespace PresentationLayer.Areas.Admin.Controllers
 
             return View(model);
         }
-
-
-        //[HttpGet("voucher/Update/{id}")]
-        //public async Task <IActionResult> Update(Guid id)
-        //{
-        //    var client = _httpClientFactory.CreateClient();
-        //    var url = $"https://localhost:7241/api/VoucherM/GetById/{id}";
-
-        //    var response = await client.GetAsync(url);
-        //    if (response.IsSuccessStatusCode)
-        //    {
-        //        var jsonResponse = await response.Content.ReadAsStringAsync();
-        //        var voucherUpdateVM = JsonConvert.DeserializeObject<UpdateVoucherVM>(jsonResponse);
-        //        return View(voucherUpdateVM);
-        //    }
-        //    else
-        //    {
-        //        return RedirectToAction("Index");
-        //    }
-        //}
-        //[HttpPost("voucher/Update/{id}")]
-        //public async Task<IActionResult> Update(Guid id, UpdateVoucherVM voucherUpdateVM)
-        //{
-          
-        //    var client = _httpClientFactory.CreateClient();
-        //    var url = $"https://localhost:7241/api/VoucherM/EditVoucher/{id}";
-
-        //    var checkUrl = $"https://localhost:7241/api/VoucherM/CheckVoucherCodeExists?code={voucherUpdateVM.Code}";
-        //    var checkResponse = await client.GetAsync(checkUrl);
-
-        //    if (!checkResponse.IsSuccessStatusCode)
-        //    {
-        //        ModelState.AddModelError(string.Empty, "Có lỗi xảy ra khi kiểm tra mã voucher.");
-        //        return View(voucherUpdateVM);
-        //    }
-
-        //    var checkContent = await checkResponse.Content.ReadAsStringAsync();
-        //    var checkResult = JsonConvert.DeserializeObject<CheckVoucherCodeResponse>(checkContent);
-
-        //    if (checkResult.Exists)
-        //    {
-        //        var usersResponse = await client.GetAsync("https://localhost:7241/api/VoucherM/getallClient");
-        //        List<UserVM> users = new List<UserVM>();
-        //        if (usersResponse.IsSuccessStatusCode)
-        //        {
-        //            var usersContent = await usersResponse.Content.ReadAsStringAsync();
-        //            users = JsonConvert.DeserializeObject<List<UserVM>>(usersContent);
-        //        }
-        //        ViewBag.Users = users;
-        //        ModelState.AddModelError("Code", "Mã voucher đã tồn tại.");
-        //        return View(voucherUpdateVM);
-        //    }
-
-        //    var json = JsonConvert.SerializeObject(voucherUpdateVM);
-        //    var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-        //    var response = await client.PutAsync(url, content);
-        //    if (response.IsSuccessStatusCode)
-        //    {
-        //        TempData["SuccessMessage"] = "Cập nhật voucher thành công!";
-        //        return RedirectToAction("Index");
-        //    }
-        //    else
-        //    {
-        //        var errorMessage = await response.Content.ReadAsStringAsync();
-        //        TempData["ErrorMessage"] = $"Error: {errorMessage}";
-        //        //ModelState.AddModelError(string.Empty, $"Error: {errorMessage}");
-        //        return View(voucherUpdateVM);
-        //    }
-        //}
+      
         [HttpPost]
         public async Task<IActionResult> Delete(Guid id)
         {
@@ -446,33 +377,6 @@ namespace PresentationLayer.Areas.Admin.Controllers
             }
         }
 
-        //[HttpGet("voucher/GetVoucherByUser")]
-        //public async Task<IActionResult> GetVouchersByUserId()
-        //{
-        //    var userId = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
-
-        //    if (userId == null)
-        //    {
-        //        TempData["ErrorMessage"] = $"Error: không thể lấy thông tin người dùng";
-        //        //ModelState.AddModelError(string.Empty, "Không thể lấy thông tin người dùng.");
-        //        return View("Index");
-        //    }
-        //    var client = _httpClientFactory.CreateClient();
-        //    var url = $"https://localhost:7241/api/VoucherM/GetVouchersByUserId?userId={userId}";
-
-        //    var response = await client.GetAsync(url);
-        //    if (response.IsSuccessStatusCode)
-        //    {
-        //        var jsonResponse = await response.Content.ReadAsStringAsync();
-        //        var vouchers = JsonConvert.DeserializeObject<List<VoucherViewModel>>(jsonResponse);
-        //        return View(vouchers);
-        //    }
-        //    else
-        //    {
-
-        //        return View(new List<VoucherViewModel>());
-        //    }
-        //}
 
 
     }
