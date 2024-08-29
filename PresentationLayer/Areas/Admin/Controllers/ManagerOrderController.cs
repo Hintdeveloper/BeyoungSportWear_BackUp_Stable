@@ -13,20 +13,17 @@ namespace PresentationLayer.Areas.Admin.Controllers
         {
             return View();
         }
-        [HttpGet("managercreate_order")]
-        public async Task<IActionResult> Create()
+
+        [HttpGet]
+        [Route("manager_orderstatus_verII/{ID}")]
+        public async Task<IActionResult> Index_Ver_II(Guid ID)
         {
             return View();
         }
 
-        [HttpGet("managerupdate_order/{ID}")]
-        public async Task<IActionResult> Update(Guid ID)
-        {
-            return View();
-        }
         [HttpGet]
-        [Route("manager_orderstatus")]
-        public async Task<IActionResult> Index_Ver_2()
+        [Route("order_success")]
+        public async Task<IActionResult> Order_Success()
         {
             return View();
         }
