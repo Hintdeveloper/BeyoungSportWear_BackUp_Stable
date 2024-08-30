@@ -120,9 +120,9 @@
                 Mã Voucher :  @item.Code
             </div>
             <div class="card-body">
-                Giảm : @Html.DisplayFor(modelItem => item.ReducedValue) .vnđ 
+                Giảm : @Currency.FormatCurrency(item.ReducedValue.ToString()) đ
                 <br />
-                Nếu số tiền thanh toán từ : @Html.DisplayFor(modelItem => item.MinimumAmount) .vnđ
+                Đơn hàng từ: @Currency.FormatCurrency(item.MinimumAmount.ToString()) đ
             </div>
             <div class="card-footer">
                 <div class="card-footer-left">HSD Còn : @item.DaysLeft </div>

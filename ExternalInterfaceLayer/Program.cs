@@ -1,4 +1,5 @@
-﻿using BusinessLogicLayer.Services.Implements;
+﻿using BusinessLogicLayer.AutoMapperConfiguration;
+using BusinessLogicLayer.Services.Implements;
 using BusinessLogicLayer.Services.Interface;
 using BusinessLogicLayer.Services.SignalR;
 using BusinessLogicLayer.Viewmodels;
@@ -15,6 +16,7 @@ using System.Text;
 using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddAutoMapper(typeof(CartProductDetailsMap).Assembly);
 builder.Services.AddControllers();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddEndpointsApiExplorer();
