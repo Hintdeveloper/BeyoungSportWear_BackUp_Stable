@@ -112,7 +112,10 @@ namespace ExternalInterfaceLayer.Controllers
                     var totalAmountText = Currency.FormatCurrency(orderData.TotalAmount.ToString());
                     var totalAmountInWords = ViString.RemoveSign4VietnameseString(Currency.NumberToText((double)orderData.TotalAmount, true));
                     doc.Add(new iTextSharp.text.Paragraph($"Total Cost: {totalAmountText} ({totalAmountInWords})", normalFont));
-                    doc.Add(new iTextSharp.text.Paragraph($"Notes: {ViString.RemoveSign4VietnameseString(orderData.Notes)}", normalFont));
+                    if (!string.IsNullOrEmpty(orderData.Notes))
+                    {
+                        doc.Add(new iTextSharp.text.Paragraph($"Notes: {ViString.RemoveSign4VietnameseString(orderData.Notes)}", normalFont));
+                    }
                     doc.Add(new iTextSharp.text.Paragraph("\n"));
 
                     doc.Add(new iTextSharp.text.Paragraph("Order Details", subTitleFont));
