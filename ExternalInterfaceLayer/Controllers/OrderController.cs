@@ -95,7 +95,11 @@ namespace ExternalInterfaceLayer.Controllers
                     var subTitleFont = new Font(Font.FontFamily.HELVETICA, 16, Font.BOLD, BaseColor.GRAY);
                     var normalFont = new Font(BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED), 12, Font.NORMAL, BaseColor.BLACK);
 
+<<<<<<< HEAD
                     var icon = GetIcon("https://res.cloudinary.com/dqcxurnpa/image/upload/v1725011857/samples/logo.png");
+=======
+                    var icon = GetIcon("logo.jpg");
+>>>>>>> bbf77d41a6814c5b746570083c49f554b699b356
 
                     doc.Add(icon);
                     doc.Add(new iTextSharp.text.Paragraph("Sales Invoice", titleFont));
@@ -201,11 +205,17 @@ namespace ExternalInterfaceLayer.Controllers
             }
         }
 
-        private iTextSharp.text.Image GetIcon(string iconUrl)
+        private iTextSharp.text.Image GetIcon(string name)
         {
+            // Tạo đường dẫn đầy đủ đến hình ảnh trong thư mục wwwroot
+            var iconUrl = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", name);
+
+            // Lấy hình ảnh từ đường dẫn tuyệt đối
             var image = iTextSharp.text.Image.GetInstance(new Uri(iconUrl));
+
+            // Điều chỉnh kích thước hình ảnh và căn giữa
             image.ScaleToFit(60f, 60f);
-            image.Alignment = Element.ALIGN_CENTER; // Căn giữa theo chiều ngang
+            image.Alignment = Element.ALIGN_CENTER;
 
             return image;
         }

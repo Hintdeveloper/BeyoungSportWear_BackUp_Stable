@@ -95,7 +95,8 @@ namespace ExternalInterfaceLayer.Controllers
             }
             else
             {
-                return BadRequest("Có lỗi trong quá trình thực hiện.");
+                // Trả về HTTP 400 với thông báo lỗi
+                return StatusCode(result.StatusCode, new { message = result.Message });
             }
         }
 

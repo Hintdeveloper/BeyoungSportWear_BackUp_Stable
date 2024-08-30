@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using BusinessLogicLayer.Viewmodels.CartProductDetails;
+using BusinessLogicLayer.Viewmodels.CartOptions;
 using DataAccessLayer.Entity;
 
 namespace BusinessLogicLayer.AutoMapperConfiguration
