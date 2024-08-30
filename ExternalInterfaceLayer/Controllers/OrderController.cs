@@ -95,7 +95,7 @@ namespace ExternalInterfaceLayer.Controllers
                     var subTitleFont = new Font(Font.FontFamily.HELVETICA, 16, Font.BOLD, BaseColor.GRAY);
                     var normalFont = new Font(BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED), 12, Font.NORMAL, BaseColor.BLACK);
 
-                    var icon = GetIcon("https://res.cloudinary.com/dqcxurnpa/image/upload/v1723411106/BeyoungSportWear/ImageProduct/Options/iir3kywpd1qfj6zepptp.png");
+                    var icon = GetIcon("https://res.cloudinary.com/dqcxurnpa/image/upload/v1725011857/samples/logo.png");
 
                     doc.Add(icon);
                     doc.Add(new iTextSharp.text.Paragraph("Sales Invoice", titleFont));
@@ -112,7 +112,10 @@ namespace ExternalInterfaceLayer.Controllers
                     var totalAmountText = Currency.FormatCurrency(orderData.TotalAmount.ToString());
                     var totalAmountInWords = ViString.RemoveSign4VietnameseString(Currency.NumberToText((double)orderData.TotalAmount, true));
                     doc.Add(new iTextSharp.text.Paragraph($"Total Cost: {totalAmountText} ({totalAmountInWords})", normalFont));
-                    doc.Add(new iTextSharp.text.Paragraph($"Notes: {ViString.RemoveSign4VietnameseString(orderData.Notes)}", normalFont));
+                    if (!string.IsNullOrEmpty(orderData.Notes))
+                    {
+                        doc.Add(new iTextSharp.text.Paragraph($"Notes: {ViString.RemoveSign4VietnameseString(orderData.Notes)}", normalFont));
+                    }
                     doc.Add(new iTextSharp.text.Paragraph("\n"));
 
                     doc.Add(new iTextSharp.text.Paragraph("Order Details", subTitleFont));
