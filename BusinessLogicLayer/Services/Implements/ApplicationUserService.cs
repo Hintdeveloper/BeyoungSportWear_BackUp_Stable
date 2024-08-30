@@ -210,6 +210,156 @@ namespace BusinessLogicLayer.Services.Implements
 
             return userVM;
         }
+        private static string GenerateRandomPassword(int length)
+        {
+            const string validChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()";
+            Random random = new Random();
+            return new string(Enumerable.Repeat(validChars, length)
+                .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
+        public async Task<Response> RegisterWithRandomPasswordAsync(RegisterOnly registerOnly, string role)
+        {
+            using var transaction = await _dbContext.Database.BeginTransactionAsync();
+            try
+            {
+                var existingUserByEmail = await _userManager.FindByEmailAsync(registerOnly.Email);
+                if (existingUserByEmail != null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        StatusCode = 400,
+                        Message = "This email is already in use."
+                    };
+                }
+
+                var existingUserByUsername = await _userManager.FindByNameAsync(registerOnly.Username);
+                if (existingUserByUsername != null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        StatusCode = 400,
+                        Message = "This username is already taken."
+                    };
+                }
+                var existingUserByPhone = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == registerOnly.PhoneNumber);
+                if (existingUserByPhone != null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        StatusCode = 400,
+                        Message = "This phone number is already in use."
+                    };
+                }
+                string password = GenerateRandomPassword(12);
+
+                var newUser = new ApplicationUser
+                {
+                    UserName = registerOnly.Username,
+                    Email = registerOnly.Email,
+                    FirstAndLastName = registerOnly.FirstAndLastName,
+                    PhoneNumber = registerOnly.PhoneNumber,
+                    Gender = registerOnly.Gender,
+                    EmailConfirmed = false,
+                    Status = 1,
+                    JoinDate = DateTime.Now
+                };
+
+                var result = await _userManager.CreateAsync(newUser, password);
+                var cart = new Cart
+                {
+                    ID = newUser.Id,
+                    IDUser = newUser.Id,
+                    Description = "Giỏ hàng mặc định",
+                    Status = 1,
+                };
+                await _dbContext.Cart.AddAsync(cart);
+
+                if (result.Succeeded)
+                {
+                    if (await _roleManager.RoleExistsAsync(role))
+                    {
+                        await _userManager.AddToRoleAsync(newUser, role);
+                    }
+                    var emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
+
+                    var host = _httpContextAccessor.HttpContext.Request.Host;
+                    var callbackUrl = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{host}/Account/ConfirmEmail?userId={newUser.Id}&code={emailConfirmationToken}";
+
+                    string emailBody = $"Chào {registerOnly.FirstAndLastName},\n\n" +
+                                        $"Bạn đã được đăng ký thành công. Đây là mật khẩu của bạn: {password}\n\n" +
+                                        $"Vui lòng xác nhận email của bạn bằng cách nhấp vào liên kết sau: {callbackUrl}\n\n" +
+                                        $"Trân trọng,\nYourAppName";
+
+                    await SendEmailAsync(registerOnly.Email, "Đăng ký tài khoản thành công", emailBody);
+
+                    await transaction.CommitAsync();
+
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        StatusCode = 201,
+                        Message = "Register successfully! Please check your email for confirmation."
+                    };
+                }
+                else
+                {
+                    await transaction.RollbackAsync();
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        StatusCode = 500,
+                        Message = "User creation failed."
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return new Response
+                {
+                    IsSuccess = false,
+                    StatusCode = 500,
+                    Message = $"An error occurred while saving the entity changes: {ex.Message}",
+                };
+            }
+        }
+        private async Task SendEmailAsync(string toEmail, string subject, string body)
+        {
+            var fromAddress = new MailAddress(_mailSettings.Mail, _mailSettings.DisplayName);
+            var toAddress = new MailAddress(toEmail);
+            var fromPassword = _mailSettings.Password;
+            var smtpHost = _mailSettings.Host;
+            var smtpPort = _mailSettings.Port;
+
+            var smtp = new SmtpClient
+            {
+                Host = smtpHost,
+                Port = smtpPort,
+                EnableSsl = true,
+                DeliveryMethod = SmtpDeliveryMethod.Network,
+                UseDefaultCredentials = false,
+                Credentials = new NetworkCredential(fromAddress.Address, fromPassword)
+            };
+
+            var message = new MailMessage(fromAddress, toAddress)
+            {
+                Subject = subject,
+                Body = body,
+                IsBodyHtml = true
+            };
+
+            try
+            {
+                await smtp.SendMailAsync(message);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error sending email: {ex.Message}");
+            }
+        }
         public async Task<Response> Login(UserLoginModel model)
         {
             if (model == null || string.IsNullOrWhiteSpace(model.UserName) || string.IsNullOrWhiteSpace(model.PassWord))

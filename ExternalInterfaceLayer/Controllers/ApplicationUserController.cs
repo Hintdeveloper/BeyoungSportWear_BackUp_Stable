@@ -11,7 +11,6 @@ using System.Text.Json;
 namespace ExternalInterfaceLayer.Controllers
 {
     [Route("api/[controller]")]
-    [Authorize(Roles = "Admin,Staff,Client")]
     [ApiController]
     public class ApplicationUserController : ControllerBase
     {
@@ -42,7 +41,21 @@ namespace ExternalInterfaceLayer.Controllers
 
             return Ok(objCollection);
         }
-        
+        [HttpPost]
+        [Route("register_with_random_password")]
+        public async Task<IActionResult> RegisterWithRandomPasswordAsync([FromBody] RegisterOnly registerOnly, string role)
+        {
+
+            var result = await _IUserService.RegisterWithRandomPasswordAsync(registerOnly, role);
+            if (result.IsSuccess)
+            {
+                return Ok(new { status = "Success", message = "Successfully." });
+            }
+            else
+            {
+                return BadRequest("Có lỗi trong quá trình thực hiện.");
+            }
+        }
         [HttpPut]
         [Route("UpdateUser/{ID}")]
         public async Task<IActionResult> UpdateUser(string ID, [FromForm] UserUpdateVM userUpdateVM)

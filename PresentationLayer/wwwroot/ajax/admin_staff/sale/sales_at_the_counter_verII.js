@@ -2022,3 +2022,71 @@ function formatDate(date) {
 //document.querySelector('.close-button').addEventListener('click', function () {
 //    closeModal();
 //});
+
+document.getElementById('openModalBtn').addEventListener('click', function () {
+    var modal = new bootstrap.Modal(document.getElementById('modal_user'));
+    console.log('click')
+    modal.show();
+});
+document.getElementById('saveUserBtn').addEventListener('click', function () {
+    var username = document.getElementById('username').value;
+    var name = document.getElementById('name_user').value;
+    var email = document.getElementById('email_user').value;
+    var phone = document.getElementById('phone').value;
+
+    Swal.fire({
+        title: 'Xác nhận?',
+        text: "Bạn có chắc chắn muốn tạo mới khách hàng này?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Xác nhận',
+        cancelButtonText: 'Hủy bỏ'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: 'Đang xử lý...',
+                text: 'Vui lòng chờ trong giây lát',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            var data = JSON.stringify({
+                "firstAndLastName": name,
+                "username": username,
+                "email": email,
+                "phoneNumber": phone
+            });
+
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "https://localhost:7241/api/ApplicationUser/register_with_random_password?role=client", true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    Swal.close();
+
+                    if (xhr.status === 200) {
+                        var response = JSON.parse(xhr.responseText);
+
+                        Swal.fire({
+                            title: 'Thành công!',
+                            text: response.message,
+                            icon: 'success'
+                        }).then(() => {
+                            $('#modal_user').modal('hide');
+                            document.getElementById('customerPhoneNumber').value = phone;
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Lỗi!',
+                            text: 'Có lỗi xảy ra. Vui lòng thử lại.',
+                            icon: 'error'
+                        });
+                    }
+                }
+            };
+            xhr.send(data);
+        }
+    });
+});
