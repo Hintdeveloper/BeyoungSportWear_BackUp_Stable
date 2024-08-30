@@ -256,7 +256,7 @@
                 </div>
                 <div class=" col-md-2">
                     <label style="text-align: center;" class="control-label">Tạo mới</label>
-                    <button class="btn btn-primary btn-them" data-toggle="modal" data-target="#modal_user">
+                    <button id="openModalBtn" class="btn btn-primary btn-them" data-toggle="modal" data-target="#modal_user">
                         <i class="fas fa-user-plus"></i>
                     </button>
                 </div>
@@ -383,28 +383,24 @@
                         </span>
                     </div>
                     <div class="form-group col-md-12">
+                        <label class="control-label">UserName</label>
+                        <input class="form-control" id="username" type="text" required>
+                    </div>      
+                    <div class="form-group col-md-12">
                         <label class="control-label">Họ và tên</label>
-                        <input class="form-control" type="text" required>
-                    </div>
-                    <div class="form-group col-md-6">
-                        <label class="control-label">Địa chỉ</label>
-                        <input class="form-control" type="text" required>
-                    </div>
+                        <input class="form-control" id="name_user" type="text" required>
+                    </div>                  
                     <div class="form-group col-md-6">
                         <label class="control-label">Email</label>
-                        <input class="form-control" type="text" required>
-                    </div>
-                    <div class="form-group col-md-6">
-                        <label class="control-label">Ngày sinh</label>
-                        <input class="form-control" type="date" required>
+                        <input class="form-control" id="email_user" type="text" required>
                     </div>
                     <div class="form-group col-md-6">
                         <label class="control-label">Số điện thoại</label>
-                        <input class="form-control" type="number" required>
+                        <input class="form-control" id="phone" type="number" required>
                     </div>
                 </div>
                 <br>
-                <button class="btn btn-save" type="button">Lưu lại</button>
+                <button class="btn btn-save" id="saveUserBtn" type="button">Lưu lại</button>
                 <a class="btn btn-cancel" data-dismiss="modal" href="#">Hủy bỏ</a>
                 <br>
             </div>

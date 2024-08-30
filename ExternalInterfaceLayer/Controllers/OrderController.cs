@@ -94,6 +94,7 @@ namespace ExternalInterfaceLayer.Controllers
                     var titleFont = new Font(Font.FontFamily.HELVETICA, 18, Font.BOLD, BaseColor.BLACK);
                     var subTitleFont = new Font(Font.FontFamily.HELVETICA, 16, Font.BOLD, BaseColor.GRAY);
                     var normalFont = new Font(BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED), 12, Font.NORMAL, BaseColor.BLACK);
+
                     var icon = GetIcon("logo.jpg");
 
                     doc.Add(icon);
