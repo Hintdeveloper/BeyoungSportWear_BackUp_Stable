@@ -364,4 +364,37 @@
         </div>
     </div>
 </div>
+
+<!-- Modal -->
+<div class="modal fade" id="notificationModal" tabindex="-1" role="dialog" aria-labelledby="notificationModalLabel" aria-hidden="true" style="max-width: 100%;">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content" style="border-radius: 15px; max-height: 670px;box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);">
+            <div class="modal-header">
+                <h5 class="modal-title" id="notificationModalLabel">Thông báo quan trọng</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="text-align: center;">
+                <p id="modalMessage">Số lượng của một số sản phẩm trong đơn hàng của bạn lớn hơn 100. Vui lòng liên hệ với cửa hàng để biết giá sỉ.</p>
+                <div class="contact-info" style="margin-top: 20px;">
+                    <p>Để biết thêm thông tin, bạn có thể liên hệ với chúng tôi qua:</p>
+                    <ul style="list-style: none; padding: 0;">
+                        <li>Số điện thoại: <a href="tel: 0334539098" style="color: #007bff;">0334539098</a></li>
+                        <li>Email: <a href="mailto:nhamtuandat317@gmail.com" style="color: #007bff;">nhamtuandat317@gmail.com</a></li>
+                        <li>Quét mã QR để liên hệ qua Zalo:</li>
+                        <li>
+                            <img src="https://res.cloudinary.com/dqcxurnpa/image/upload/v1725017988/ao1tj46yj6el2ddtqxnj.jpg" alt="QR Code to Zalo" style="width: 200px; height: 200px; object-fit: cover; margin-top: 10px;">
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer" style="justify-content: center;">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary" id="confirmButton">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script type="text/javascript" src="~/ajax/client/checkout/checkout_ver_1.js"></script>

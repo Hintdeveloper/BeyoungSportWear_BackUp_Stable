@@ -782,8 +782,26 @@ function sendOrderData() {
     if (!orderData) {
         return;
     }
-    console.log('orderData:', orderData);
 
+    const hasLargeQuantity = orderData.orderDetailsCreateVM.some(detail => detail.quantity > 100);
+
+    if (hasLargeQuantity) {
+        $('#notificationModal').modal('show');
+        $('body').addClass('modal-open');
+
+        $('.modal-backdrop').hide();
+
+        $('#confirmButton').on('click', function () {
+            $('#notificationModal').modal('hide');
+            $('body').removeClass('modal-open');
+            processOrder(orderData);
+        });
+    } else {
+        processOrder(orderData);
+    }
+}
+
+function processOrder(orderData) {
     Swal.fire({
         title: 'Xác nhận gửi đơn hàng',
         text: 'Bạn có chắc chắn muốn gửi đơn hàng này không?',
@@ -801,6 +819,7 @@ function sendOrderData() {
                     Swal.showLoading();
                 }
             });
+
             const jwt = getJwtFromCookie();
 
             if (!jwt) {
@@ -882,7 +901,6 @@ function sendOrderData() {
                                 window.location.href = '/';
                             });
                         } else {
-
                             Swal.fire({
                                 title: 'Lỗi!',
                                 text: xhr.responseText,
