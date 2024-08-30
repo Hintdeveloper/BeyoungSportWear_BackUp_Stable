@@ -94,12 +94,7 @@ namespace ExternalInterfaceLayer.Controllers
                     var titleFont = new Font(Font.FontFamily.HELVETICA, 18, Font.BOLD, BaseColor.BLACK);
                     var subTitleFont = new Font(Font.FontFamily.HELVETICA, 16, Font.BOLD, BaseColor.GRAY);
                     var normalFont = new Font(BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED), 12, Font.NORMAL, BaseColor.BLACK);
-
-<<<<<<< HEAD
-                    var icon = GetIcon("https://res.cloudinary.com/dqcxurnpa/image/upload/v1725011857/samples/logo.png");
-=======
                     var icon = GetIcon("logo.jpg");
->>>>>>> bbf77d41a6814c5b746570083c49f554b699b356
 
                     doc.Add(icon);
                     doc.Add(new iTextSharp.text.Paragraph("Sales Invoice", titleFont));
