@@ -23,35 +23,23 @@ public class StatisticsService : IStatisticsService
     }
     public async Task<Dictionary<Guid, int>> CalculateBestSellingProducts(DateTime startDate, DateTime endDate)
     {
-        var orders = await _dbcontext.Order
-                    .Where(order => order.CreateDate >= startDate && order.CreateDate <= endDate && order.OrderStatus == OrderStatus.Delivered)
-                    .Include(order => order.OrderDetails)
-                    .ToListAsync();
-
-        var productSalesCount = new Dictionary<Guid, int>();
-
-        foreach (var order in orders)
-        {
-            foreach (var orderVariant in order.OrderDetails)
+        var productSalesCount = await _dbcontext.Order
+            .Where(order => order.CreateDate >= startDate
+                         && order.CreateDate <= endDate
+                         && order.OrderStatus == OrderStatus.Delivered)
+            .SelectMany(order => order.OrderDetails)
+            .GroupBy(orderDetail => orderDetail.Options.ProductDetails.ID)
+            .Select(group => new
             {
-                var productId = orderVariant.IDOptions;
-                var quantitySold = orderVariant.Quantity;
+                ProductId = group.Key,
+                QuantitySold = group.Sum(orderDetail => orderDetail.Quantity)
+            })
+            .OrderByDescending(result => result.QuantitySold)
+            .ToDictionaryAsync(result => result.ProductId, result => result.QuantitySold);
 
-                if (!productSalesCount.ContainsKey(productId))
-                {
-                    productSalesCount[productId] = quantitySold;
-                }
-                else
-                {
-                    productSalesCount[productId] += quantitySold;
-                }
-            }
-        }
-
-        var sortedProducts = productSalesCount.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
-
-        return sortedProducts;
+        return productSalesCount;
     }
+
 
     public async Task<MonthlyStatistic> CalculateStatistics(string month)
     {
@@ -115,6 +103,69 @@ public class StatisticsService : IStatisticsService
             TotalOrder = totalOrders,
             Month = startDate,
             //TotalRevenue = totalRevenue,
+            TotalQuantityOptions = totalQuantityOptions,
+            TotalProduct = totalProduct,
+            BestSellingProducts = bestSellingProducts,
+            TotalUser = totalUser,
+            ProductsAlmostOutOfStock = productsAlmostOutOfStock,
+            TotalOrdersnosuccess = totalOrdersnosuccess,
+            TotalOrderssuccess = totalOrderssuccess
+        };
+    }
+
+    public async Task<MonthlyStatistic> CalculateStatistics(DateTime startDate, DateTime endDate)
+    {
+        var bankPaymentOrders = await _dbcontext.Order
+               .Where(order => order.PaymentMethods == PaymentMethod.ChuyenKhoanNganHang
+                               && order.CreateDate >= startDate
+                               && order.CreateDate <= endDate)
+               .ToListAsync();
+
+        var totalStockQuantity = await _dbcontext.Options
+            .SumAsync(option => option.StockQuantity);
+
+        decimal totalBankPayments = bankPaymentOrders.Sum(order => order.TotalAmount);
+
+        int totalOrders = await _dbcontext.Order
+            .Where(order => order.CreateDate >= startDate && order.CreateDate <= endDate)
+            .CountAsync();
+
+        int totalProduct = await _dbcontext.ProductDetails
+            .Where(product => product.CreateDate >= startDate && product.CreateDate <= endDate)
+            .CountAsync();
+
+        int totalQuantityOptions = await _dbcontext.Options
+            .Where(option => option.CreateDate >= startDate && option.CreateDate <= endDate)
+            .SumAsync(c => c.StockQuantity);
+
+        int totalOrdersnosuccess = await _dbcontext.Order
+            .Where(order => order.CreateDate >= startDate && order.CreateDate <= endDate && order.OrderStatus == OrderStatus.Cancelled)
+            .CountAsync();
+
+        int totalOrderssuccess = await _dbcontext.Order
+            .Where(order => order.CreateDate >= startDate && order.CreateDate <= endDate && order.OrderStatus == OrderStatus.Delivered)
+            .CountAsync();
+
+        int totalUser = await _dbcontext.ApplicationUser
+            .Where(user => user.JoinDate >= startDate && user.JoinDate <= endDate)
+            .CountAsync();
+
+        const int threshold = 10;
+        int productsAlmostOutOfStock = await _dbcontext.ProductDetails
+            .Select(pd => new
+            {
+                ProductId = pd.ID,
+                TotalQuantity = pd.Options.Sum(o => o.StockQuantity)
+            })
+            .Where(p => p.TotalQuantity <= threshold)
+            .CountAsync();
+
+        var bestSellingProducts = await CalculateBestSellingProducts(startDate, endDate);
+
+        return new MonthlyStatistic
+        {
+            TotalOrder = totalOrders,
+            Month = startDate,
             TotalQuantityOptions = totalQuantityOptions,
             TotalProduct = totalProduct,
             BestSellingProducts = bestSellingProducts,

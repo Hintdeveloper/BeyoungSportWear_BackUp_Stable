@@ -41,7 +41,7 @@ async function fetchStatistics() {
         if (xhr.status >= 200 && xhr.status < 300) {
             var data = JSON.parse(xhr.responseText);
             console.log('Data received:', data);
-            updateCharts(data);
+            //updateCharts(data);
             updateStatistics(data);
             const bestSellingProducts = data.bestSellingProducts;
             const productDetailsApiUrl = 'https://localhost:7241/api/ProductDetails/GetByIDAsyncVer_1/';
@@ -104,7 +104,7 @@ function fetchYearStatistics() {
     var xhr = new XMLHttpRequest();
     var currentYear = new Date().getFullYear();
 
-    var formattedYear = `${currentYear}-01-01`; 
+    var formattedYear = `${currentYear}-01-01`;
     xhr.open('GET', `https://localhost:7241/api/Statistics/year?year=${formattedYear}`, true);
 
     xhr.setRequestHeader('Accept', '*/*');
@@ -134,12 +134,11 @@ function updateLineChart(data) {
         lineChart.destroy();
     }
 
-    var revenueData = data.monthlyRevenues || [];
-    var labels = generateMonthlyLabels();
-
     // Kiểm tra dữ liệu
-    if (revenueData.length === 0 || !Array.isArray(revenueData)) {
-        console.error('Dữ liệu doanh thu không hợp lệ:', revenueData);
+    const revenueData = data.monthlyRevenues || [];
+    console.log('Dữ liệu doanh thu:', revenueData); // Kiểm tra dữ liệu
+    if (revenueData.length !== 12) {
+        console.error('Dữ liệu doanh thu không hợp lệ. Cần có 12 tháng dữ liệu.');
         return;
     }
 
@@ -147,7 +146,7 @@ function updateLineChart(data) {
     lineChart = new Chart(lineChartCtx, {
         type: 'line',
         data: {
-            labels: labels,
+            labels: generateMonthlyLabels(), // ["Tháng 1", "Tháng 2", ..., "Tháng 12"]
             datasets: [{
                 label: 'Doanh thu theo tháng trong năm',
                 data: revenueData,

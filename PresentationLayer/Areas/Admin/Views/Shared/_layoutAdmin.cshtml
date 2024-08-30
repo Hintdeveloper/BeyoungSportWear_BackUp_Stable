@@ -76,18 +76,12 @@
                 </a>
             </li>
             <li>
-                <a class="app-menu__item active" href="index.html">
+                <a class="app-menu__item active" asp-area="Admin" asp-controller="Home" asp-action="Index">
                     <i class='app-menu__icon bx bx-tachometer'></i>
                     <span class="app-menu__label">Bảng điều khiển</span>
                 </a>
             </li>
-            <li>
-                <a class="app-menu__item " asp-area="Admin" asp-controller="Home" asp-action="Account">
-                    <i class='app-menu__icon bx bx-id-card'></i>
-                    <span class="app-menu__label">Thông tin tài khoản</span>
-                </a>
-            </li>
-
+          
             <li>
                 <a class="app-menu__item " asp-area="Admin" asp-controller="ManagerStaff" asp-action="Index">
                     <i class='app-menu__icon bx bx-id-card'></i>
@@ -167,9 +161,9 @@
                 </a>
             </li>
             <li>
-                <a class="app-menu__item" asp-area="Admin" asp-controller="ManagementRevenue" asp-action="Index">
-                    <i class='app-menu__icon bx bx-pie-chart-alt-2'></i>
-                    <span class="app-menu__label">Báo cáo doanh thu</span>
+                <a class="app-menu__item" asp-area="Admin" asp-controller="Home" asp-action="Account">
+                    <i class='app-menu__icon bx bx-cog'></i>
+                    <span class="app-menu__label"> Tài khoản của tôi</span>
                 </a>
             </li>
         </ul>

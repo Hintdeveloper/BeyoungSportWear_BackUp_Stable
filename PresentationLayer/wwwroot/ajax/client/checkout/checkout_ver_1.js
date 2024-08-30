@@ -47,6 +47,53 @@ function updateURL() {
     const newUrl = `${window.location.pathname}?data=${encodedData}`;
     history.replaceState(null, '', newUrl);
 }
+function loadCartItemsFromURL() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const encodedData = urlParams.get('data');
+
+    if (encodedData) {
+        try {
+            const decodedData = JSON.parse(decodeURIComponent(encodedData));
+
+            const fetchPromises = decodedData.map(item => {
+                return new Promise((resolve, reject) => {
+                    fetchProductDetails(item.idOptions, (error, productData) => {
+                        if (error) {
+                            reject('Không thể kiểm tra số lượng tồn kho.');
+                        } else {
+                            if (item.quantity > productData.stockQuantity) {
+                                item.quantity = 1;
+                                toastr.warning(`Số lượng sản phẩm '${item.productName}' đã bị điều chỉnh về ${1} do vượt quá tồn kho.`, 'Cảnh báo');
+                            }
+                            resolve(item);
+                        }
+                    });
+                });
+            });
+
+            Promise.all(fetchPromises)
+                .then(validatedItems => {
+                    cartItems = [];
+
+                    validatedItems.forEach(validItem => {
+                        cartItems.push(validItem);
+                    });
+
+                    updateTableWithProductDetails();
+                    updateURL();
+                })
+                .catch(error => {
+                    toastr.error(error, 'Lỗi');
+                });
+
+        } catch (e) {
+            toastr.error('Dữ liệu giỏ hàng không hợp lệ.', 'Lỗi');
+        }
+    }
+}
+window.onload = function () {
+    loadCartItemsFromURL();
+};
 function fetchProductDetails(idOptions, callback) {
     const xhr = new XMLHttpRequest();
     xhr.open('GET', `https://localhost:7241/api/Options/GetByID/${idOptions}`, true);
@@ -104,11 +151,13 @@ function updateTableWithProductDetails() {
                       <img src="${item.imageURL}" style="width: 50px; height: 50px; border-radius: 5px; margin-right: 10px;">
                       <div>
                           <strong>${item.productName} (${item.sizeName} - ${item.colorName})</strong><br
-                          <span style="color: #555;">Mã sản phẩm: ${keyCode}</span><br>
                           <br>
                             <div style="display: flex; align-items: center; margin-top: 5px;">
                                 <button onclick="changeQuantity('${id}', -1)" type="button" style="padding: 5px 10px; font-size: 14px; background-color: #f0f0f0; border: 1px solid #ddd; border-radius: 3px; cursor: pointer;">-</button>
-                                <input type="number" id="quantity-${id}" value="${quantity}" min="1" style="width: 60px; text-align: center; margin: 0 10px; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+                                <input type="text" id="quantity-${id}" value="${quantity}" min="1" style="width: 150px; 
+                                    text-align: center; margin: 0 10px;
+                                    padding: 5px; border: 1px solid #ddd;
+                                    border-radius: 3px;" oninput="updateQuantity('${id}')">
                                 <button onclick="changeQuantity('${id}', 1)" type="button" style="padding: 5px 10px; font-size: 14px; background-color: #f0f0f0; border: 1px solid #ddd; border-radius: 3px; cursor: pointer;">+</button>
                                 <span style="color: #333;">(Giá bán: ${price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })})</span>
                             </div>
@@ -171,26 +220,75 @@ function changeQuantity(id, delta) {
         quantity = 1;
         toastr.error('Số lượng sản phẩm không thể nhỏ hơn 1.', 'Lỗi');
     } else {
-        toastr.success('Số lượng sản phẩm đã được cập nhật thành công!', 'Thành công');
+        fetchProductDetails(id, (error, productData) => {
+            if (error) {
+                toastr.error('Không thể kiểm tra số lượng tồn kho.', 'Lỗi');
+            } else {
+                if (quantity > productData.stockQuantity) {
+                    quantity = productData.stockQuantity;
+                    toastr.warning(`Số lượng sản phẩm không thể vượt quá tồn kho (${productData.stockQuantity}).`, 'Cảnh báo');
+                } else {
+                    toastr.success('Số lượng sản phẩm đã được cập nhật thành công!', 'Thành công');
+                }
+                quantityInput.value = quantity;
+
+                const item = cartItems.find(item => item.idOptions === id);
+                if (item) {
+                    item.quantity = quantity;
+                } else {
+                    cartItems.push({ idOptions: id, quantity: quantity });
+                }
+                const orderDetail = orderDetails.find(detail => detail.idOptions === id);
+                if (orderDetail) {
+                    orderDetail.quantity = quantity;
+                } else {
+                    orderDetails.push({ idOptions: id, quantity: quantity });
+                }
+                updateURL();
+                updateTableWithProductDetails();
+            }
+        });
     }
+}
+function updateQuantity(id) {
+    const quantityInput = document.getElementById(`quantity-${id}`);
+    let quantity = parseInt(quantityInput.value, 10);
 
-    quantityInput.value = quantity;
-
-    const item = cartItems.find(item => item.idOptions === id);
-    if (item) {
-        item.quantity = quantity;
+    if (isNaN(quantity) || quantity < 1) {
+        quantity = 1;
+        toastr.error('Số lượng sản phẩm không hợp lệ. Đã được điều chỉnh về 1.', 'Lỗi');
+        quantityInput.value = 1;
     } else {
-        cartItems.push({ idOptions: id, quantity: quantity });
-    }
-    const orderDetail = orderDetails.find(detail => detail.idOptions === id);
-    if (orderDetail) {
-        orderDetail.quantity = quantity;
-    } else {
-        orderDetails.push({ idOptions: id, quantity: quantity });
-    }
+        fetchProductDetails(id, (error, productData) => {
+            if (error) {
+                toastr.error('Không thể kiểm tra số lượng tồn kho.', 'Lỗi');
+            } else {
+                if (quantity > productData.stockQuantity) {
+                    quantity = productData.stockQuantity;
+                    toastr.warning(`Số lượng sản phẩm không thể vượt quá tồn kho (${productData.stockQuantity}).`, 'Cảnh báo');
+                    quantityInput.value = productData.stockQuantity;
+                } else {
+                    toastr.success('Số lượng sản phẩm đã được cập nhật thành công!', 'Thành công');
+                }
 
-    updateURL();
-    updateTableWithProductDetails();
+                const item = cartItems.find(item => item.idOptions === id);
+                if (item) {
+                    item.quantity = quantity;
+                } else {
+                    cartItems.push({ idOptions: id, quantity: quantity });
+                }
+                const orderDetail = orderDetails.find(detail => detail.idOptions === id);
+                if (orderDetail) {
+                    orderDetail.quantity = quantity;
+                } else {
+                    orderDetails.push({ idOptions: id, quantity: quantity });
+                }
+
+                updateURL();
+                updateTableWithProductDetails();
+            }
+        });
+    }
 }
 document.addEventListener('DOMContentLoaded', function () {
     var citySelect = document.getElementById("city");
@@ -430,7 +528,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         "coupon": null
                     })
                 });
-               
+
                 const data = await response.json();
 
                 console.log('API Response:', data);
@@ -464,11 +562,6 @@ function updateTotalOrder() {
         var totalOrder = totalEstimatedPrice + shippingFee - discount;
 
         document.getElementById('total_order').innerText = totalOrder.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
-
-        console.log('Phí ship:', shippingFee);
-        console.log('Giá tạm:', totalEstimatedPrice);
-        console.log('Giảm giá:', discount);
-        console.log('Tổng giá:', totalOrder);
     } catch (error) {
         console.error('Error:', error);
     }
@@ -650,6 +743,7 @@ function getFormData() {
             orderStatus: 0,
             totalAmount: totalOrder,
             paymentMethods: paymentMethod,
+            paymentStatus: 0,
             orderType: 0,
             status: 1,
             orderDetailsCreateVM: orderDetails
@@ -707,7 +801,7 @@ function sendOrderData() {
                     Swal.showLoading();
                 }
             });
-            const jwt = getJwtFromCookie(); 
+            const jwt = getJwtFromCookie();
 
             if (!jwt) {
                 document.cookie = 'cart=; path=/; max-age=0';
@@ -788,11 +882,10 @@ function sendOrderData() {
                                 window.location.href = '/';
                             });
                         } else {
-                            console.error('Error:', xhr.responseText);
 
                             Swal.fire({
                                 title: 'Lỗi!',
-                                text: 'Đã xảy ra lỗi khi gửi đơn hàng. Vui lòng thử lại.',
+                                text: xhr.responseText,
                                 icon: 'error',
                                 confirmButtonText: 'OK'
                             });
@@ -924,7 +1017,7 @@ function applyVoucher(voucherId) {
             } else {
                 console.error('Element with ID coupound not found.');
             }
-            updateTotalOrder(); 
+            updateTotalOrder();
             console.log('Mã voucher được chọn:', voucher.code);
             voucherCode = voucher.code;
 
@@ -1003,4 +1096,129 @@ function calculateTotals(cartItems, voucherValue, shippingFee) {
         shippingFee,
         finalTotal
     };
+}
+async function fetchProvinces(provinceName) {
+    try {
+        const response = await fetch('https://online-gateway.ghn.vn/shiip/public-api/master-data/province', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Token': 'd01771f0-3f8b-11ef-8f55-4ee3d82283af'
+            }
+        });
+
+        const data = await response.json();
+
+        if (data && Array.isArray(data.data)) {
+            const cleanedProvinceName = provinceName.replace(/Tỉnh\s*/i, '').trim();
+
+            const province = data.data.find(province => province.ProvinceName.replace(/Tỉnh\s*/i, '').trim() === cleanedProvinceName);
+            return province ? province.ProvinceID : null;
+        } else {
+            console.error('Dữ liệu tỉnh không hợp lệ:', data);
+            return null;
+        }
+    } catch (error) {
+        console.error('Lỗi khi lấy dữ liệu tỉnh:', error);
+        return null;
+    }
+}
+async function fetchDistricts(provinceID, districtName) {
+    try {
+        if (!provinceID) {
+            console.error('ProvinceID không hợp lệ');
+            return null;
+        }
+        const response = await fetch('https://online-gateway.ghn.vn/shiip/public-api/master-data/district', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Token': 'd01771f0-3f8b-11ef-8f55-4ee3d82283af'
+            },
+            body: JSON.stringify({ "province_id": provinceID })
+        });
+
+        const data = await response.json();
+
+        if (data && Array.isArray(data.data)) {
+            const district = data.data.find(district => district.DistrictName === districtName);
+            return district ? district.DistrictID : null;
+        } else {
+            console.error('Dữ liệu quận huyện không hợp lệ:', data);
+            return null;
+        }
+    } catch (error) {
+        console.error('Lỗi khi lấy dữ liệu quận huyện:', error);
+        return null;
+    }
+}
+async function fetchWards(districtID, wardName) {
+    try {
+        if (!districtID) {
+            console.error('DistrictID không hợp lệ');
+            return null;
+        }
+        const response = await fetch(`https://online-gateway.ghn.vn/shiip/public-api/master-data/ward?district_id=${districtID}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Token': 'd01771f0-3f8b-11ef-8f55-4ee3d82283af'
+            }
+        });
+
+        const data = await response.json();
+
+        if (data && Array.isArray(data.data)) {
+            const ward = data.data.find(ward => ward.WardName.trim() === wardName);
+            return ward ? ward.WardCode : null;
+        } else {
+            console.error('Dữ liệu xã phường không hợp lệ:', data);
+            return null;
+        }
+    } catch (error) {
+        console.error('Lỗi khi lấy dữ liệu xã phường:', error);
+        return null;
+    }
+}
+async function getShippingFee(provinceID, districtID, wardCode) {
+    const shopID = 4145900;
+    var token = 'd01771f0-3f8b-11ef-8f55-4ee3d82283af';
+
+    try {
+        const response = await fetch('https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Token': token
+            },
+            body: JSON.stringify({
+                "service_type_id": 2,
+                "from_district_id": 3440,
+                "from_ward_code": "13009",
+                "to_district_id": districtID,
+                "to_ward_code": wardCode,
+                "height": 20,
+                "length": 30,
+                "weight": 3000,
+                "width": 40,
+                "insurance_value": 0,
+                "coupon": null
+            })
+        });
+
+        const responseData = await response.json();
+
+        console.log('API Response:', responseData);
+        if (responseData.code === 200) {
+            shippingFee = responseData.data.total;
+            document.getElementById('shippingFee').innerText = shippingFee;
+            document.getElementById('shippingFeeDisplay').innerText = shippingFee.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+            calculateTotalPay();
+            console.log('Giá:' + shippingFee)
+        } else {
+            console.error('Error:', data.message);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
 }

@@ -76,5 +76,19 @@ namespace ExternalInterfaceLayer.Controllers
             }
         }
 
+        [HttpGet("calculate_statistics/{startDate}/{endDate}")]
+        public async Task<IActionResult> CalculateStatistics(DateTime startDate, DateTime endDate)
+        {
+            try
+            {
+                var bestSellingProducts = await _statisticsService.CalculateStatistics(startDate, endDate);
+                return Ok(bestSellingProducts);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while retrieving best-selling products.", error = ex.Message });
+            }
+        }
+
     }
 }

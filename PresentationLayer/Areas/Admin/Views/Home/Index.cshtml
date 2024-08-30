@@ -59,15 +59,15 @@
             </div>
             <div class="col-md-12">
                 <div class="tile">
-                    <h3 class="tile-title">Tình trạng đơn hàng</h3>
+                    <h3 class="tile-title">Sản phẩm bán chạy</h3>
                     <div>
                         <table class="table table-bordered">
                             <thead>
                                 <tr>
-                                    <th>ID đơn hàng</th>
-                                    <th>Tên khách hàng</th>
-                                    <th>Tổng tiền</th>
-                                    <th>Trạng thái</th>
+                                    <th>Mã</th>
+                                    <th>Tên sản phẩm</th>
+                                    <th>Giá bán</th>
+                                    <th>Số sản phẩm bán được</th>
                                 </tr>
                             </thead>
                             <tbody id="order_table_body">
@@ -76,7 +76,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-12">
+            @* <div class="col-md-12">
                 <div class="tile">
                     <h3 class="tile-title">Khách hàng mới</h3>
                     <div>
@@ -94,7 +94,7 @@
                         </table>
                     </div>
                 </div>
-            </div>
+            </div> *@
         </div>
     </div>
     <div class="col-md-12 col-lg-6">
@@ -102,9 +102,11 @@
             <!-- Phần nhập thời gian -->
             <div class="col-md-12">
                 <div class="tile">
-                    <label for="month">Chọn Tháng:</label>
-                    <input type="month" id="month" name="month" value="@DateTime.Now.ToString("yyyy-MM")">
-                    <button onclick="getStatisticsmonth()">Thống kê</button>
+                    <label for="startDate" style="display: inline-block; width: 150px; margin-right: 10px;">Chọn ngày bắt đầu:</label>
+                    <input type="date" id="startDate" name="startDate" value="@DateTime.Now.ToString("yyyy-MM-dd")" style="padding: 5px; margin-right: 20px;" onchange="fetchStatistics()">
+
+                    <label for="endDate" style="display: inline-block; width: 150px; margin-right: 10px;">Chọn ngày kết thúc:</label>
+                    <input type="date" id="endDate" name="endDate" value="@DateTime.Now.ToString("yyyy-MM-dd")" style="padding: 5px;" onchange="fetchStatistics()">
                 </div>
             </div>
             <!-- Biểu đồ dữ liệu -->
@@ -116,14 +118,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-12">
-                <div class="tile">
-                    <h3 class="tile-title">Tỉ lệ đơn hàng</h3>
-                    <div class="embed-responsive embed-responsive-16by9">
-                        <canvas class="embed-responsive-item" id="pieChart"></canvas>
-                    </div>
-                </div>
-            </div>
+          
 
         </div>
     </div>

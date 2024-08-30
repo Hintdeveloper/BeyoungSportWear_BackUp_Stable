@@ -3,18 +3,70 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 <style>
+    .product__details__pic {
+        margin-bottom: 20px;
+    }
+
+        .product__details__pic .tab-content img {
+            width: 40%; /* Đảm bảo ảnh chính chiếm toàn bộ chiều rộng của khung chứa */
+            height: auto; /* Giữ tỷ lệ khung hình */
+            object-fit: contain; /* Đảm bảo ảnh nằm gọn trong khung mà không bị cắt xén */
+        }
+
+    .product__details__thumbnail {
+        margin-top: 10px; /* Khoảng cách giữa ảnh chính và ảnh thu nhỏ */
+    }
+
+        .product__details__thumbnail .nav-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-start; /* Canh lề ảnh thu nhỏ về phía trái */
+            padding: 0;
+            margin: 0;
+        }
+
+            .product__details__thumbnail .nav-tabs li {
+                margin-right: 10px;
+                list-style: none;
+            }
+
+            .product__details__thumbnail .nav-tabs img {
+                width: 70px; /* Kích thước cố định cho các ảnh thu nhỏ */
+                height: 70px; /* Đảm bảo ảnh thu nhỏ có kích thước đồng nhất */
+                object-fit: cover; /* Cắt xén nếu cần thiết để ảnh chiếm toàn bộ khung hình */
+                cursor: pointer; /* Thêm con trỏ tay khi hover */
+            }
+
+    .product__details__content {
+        margin-bottom: 20px;
+    }
+
+    .product__details__text {
+        margin-bottom: 20px;
+    }
+
+    .product__details__cart__option {
+        margin-bottom: 20px;
+    }
+
+    .product__details__last__option {
+        margin-bottom: 20px;
+    }
+
+    .product__details__tab {
+        margin-top: 20px;
+    }
+
     .color-options {
         display: inline-block;
         margin-right: 50px;
         margin-bottom: 25px;
-        
     }
 
         .color-options span {
             display: inline-block;
             margin-right: 50px;
             margin-bottom: 25px;
-            
         }
 
         .color-options label {
@@ -43,88 +95,73 @@
             }
 </style>
 <section class="shop-details">
-    <div class="product__details__pic">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="product__details__breadcrumb">
-                        <a href="">Home</a>
-                        <a href="">Shop</a>
-                        <span>Product Details</span>
-                    </div>
+    <div class="row" style=" padding-left: 90px; padding-right: 50px;">
+        <div class="col-md-6">
+            <div class="product__details__pic">
+                <div class="tab-content" id="tabContent">
                 </div>
             </div>
-            <div class="row">
-                <div class="col-lg-3 col-md-3">
-                    <ul class="nav nav-tabs" role="tablist" id="thumbList">
-                      
-                    </ul>
-                </div>
-                <div class="col-lg-6 col-md-9">
-                    <div class="tab-content" id="tabContent">
-                      
-                    </div>
-                </div>
+            <div class="product__details__thumbnail">
+                <ul class="nav nav-tabs" role="tablist" id="thumbList_1">
+                </ul>
             </div>
         </div>
-    </div>
-    <div class="product__details__content">
-        <div class="container">
-            <div class="row d-flex justify-content-center">
-                <div class="col-lg-8">
-                    <div class="product__details__text">
-                        <h4 id="product_name"></h4>
-                        <h3 id="retal_price"></h3>
-                        <small id="quantity"></small>
-                        <div class="product__details__option">
-                            <div class="product__details__option__size">
-                                <span>Size:</span>
-                            </div>
-                            <div class="color-options">
-                                <span>Color:</span>
-                            </div>
+        <div class="col-md-6">
+            <div class="product__details__content">
+                <div class="">
+                    <h4 id="product_name"></h4>
+                    <h3 id="retal_price"></h3>
+                    <small id="quantity"></small>
+                    <div class="product__details__option">
+                        <div class="product__details__option__size">
+                            <strong>Size:</strong>
                         </div>
-                        <div class="product__details__cart__option">
-                            <div class="quantity">
-                                <div class="pro-qty">
-                                    <input type="text" id="quantityInput" value="1">
-                                </div>
-                            </div>
-                            <button id="addToCartButton" class="primary-btn" type="button">Thêm vào giỏ hàng</button>
-                            <button id="PayImmediately" class="primary-btn" type="button">Thanh toán</button>
-                        </div>
-                        <div class="product__details__last__option">
-                            <h5><span>Các hình thức thanh toán</span></h5>
-                            <img src="~/asset_client/img/shop-details/details-payment.png" alt="">
-                            <ul>
-                                <li><span>Mã:</span><span id="keycode"></span></li>
-                                <li><span>Categories:</span><span id="category"></span></li>
-                            </ul>
+                        <div class="color-options">
+                            <strong>Color:</strong>
                         </div>
                     </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="product__details__tab">
-                        <ul class="nav nav-tabs" role="tablist">
-                            <li class="nav-item">
-                                <a class="nav-link active" data-toggle="tab" href="#tabs-5"
-                                   role="tab">Thông tin và mô tả</a>
-                            </li>
-                        </ul>
-                        <div class="tab-content">
-                            <div class="tab-pane active" id="tabs-5" role="tabpanel">
-                                <div class="product__details__tab__content">
-                                    <p id="brandName"></p>
-                                    <p id="origin"></p>
-                                    <p id="style"></p>
-                                    <p id="manufacturersName"></p>
-                                    <p id="materialName"></p>
-                                    <p id="description"></p>
-                                </div>
+                    <div class="product__details__cart__option">
+                        <div class="quantity">
+                            <div class="pro-qty">
+                                <input type="text" id="quantityInput" value="1">
                             </div>
                         </div>
+                        <button id="addToCartButton" class="primary-btn" type="button">Thêm vào giỏ hàng</button>
+                        <button id="PayImmediately" class="primary-btn" type="button">Thanh toán</button>
+                    </div>
+                </div>
+                <div class="product__details__tab">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" data-toggle="tab" href="#tab-details" role="tab"><strong>Thông tin chi tiết</strong></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-toggle="tab" href="#tab-description" role="tab"><strong>Mô tả</strong></a>
+                        </li>
+                    </ul>
+                    <div class="tab-content">
+                        <div class="tab-pane active" id="tab-details" role="tabpanel">
+                            <div class="product__details__tab__content">
+                                <p id="brandName"></p>
+                                <p id="origin"></p>
+                                <p id="style"></p>
+                                <p id="manufacturersName"></p>
+                                <p id="materialName"></p>
+                            </div>
+                        </div>
+                        <div class="tab-pane" id="tab-description" role="tabpanel">
+                            <div class="product__details__tab__content">
+                                <p id="description"></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="product__details__last__option" style="text-align: center;">
+                        <h5><span>Các hình thức thanh toán</span></h5>
+                        <img style="width: 100px; height: 60px" src="https://res.cloudinary.com/dqcxurnpa/image/upload/v1723423725/BeyoungSportWear/ImageProduct/Options/cdvsekxqjneikonxlpc5.jpg" alt="">
+                        <ul>
+                            <li><strong>Mã:</strong><strong id="keycode"></strong></li>
+                            <li><strong>Danh mục:</strong><strong id="category"></strong></li>
+                        </ul>
                     </div>
                 </div>
             </div>
