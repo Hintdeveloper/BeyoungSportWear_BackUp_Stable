@@ -75,8 +75,8 @@ namespace ExternalInterfaceLayer.Controllers
         [Route("Delete/{IDCart}/{IDOptions}")]
         public async Task<IActionResult> RemoveAsync(string IDCart, Guid? IDOptions)
         {
-            var objDelete = await _ICartOptionsService.GetByIDAsync(IDCart, IDOptions);
-            if (objDelete == null) return NotFound();
+            //var objDelete = await _ICartOptionsService.GetByIDAsync(IDCart, IDOptions);
+            //if (objDelete == null) return NotFound();
 
             var result = await _ICartOptionsService.RemoveAsync(IDCart, IDOptions);
 

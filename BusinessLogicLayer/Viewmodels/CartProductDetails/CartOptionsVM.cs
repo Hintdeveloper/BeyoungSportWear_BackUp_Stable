@@ -1,20 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace BusinessLogicLayer.Viewmodels.CartProductDetails
+﻿namespace BusinessLogicLayer.Viewmodels.CartProductDetails
 {
     public class CartOptionsVM
     {
         public Guid IDOptions { get; set; }
-        public Guid IDCart { get; set; }
+        public string IDCart { get; set; }
+        public string ProductName { get; set; }
+        public string ImageURL { get; set; }
+        public string SizeName { get; set; }
+        public string ColorName { get; set; }
         public int Quantity { get; set; }
         public decimal UnitPrice { get; set; }
-
         public decimal TotalPrice { get; set; }
-
-        public int Status { get; set; }
     }
 }
