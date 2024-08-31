@@ -114,11 +114,15 @@ namespace PresentationLayer.Areas.Admin.Controllers
             }
             return Unauthorized();
         }
+        [Authorize(Roles = "Admin")]
+
         [HttpGet("home/index_staff/create")]
         public async Task<IActionResult> Create()
         {
             return View();
         }
+        [Authorize(Roles = "Admin")]
+
         [HttpPost("home/index_staff/create")]
         public async Task<IActionResult> Create(RegisterUser registerUser, string role)
         {
@@ -221,6 +225,8 @@ namespace PresentationLayer.Areas.Admin.Controllers
             }
             return Unauthorized();
         }
+        [Authorize(Roles = "Admin")]
+
         [HttpGet("home/index_staff/edit/{ID}")]
         public async Task<IActionResult> Edit(Guid ID)
         {
@@ -252,6 +258,8 @@ namespace PresentationLayer.Areas.Admin.Controllers
             }
             return Unauthorized();
         }
+        [Authorize(Roles = "Admin")]
+
         [HttpPost("home/index_staff/edit/{ID}")]
         public async Task<IActionResult> Edit(UserUpdateVM userUpdate, Guid ID)
         {
@@ -322,6 +330,8 @@ namespace PresentationLayer.Areas.Admin.Controllers
             }
             return Unauthorized();
         }
+        [Authorize(Roles = "Admin")]
+
         [HttpGet("home/index_staff/changestatus/{ID}")]
         public async Task<IActionResult> ChangeStatus(Guid ID)
         {

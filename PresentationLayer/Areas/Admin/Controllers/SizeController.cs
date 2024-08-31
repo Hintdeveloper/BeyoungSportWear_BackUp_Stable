@@ -51,11 +51,15 @@ namespace PresentationLayer.Areas.Admin.Controllers
             }
             return Unauthorized();
         }
+        [Authorize(Roles = "Admin")]
+
         [HttpGet("size/create")]
         public async Task<IActionResult> Create()
         {
             return View();
         }
+        [Authorize(Roles = "Admin")]
+
         [HttpPost("size/create")]
         public async Task<IActionResult> Create(SizeCreateVM size)
         {
@@ -126,6 +130,7 @@ namespace PresentationLayer.Areas.Admin.Controllers
             }
             return Unauthorized();
         }
+        [Authorize(Roles = "Admin")]
 
         [HttpGet("size/edit/{id}")]
         public async Task<IActionResult> Edit(Guid id)
@@ -154,6 +159,7 @@ namespace PresentationLayer.Areas.Admin.Controllers
             }
             return Unauthorized();
         }
+        [Authorize(Roles = "Admin")]
 
         [HttpPost("size/edit/{id}")]
         public async Task<IActionResult> Edit(Guid id, SizeUpdateVM size)
@@ -192,6 +198,7 @@ namespace PresentationLayer.Areas.Admin.Controllers
             }
             return Unauthorized();
         }
+        [Authorize(Roles = "Admin")]
 
         [HttpGet("size/changestatus/{id}")]
         public async Task<IActionResult> ChangeStatus(Guid id)

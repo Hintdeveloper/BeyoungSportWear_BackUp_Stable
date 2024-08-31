@@ -43,11 +43,15 @@ namespace PresentationLayer.Areas.Admin.Controllers
             }
             return Unauthorized();
         }
+        [Authorize(Roles = "Admin")]
+
         [HttpGet("color/create")]
         public async Task<IActionResult> Create()
         {
             return View();
         }
+        [Authorize(Roles = "Admin")]
+
         [HttpPost("color/create")]
         public async Task<IActionResult> Create(ColorCreateVM colors)
         {
@@ -122,6 +126,7 @@ namespace PresentationLayer.Areas.Admin.Controllers
             return Unauthorized();
 
         }
+        [Authorize(Roles = "Admin")]
 
         [HttpGet("color/edit/{ID}")]
         public async Task<IActionResult> Edit(Guid ID)
@@ -150,6 +155,7 @@ namespace PresentationLayer.Areas.Admin.Controllers
             }
             return Unauthorized();
         }
+        [Authorize(Roles = "Admin")]
 
         [HttpPost("color/edit/{ID}")]
         public async Task<IActionResult> Edit(Guid ID, ColorUpdateVM colors)
@@ -190,6 +196,7 @@ namespace PresentationLayer.Areas.Admin.Controllers
             }
             return Unauthorized();
         }
+        [Authorize(Roles = "Admin")]
 
         [HttpGet("colors/changestatus/{id}")]
         public async Task<IActionResult> ChangeStatus(Guid id)

@@ -110,11 +110,15 @@ namespace PresentationLayer.Areas.Admin.Controllers
             }
             return Unauthorized();
         }
+        [Authorize(Roles = "Admin")]
+
         [HttpGet("home/guest/create")]
         public async Task<IActionResult> Create()
         {
             return View();
         }
+        [Authorize(Roles = "Admin")]
+
         [HttpPost("home/guest/create")]
         public async Task<IActionResult> Create(RegisterUser registerUser, string role)
         {
@@ -215,6 +219,8 @@ namespace PresentationLayer.Areas.Admin.Controllers
             }
             return Unauthorized();
         }
+        [Authorize(Roles = "Admin")]
+
         [HttpGet("home/guest/edit/{ID}")]
         public async Task<IActionResult> Edit(Guid ID)
         {
@@ -260,6 +266,8 @@ namespace PresentationLayer.Areas.Admin.Controllers
             }
             return Unauthorized();
         }
+        [Authorize(Roles = "Admin")]
+
         [HttpPost("home/guest/edit/{ID}")]
         public async Task<IActionResult> Edit(UserUpdateVM userUpdate, Guid ID)
         {
@@ -330,6 +338,8 @@ namespace PresentationLayer.Areas.Admin.Controllers
             }
             return Unauthorized();
         }
+        [Authorize(Roles = "Admin")]
+
         [HttpGet("home/guest/changestatus/{ID}")]
         public async Task<IActionResult> ChangeStatus(Guid ID)
         {

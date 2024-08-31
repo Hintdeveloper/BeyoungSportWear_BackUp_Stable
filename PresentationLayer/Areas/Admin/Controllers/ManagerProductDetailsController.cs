@@ -15,17 +15,21 @@ namespace PresentationLayer.Areas.Admin.Controllers
         {
             return View();
         }
+        [Authorize(Roles = "Admin")]
+
         [HttpGet("managercreate_productdetails")]
         public async Task<IActionResult> Create()
         {
             return View();
         }
+        [Authorize(Roles = "Admin")]
 
         [HttpGet("managerupdate_productdetails/{ID}")]
         public async Task<IActionResult> Update(Guid ID)
         {
             return View();
         }
+        [Authorize(Roles = "Admin")]
 
         [HttpPost("managerupdate_productdetails/{ID}")]
         [ValidateAntiForgeryToken]
@@ -33,11 +37,14 @@ namespace PresentationLayer.Areas.Admin.Controllers
         {
             return View();
         }
+        [Authorize(Roles = "Admin")]
+
         [HttpGet("managerupdate_productdetails_ver1/{ID}")]
         public async Task<IActionResult> Update_Ver_I(Guid ID)
         {
             return View();
         }
+        [Authorize(Roles = "Admin")]
 
         [HttpPost("managerupdate_productdetails_ver1/{ID}")]
         public async Task<IActionResult> Update_Ver_I()
