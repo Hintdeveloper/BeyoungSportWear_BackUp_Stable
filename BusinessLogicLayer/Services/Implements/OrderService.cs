@@ -1031,7 +1031,7 @@ namespace BusinessLogicLayer.Services.Implements
         public async Task<List<OrderVM>> GetByStatusAsync(OrderStatus OrderStatus)
         {
             var orders = await _dbcontext.Order
-                            .Where(o => o.OrderStatus == OrderStatus && o.TrackingCheck == true)
+                            .Where(o => o.OrderStatus == OrderStatus)
                             .OrderByDescending(b => b.CreateDate)
                             .Select(o => new OrderVM
                             {

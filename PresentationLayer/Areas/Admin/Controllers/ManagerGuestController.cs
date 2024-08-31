@@ -12,6 +12,7 @@ using System.Text;
 
 namespace PresentationLayer.Areas.Admin.Controllers
 {
+    [Authorize(Roles = "Admin,Staff")]
     [Area("admin")]
     public class ManagerGuestController : Controller
     {

@@ -15,6 +15,7 @@ using System.Text.Json;
 
 namespace PresentationLayer.Areas.Admin.Controllers
 {
+    [Authorize(Roles = "Admin,Staff")]
     [Area("Admin")]
     public class ManagerStaffController : Controller
     {

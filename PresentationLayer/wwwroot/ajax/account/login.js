@@ -35,7 +35,7 @@
                     showConfirmButton: false,
                     timer: 1500
                 }).then(() => {
-                    if (role === 'Admin') {
+                    if (role === 'Admin' || role === 'Staff') {
                         window.location.href = '/admin/home/index';
                     } else {
                         window.location.href = '/main';

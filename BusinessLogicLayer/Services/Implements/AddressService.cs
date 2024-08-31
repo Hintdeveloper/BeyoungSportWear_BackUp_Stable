@@ -136,6 +136,7 @@ namespace BusinessLogicLayer.Services.Implements
                 address.Commune = request.Commune;
                 address.DistrictCounty = request.DistrictCounty;
                 address.SpecificAddress = request.SpecificAddress;
+                address.IsDefault = request.IsDefault;
                 address.ModifiedDate = DateTime.Now;
                 address.ModifiedBy = request.ModifiedBy;
 
