@@ -12,6 +12,7 @@ using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace PresentationLayer.Areas.Admin.Controllers
 {
@@ -20,7 +21,7 @@ namespace PresentationLayer.Areas.Admin.Controllers
     public class ManagerStaffController : Controller
     {
         [HttpGet("home/index_staff")]
-        public async Task<IActionResult> Index(string name, string phone, string email)
+        public async Task<IActionResult> Index(string searchQuery)
         {
             if (HttpContext.Request.Cookies.TryGetValue("jwt", out string jwtToken))
             {
@@ -31,29 +32,36 @@ namespace PresentationLayer.Areas.Admin.Controllers
 
                     List<UserDataVM> users = null;
 
-                    // Kiểm tra từng tiêu chí và gọi các phương thức tương ứng
-                    if (!string.IsNullOrEmpty(email))
+                    if (!string.IsNullOrEmpty(searchQuery))
                     {
-                        var result = await GetUserByEmail(email);
-                        if (result is ViewResult viewResult && viewResult.Model is List<UserDataVM> userList)
+                        searchQuery = searchQuery.Trim();  // Loại bỏ khoảng trắng thừa ở đầu và cuối
+
+                        // Nếu là số điện thoại (chính xác 10 số)
+                        if (Regex.IsMatch(searchQuery, @"^0\d{9}$"))
                         {
-                            users = userList;
+                            var result = await GetUserByPhoneNumber(searchQuery);
+                            if (result is ViewResult viewResult && viewResult.Model is List<UserDataVM> userList)
+                            {
+                                users = userList;
+                            }
                         }
-                    }
-                    else if (!string.IsNullOrEmpty(phone))
-                    {
-                        var result = await GetUserByPhoneNumber(phone);
-                        if (result is ViewResult viewResult && viewResult.Model is List<UserDataVM> userList)
+                        // Nếu là email (chứa ký tự @)
+                        else if (searchQuery.Contains('@'))
                         {
-                            users = userList;
+                            var result = await GetUserByEmail(searchQuery);
+                            if (result is ViewResult viewResult && viewResult.Model is List<UserDataVM> userList)
+                            {
+                                users = userList;
+                            }
                         }
-                    }
-                    else if (!string.IsNullOrEmpty(name))
-                    {
-                        var result = await GetUserByName(name);
-                        if (result is ViewResult viewResult && viewResult.Model is List<UserDataVM> userList)
+                        // Ngược lại, tìm theo tên
+                        else
                         {
-                            users = userList;
+                            var result = await GetUserByName(searchQuery);
+                            if (result is ViewResult viewResult && viewResult.Model is List<UserDataVM> userList)
+                            {
+                                users = userList;
+                            }
                         }
                     }
                     else
@@ -74,27 +82,10 @@ namespace PresentationLayer.Areas.Admin.Controllers
                         }
                     }
 
-                    // Lọc người dùng theo tất cả các tiêu chí (name, phone, email) và role
+                    // Lọc người dùng có vai trò là Client
                     if (users != null)
                     {
-                        if (!string.IsNullOrEmpty(name))
-                        {
-                            users = users.Where(u =>
-                                    u.FirstAndLastName.Split(' ', StringSplitOptions.RemoveEmptyEntries)
-                                    .Any(part => part.Equals(name, StringComparison.OrdinalIgnoreCase))
-                                    ).ToList();
-                        }
-                        if (!string.IsNullOrEmpty(phone))
-                        {
-                            users = users.Where(u => u.PhoneNumber == phone).ToList();
-                        }
-                        if (!string.IsNullOrEmpty(email))
-                        {
-                            users = users.Where(u => u.Email.Equals(email, StringComparison.OrdinalIgnoreCase)).ToList();
-                        }
-
-                        // Lọc người dùng có vai trò là Staff
-                        users = users.Where(u => u.RoleName == "Staff").ToList();
+                        users = users.Where(u => u.RoleName == "Client").ToList();
                     }
 
                     if (users == null || !users.Any())
