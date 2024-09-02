@@ -135,7 +135,7 @@
             <div class="tile-body">
                 <div class="row element-button">
                    <div class="col-sm-2">
-                        <a class="btn btn-add btn-sm" asp-area="Admin" asp-controller="ManagerProductDetails" asp-action="Create" title="Thêm">
+                        <a class="btn btn-add btn-sm createbtn" asp-area="Admin" asp-controller="ManagerProductDetails" asp-action="Create" title="Thêm">
                             <i class="fas fa-plus"></i>
                             Tạo mới sản phẩm
                         </a>
@@ -234,3 +234,106 @@
     </div>
 </div>
 <script type="text/javascript" src="~/ajax/admin_staff/product/productdetails_index.js"></script>
+<script>
+    // Hàm xử lý khi người dùng nhấn vào nút Create hoặc Edit
+    function handleSimpleAction(event) {
+        event.preventDefault(); // Ngăn chặn hành vi mặc định của thẻ a
+
+        const url = this.href;
+
+        fetch(url, {
+            method: 'GET'
+        })
+            .then(response => {
+                if (response.status === 403) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Không có quyền!',
+                        text: 'Bạn không có quyền thực hiện hành động này.'
+                    });
+                    throw new Error('Forbidden');
+                } else if (response.ok) {
+                    window.location.href = url; // Chuyển hướng nếu yêu cầu thành công
+                } else {
+                    return response.text().then(text => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Lỗi!',
+                            text: text || 'Có lỗi xảy ra khi gửi yêu cầu.'
+                        });
+                        throw new Error(text);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error("Fetch error:", error.message);
+            });
+    }
+
+    // Hàm xử lý khi người dùng nhấn vào nút ChangeStatus
+    function handleChangeStatus(event) {
+        event.preventDefault(); // Ngăn chặn hành vi mặc định của thẻ a
+
+        Swal.fire({
+            title: 'Bạn có chắc chắn muốn đổi trạng thái thương hiệu này?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'OK',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const url = this.href;
+
+                fetch(url, {
+                    method: 'GET'
+                })
+                    .then(response => {
+                        if (response.status === 403) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Không có quyền!',
+                                text: 'Bạn không có quyền thực hiện hành động này.'
+                            });
+                            throw new Error('Forbidden');
+                        } else if (response.ok) {
+                            return response.text();
+                        } else {
+                            return response.text().then(text => {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Lỗi!',
+                                    text: text || 'Có lỗi xảy ra khi gửi yêu cầu.'
+                                });
+                                throw new Error(text);
+                            });
+                        }
+                    })
+                    .then(text => {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Thành công!',
+                            text: 'Trạng thái thương hiệu thay đổi thành công.'
+                        }).then(() => {
+                            window.location.href = '@Url.Action("Index")';
+                        });
+                    })
+                    .catch(error => {
+                        console.error("Fetch error:", error.message);
+                    });
+            }
+        });
+    }
+
+    // Áp dụng cho các nút Create và Edit
+    document.querySelectorAll(".createbtn, .editbtn").forEach(function (button) {
+        button.addEventListener("click", handleSimpleAction);
+    });
+
+    // Áp dụng cho nút ChangeStatus
+    document.querySelectorAll(".changebtn").forEach(function (button) {
+        button.addEventListener("click", handleChangeStatus);
+    });
+
+</script>

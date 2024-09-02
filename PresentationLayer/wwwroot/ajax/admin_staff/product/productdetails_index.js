@@ -33,11 +33,11 @@ function displayData(data) {
             <td>${productdetails.isActive == true ? '<span class="badge bg-success">Đang bán</span>' : '<span class="badge bg-danger">Đã ngừng bán</span>'}</td>
 
             <td>
-                <button class="btn btn-primary btn-sm trash" type="button" title="${productdetails.isActive ? 'Ẩn bán' : 'Hiện bán'}" onclick="confirmDelete('${productdetails.id}', ${productdetails.isActive})">
+                <button class="btn btn-primary btn-sm trash changebtn" type="button" title="${productdetails.isActive ? 'Ẩn bán' : 'Hiện bán'}" onclick="confirmDelete('${productdetails.id}', ${productdetails.isActive})">
                     <i class="${productdetails.isActive ? 'fas fa-ban' : 'fas fa-check-circle text-success'}"></i>
                 </button>
 
-                <button class="btn btn-primary btn-sm edit" type="button" title="Sửa" onclick="navigateToUpdatePage('${productdetails.id}')">
+                <button class="btn btn-primary btn-sm editbtn" type="button" title="Sửa" onclick="navigateToUpdatePage('${productdetails.id}')">
                     <i class="fas fa-edit"></i>
                 </button>
                 <button class="btn btn-primary btn-sm view" type="button" title="Xem chi tiết" onclick="viewDetails('${productdetails.id}')">
@@ -153,6 +153,7 @@ function viewDetails(productID) {
     xhr.send();
 }
 function navigateToUpdatePage(productId) {
+    
     window.location.href = `/managerupdate_productdetails_ver1/${productId}`;
 }
 function confirmDelete(productID, isActive) {
@@ -182,6 +183,15 @@ function toggleProductStatus(productID, isActive) {
     var xhr = new XMLHttpRequest();
     xhr.open('POST', `https://localhost:7241/api/ProductDetails/UpdateIsActive`, true);
     xhr.setRequestHeader('Content-Type', 'application/json');
+    var token = getCookie('jwt');
+
+    if (token) {
+        xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+    } else {
+        console.error('JWT token not found in cookies.');
+        return;
+    }
+
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4) {
             if (xhr.status === 200) {
@@ -204,6 +214,14 @@ function toggleProductStatus(productID, isActive) {
                     button.innerHTML = `<i class="${iconClass}"></i>`;
                 }
             }
+            //else if (xhr.status === 403 || xhr.status === 401) {
+            //    Swal.fire({
+            //        icon: 'error',
+            //        title: 'Không có quyền!',
+            //        text: 'Bạn không có quyền thực hiện hành động này.'
+            //    });
+            //    throw new Error('Forbidden');
+            //}
             else {
                 Swal.fire({
                     icon: 'error',
