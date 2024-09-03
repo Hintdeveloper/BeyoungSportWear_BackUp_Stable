@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace ExternalInterfaceLayer.Controllers
 {
     [Route("api/[controller]")]
-    [Authorize(Roles = "Admin,Staff,Client")]
     [ApiController]
     public class SizesController : ControllerBase
     {
@@ -45,6 +44,7 @@ namespace ExternalInterfaceLayer.Controllers
             }
             return Ok(material);
         }
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [Route("SizesCreate")]
         public async Task<IActionResult> Create(SizeCreateVM request)
@@ -61,6 +61,7 @@ namespace ExternalInterfaceLayer.Controllers
             }
             return BadRequest("Failed to create Sizes");
         }
+        [Authorize(Roles = "Admin")]
         [HttpPut]
         [Route("SizesUpdate/{ID}")]
         public async Task<IActionResult> Update(Guid ID, SizeUpdateVM request)
@@ -77,6 +78,7 @@ namespace ExternalInterfaceLayer.Controllers
             }
             return BadRequest("Failed to update Sizes");
         }
+        [Authorize(Roles = "Admin")]
         [HttpGet("ChangeStatus/{ID}")]
         public async Task<IActionResult> ChangeStatus(Guid ID)
         {

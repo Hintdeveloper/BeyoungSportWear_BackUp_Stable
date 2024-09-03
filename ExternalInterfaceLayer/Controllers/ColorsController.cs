@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace ExternalInterfaceLayer.Controllers
 {
     [Route("api/[controller]")]
-    [Authorize(Roles = "Admin,Staff,Client")]
     [ApiController]
     public class ColorsController : ControllerBase
     {
@@ -46,6 +45,7 @@ namespace ExternalInterfaceLayer.Controllers
             }
             return Ok(obj);
         }
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [Route("ColorsCreate")]
         public async Task<IActionResult> Create(ColorCreateVM request)
@@ -62,6 +62,7 @@ namespace ExternalInterfaceLayer.Controllers
             }
             return BadRequest("Failed to create Colors");
         }
+        [Authorize(Roles = "Admin")]
         [HttpPut]
         [Route("ColorsUpdate/{ID}")]
         public async Task<IActionResult> Update(Guid ID, ColorUpdateVM request)
@@ -78,6 +79,7 @@ namespace ExternalInterfaceLayer.Controllers
             }
             return BadRequest("Failed to update Colors");
         }
+        [Authorize(Roles = "Admin")]
         [HttpGet("ChangeStatus/{ID}")]
         public async Task<IActionResult> ChangeStatus(Guid ID)
         {

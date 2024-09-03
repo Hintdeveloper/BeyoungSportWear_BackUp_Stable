@@ -21,6 +21,7 @@ namespace PresentationLayer.Areas.Admin.Controllers
     [Route("home")]
     public class MaterialsController : Controller
     {
+
         [HttpGet("material/index")]
         public async Task<IActionResult> Index()
         {

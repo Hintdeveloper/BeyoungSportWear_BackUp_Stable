@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace ExternalInterfaceLayer.Controllers
 {
     [Route("api/[controller]")]
-    [Authorize(Roles = "Admin,Staff")]
     [ApiController]
     public class BrandController : ControllerBase
     {
@@ -44,6 +43,7 @@ namespace ExternalInterfaceLayer.Controllers
             }
             return Ok(obj);
         }
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [Route("BrandCreate")]
         public async Task<IActionResult> Create(BrandCreateVM request)
@@ -60,6 +60,7 @@ namespace ExternalInterfaceLayer.Controllers
             }
             return BadRequest("Failed to create Brand");
         }
+        [Authorize(Roles = "Admin")]
         [HttpPut]
         [Route("BrandUpdate/{ID}")]
         public async Task<IActionResult> Update(Guid ID, BrandUpdateVM request)
@@ -76,6 +77,7 @@ namespace ExternalInterfaceLayer.Controllers
             }
             return BadRequest("Failed to update Brand");
         }
+        [Authorize(Roles = "Admin")]
         [HttpGet("ChangeStatus/{ID}")]
         public async Task<IActionResult> ChangeStatus(Guid ID)
         {
