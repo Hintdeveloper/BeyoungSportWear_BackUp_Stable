@@ -40,7 +40,7 @@ namespace PresentationLayer.Areas.Admin.Controllers
                 return View(new List<GetAllVoucherVM>());
             }
         }
-
+        [Authorize(Roles = "Admin")]
 
         [HttpGet("voucher/Create")]
         public async Task<IActionResult> Create()
@@ -60,6 +60,8 @@ namespace PresentationLayer.Areas.Admin.Controllers
             var model = new CreateVoucherVM();
             return View(model);
         }
+        [Authorize(Roles = "Admin")]
+
         [HttpPost("voucher/create")]
         public async Task<IActionResult> Create(CreateVoucherVM model)
         {
@@ -242,7 +244,7 @@ namespace PresentationLayer.Areas.Admin.Controllers
         }
 
 
-
+        [Authorize(Roles = "Admin")]
         [HttpGet("voucher/UpdateVoucherUser/{id}")]
         public async Task<IActionResult> UpdateVoucherUser(Guid id)
         {
@@ -290,6 +292,7 @@ namespace PresentationLayer.Areas.Admin.Controllers
 
             return View(voucherUpdateVM);
         }
+        [Authorize(Roles = "Admin")]
 
         [HttpPost("voucher/UpdateVoucherUser/{id}")]
         public async Task<IActionResult> UpdateVoucherUser(Guid id, UpdateVC voucherUpdateVM)
@@ -347,6 +350,7 @@ namespace PresentationLayer.Areas.Admin.Controllers
                 return View(voucherUpdateVM);
             }
         }
+        [Authorize(Roles = "Admin")]
 
         [HttpPost("ToggleStatus/{id}")]
         public async Task<IActionResult> ToggleStatus(Guid id)

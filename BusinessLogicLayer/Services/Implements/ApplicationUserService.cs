@@ -92,15 +92,85 @@ namespace BusinessLogicLayer.Services.Implements
         {
             await _userManager.SetAuthenticationTokenAsync(user, _configuration["JWT:Issuer"], "JWT", token);
         }
-        private async Task<Response> SendConfirmationEmailAsync(string email, Uri callbackUri, string userPassword)
+        private async Task<Response> SendConfirmationEmailAsync(string email, string name, Uri callbackUri, string userPassword)
         {
+            string body = $@"
+                    <html>
+                    <head>
+                        <style>
+                            body {{
+                                font-family: Arial, sans-serif;
+                                line-height: 1.6;
+                                color: #333;
+                                margin: 0;
+                                padding: 0;
+                            }}
+                            .container {{
+                                max-width: 600px;
+                                margin: 0 auto;
+                                padding: 20px;
+                                border: 1px solid #ddd;
+                                border-radius: 10px;
+                                background-color: #f9f9f9;
+                            }}
+                            .header {{
+                                text-align: center;
+                                padding-bottom: 20px;
+                            }}
+                            .header img {{
+                                max-width: 100px;
+                            }}
+                            .content {{
+                                padding: 20px;
+                                background-color: #fff;
+                                border-radius: 10px;
+                            }}
+                            .order-info {{
+                                margin-top: 20px;
+                                padding: 10px;
+                                background-color: #eee;
+                                border-radius: 5px;
+                            }}
+                            .product-item {{
+                                margin-top: 10px;
+                                padding: 10px;
+                                border-bottom: 1px solid #ddd;
+                                display: flex;
+                                align-items: center;
+                            }}
+                            .product-item img {{
+                                max-width: 130px;
+                                margin-right: 10px;
+                            }}
+                            .product-details {{
+                                flex: 1;
+                            }}
+                            .footer {{
+                                text-align: center;
+                                font-size: 12px;
+                                color: #999;
+                                margin-top: 20px;
+                            }}
+                        </style>
+                    </head>
+                    <body>
+                        <div class='container'>
+                            <div class='header'>
+                                <img src='https://res.cloudinary.com/dqcxurnpa/image/upload/v1723407933/BeyoungSportWear/ImageProduct/Options/l1zudx2ihhv6noe0ecga.webp' alt='Company Logo' />
+                                <h2>Chào mừng bạn đến với trang web bán quần áo thể thao Beyoung Sport Wear!</h2>
+                            </div>
+                            <div class='content'>
+                                <p>Chào {name},</p>
+                                <p>Bạn đã đăng ký tài khoản thành công tại kênh bán hàng của chúng tôi. Bạn hãy đăng nhập tại <a href='{callbackUri}'>đây.</a> với mật khẩu là: {userPassword}</p>
+                                ";
+
             try
             {
                 MailMessage mail = new MailMessage
                 {
                     From = new MailAddress(_mailSettings.Mail, _mailSettings.DisplayName),
-                    Subject = "Xác nhận địa chỉ email",
-                    Body = $"Vui lòng xác nhận địa chỉ email của bạn bằng cách nhấp vào <a href='{callbackUri}'>đây.</a> Mật khẩu của bạn là: {userPassword}",
+                    Subject = "Thư thông báo đăng ký tài khoản thành công",
+                    Body = body,
                     IsBodyHtml = true
                 };
 
@@ -144,6 +214,7 @@ namespace BusinessLogicLayer.Services.Implements
                 Username = u.UserName,
                 Email = u.Email,
                 FirstAndLastName = u.FirstAndLastName,
+                Gender = u.Gender,
                 PhoneNumber = u.PhoneNumber,
                 Images = u.Images,
                 Status = u.Status,
@@ -165,6 +236,7 @@ namespace BusinessLogicLayer.Services.Implements
                 Email = ur.user.Email,
                 Images = ur.user.Images,
                 FirstAndLastName = ur.user.FirstAndLastName,
+                Gender = ur.user.Gender,
                 DateOfBirth = ur.user.DateOfBirth.Date,
                 PhoneNumber = ur.user.PhoneNumber,
                 Status = ur.user.Status,
@@ -192,13 +264,15 @@ namespace BusinessLogicLayer.Services.Implements
                 City = address.City,
                 DistrictCounty = address.DistrictCounty,
                 Commune = address.Commune,
-                SpecificAddress = address.SpecificAddress
+                SpecificAddress = address.SpecificAddress,
+                IsDefault = address.IsDefault
             }).ToList();
 
             var userVM = new UserDataVM
             {
                 ID = user.Id,
                 FirstAndLastName = user.FirstAndLastName,
+                Gender = user.Gender,
                 PhoneNumber = user.PhoneNumber,
                 DateOfBirth = user.DateOfBirth.Date,
                 Email = user.Email,
@@ -288,10 +362,75 @@ namespace BusinessLogicLayer.Services.Implements
                     var host = _httpContextAccessor.HttpContext.Request.Host;
                     var callbackUrl = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{host}/Account/ConfirmEmail?userId={newUser.Id}&code={emailConfirmationToken}";
 
-                    string emailBody = $"Chào {registerOnly.FirstAndLastName},\n\n" +
-                                        $"Bạn đã được đăng ký thành công. Đây là mật khẩu của bạn: {password}\n\n" +
-                                        $"Vui lòng xác nhận email của bạn bằng cách nhấp vào liên kết sau: {callbackUrl}\n\n" +
-                                        $"Trân trọng,\nYourAppName";
+                    string emailBody = $@"
+                    <html>
+                    <head>
+                        <style>
+                            body {{
+                                font-family: Arial, sans-serif;
+                                line-height: 1.6;
+                                color: #333;
+                                margin: 0;
+                                padding: 0;
+                            }}
+                            .container {{
+                                max-width: 600px;
+                                margin: 0 auto;
+                                padding: 20px;
+                                border: 1px solid #ddd;
+                                border-radius: 10px;
+                                background-color: #f9f9f9;
+                            }}
+                            .header {{
+                                text-align: center;
+                                padding-bottom: 20px;
+                            }}
+                            .header img {{
+                                max-width: 100px;
+                            }}
+                            .content {{
+                                padding: 20px;
+                                background-color: #fff;
+                                border-radius: 10px;
+                            }}
+                            .order-info {{
+                                margin-top: 20px;
+                                padding: 10px;
+                                background-color: #eee;
+                                border-radius: 5px;
+                            }}
+                            .product-item {{
+                                margin-top: 10px;
+                                padding: 10px;
+                                border-bottom: 1px solid #ddd;
+                                display: flex;
+                                align-items: center;
+                            }}
+                            .product-item img {{
+                                max-width: 130px;
+                                margin-right: 10px;
+                            }}
+                            .product-details {{
+                                flex: 1;
+                            }}
+                            .footer {{
+                                text-align: center;
+                                font-size: 12px;
+                                color: #999;
+                                margin-top: 20px;
+                            }}
+                        </style>
+                    </head>
+                    <body>
+                        <div class='container'>
+                            <div class='header'>
+                                <img src='https://res.cloudinary.com/dqcxurnpa/image/upload/v1723407933/BeyoungSportWear/ImageProduct/Options/l1zudx2ihhv6noe0ecga.webp' alt='Company Logo' />
+                                <h2>Chào mừng bạn đến với trang web bán quần áo thể thao Beyoung Sport Wear!</h2>
+                            </div>
+                            <div class='content'>
+                                <p>Chào {registerOnly.FirstAndLastName},</p>
+                                <p>Bạn đã đăng ký tài khoản thành công tại kênh bán hàng của chúng tôi. Bạn hãy đăng nhập tại <a href='{callbackUrl}'>đây.</a> với mật khẩu là: {password}</p>
+                                ";
 
                     await SendEmailAsync(registerOnly.Email, "Đăng ký tài khoản thành công", emailBody);
 
@@ -435,7 +574,7 @@ namespace BusinessLogicLayer.Services.Implements
                     {
                         IsSuccess = false,
                         StatusCode = 400,
-                        Message = "This email is already in use."
+                        Message = "Email đã có người đăng ký"
                     };
                 }
 
@@ -446,7 +585,7 @@ namespace BusinessLogicLayer.Services.Implements
                     {
                         IsSuccess = false,
                         StatusCode = 400,
-                        Message = "This username is already taken."
+                        Message = "Tài khoản này đã có người đăng ký"
                     };
                 }
 
@@ -456,23 +595,24 @@ namespace BusinessLogicLayer.Services.Implements
                     {
                         IsSuccess = false,
                         StatusCode = 400,
-                        Message = "The password and confirmation password do not match."
+                        Message = "Mật khẩu nhập lại không trùng với mật khẩu"
                     };
                 }
                 int userAge = DateTime.Now.Year - registerUser.DateOfBirth.Year;
-                if (userAge < 18 || userAge > 65)
+                if (userAge < 18 || userAge > 65 && role=="Staff")
                 {
                     return new Response
                     {
                         IsSuccess = false,
                         StatusCode = 400,
-                        Message = "Age is not valid"
+                        Message = "Tuổi cần cao hơn 18"
                     };
 
                 }
 
                 var newUser = new ApplicationUser
                 {
+                    JoinDate = DateTime.Now,
                     UserName = registerUser.Username,
                     Email = registerUser.Email,
                     FirstAndLastName = registerUser.FirstAndLastName,
@@ -530,6 +670,7 @@ namespace BusinessLogicLayer.Services.Implements
                     DistrictCounty = registerUser.DistrictCounty,
                     Commune = registerUser.Commune,
                     SpecificAddress = registerUser.SpecificAddress,
+                    IsDefault = true,
                     Status = 1,
                 };
                 await _dbContext.Address.AddAsync(addresss);
@@ -544,10 +685,10 @@ namespace BusinessLogicLayer.Services.Implements
 
                     var host = _httpContextAccessor.HttpContext.Request.Host;
 
-                    var callbackUrl = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{host}/Account/ConfirmEmail?userId={newUser.Id}&code={emailConfirmationToken}";
+                    var callbackUrl = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{host}/login";
 
                     var callbackUri = new Uri(callbackUrl);
-                    await SendConfirmationEmailAsync(newUser.Email, callbackUri, registerUser.Password);
+                    await SendConfirmationEmailAsync(newUser.Email, newUser.FirstAndLastName, callbackUri, registerUser.Password);
 
                     await transaction.CommitAsync();
 

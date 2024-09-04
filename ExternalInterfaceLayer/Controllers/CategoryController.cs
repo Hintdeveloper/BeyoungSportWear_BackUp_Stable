@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ExternalInterfaceLayer.Controllers
 {
-    [Authorize(Roles = "Admin,Staff,Client")]
     [Route("api/[controller]")]
     [ApiController]
     public class CategoryController : ControllerBase
@@ -46,6 +45,7 @@ namespace ExternalInterfaceLayer.Controllers
             }
             return Ok(obj);
         }
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [Route("CategoryCreate")]
         public async Task<IActionResult> Create(CategoryCreateVM request)
@@ -62,6 +62,7 @@ namespace ExternalInterfaceLayer.Controllers
             }
             return BadRequest("Failed to create");
         }
+        [Authorize(Roles = "Admin")]
         [HttpPut]
         [Route("CategoryUpdate/{ID}")]
         public async Task<IActionResult> Update(Guid ID, CategoryUpdateVM request)
@@ -78,6 +79,7 @@ namespace ExternalInterfaceLayer.Controllers
             }
             return BadRequest("Failed to update");
         }
+        [Authorize(Roles = "Admin")]
         [HttpGet("ChangeStatus/{ID}")]
         public async Task<IActionResult> ChangeStatus(Guid ID)
         {

@@ -5,9 +5,9 @@ namespace BusinessLogicLayer.Viewmodels.Address
 {
     public class AddressCreateVM
     {
-        public string FirstAndLastName { get; set; }
-        public string PhoneNumber { get; set; }
-        public string Gmail { get; set; }
+        public string? FirstAndLastName { get; set; }
+        public string? PhoneNumber { get; set; }
+        public string? Gmail { get; set; }
         public bool IsDefault { get; set; }
         public string CreateBy { get; set; } = null!;
         public string IDUser { get; set; }

@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace ExternalInterfaceLayer.Controllers
 {
     [Route("api/[controller]")]
-    [Authorize(Roles = "Admin,Staff")]
     [ApiController]
     public class MaterialController : ControllerBase
     {
@@ -18,6 +17,7 @@ namespace ExternalInterfaceLayer.Controllers
         {
             _IMaterialService = IMaterialService;
         }
+        [AllowAnonymous]
         [HttpGet]
         [Route("GetAll")]
         public async Task<IActionResult> GetAll()
@@ -25,6 +25,7 @@ namespace ExternalInterfaceLayer.Controllers
             var obj = await _IMaterialService.GetAllAsync();
             return Ok(obj);
         }
+        [AllowAnonymous]
         [HttpGet]
         [Route("GetAllActive")]
         public async Task<IActionResult> GetAllActive()
@@ -32,6 +33,7 @@ namespace ExternalInterfaceLayer.Controllers
             var obj = await _IMaterialService.GetAllActiveAsync();
             return Ok(obj);
         }
+        [AllowAnonymous]
         [HttpGet]
         [Route("GetByID/{ID}")]
         public async Task<IActionResult> GetByID(Guid ID)
@@ -43,6 +45,7 @@ namespace ExternalInterfaceLayer.Controllers
             }
             return Ok(obj);
         }
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [Route("MaterialCreate")]
         public async Task<IActionResult> Create(MaterialCreateVM request)
@@ -59,6 +62,7 @@ namespace ExternalInterfaceLayer.Controllers
             }
             return BadRequest("Failed to create Material");
         }
+        [Authorize(Roles = "Admin")]
         [HttpPut]
         [Route("MaterialUpdate/{ID}")]
         public async Task<IActionResult> Update(Guid ID, MaterialUpdateVM request)
@@ -75,6 +79,7 @@ namespace ExternalInterfaceLayer.Controllers
             }
             return BadRequest("Failed to update Material");
         }
+        [Authorize(Roles = "Admin")]
         [HttpGet("ChangeStatus/{ID}")]
         public async Task<IActionResult> ChangeStatus(Guid ID)
         {

@@ -105,7 +105,7 @@
                         @foreach (var address in Model.AddressVMs)
                         {
                             <tr>
-                                <td>@address.SpecificAddress, @address.Commune, @address.DistrictCounty, @address.City</td>
+                                <td>@address.IsDefault  @address.SpecificAddress, @address.Commune, @address.DistrictCounty, @address.City</td>
                                 <td>
                                     <button class="btn btn-warning" onclick="openEditModal('@address.ID')">Sửa</button>
                                     <button class="btn btn-danger" onclick="deleteAddress('@address.ID')">Xóa</button>

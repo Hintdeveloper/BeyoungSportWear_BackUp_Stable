@@ -52,11 +52,13 @@ namespace PresentationLayer.Areas.Admin.Controllers
             }
             return Unauthorized();
         }
+        [Authorize(Roles = "Admin")]
         [HttpGet("brand/create")]
         public async Task<IActionResult> Create()
         {
             return View();
         }
+        [Authorize(Roles = "Admin")]
         [HttpPost("brand/create")]
         public async Task<IActionResult> Create(BrandCreateVM brand)
         {
@@ -132,7 +134,8 @@ namespace PresentationLayer.Areas.Admin.Controllers
             return Unauthorized();
         }
 
-        
+        [Authorize(Roles = "Admin")]
+
         [HttpGet("brand/edit/{ID}")]
         public async Task<IActionResult> Edit(Guid ID)
         {
@@ -162,6 +165,7 @@ namespace PresentationLayer.Areas.Admin.Controllers
             }
             return Unauthorized();
         }
+        [Authorize(Roles = "Admin")]
 
         [HttpPost("brand/edit/{ID}")]
         public async Task<IActionResult> Edit(Guid ID, BrandUpdateVM brand)
@@ -204,6 +208,7 @@ namespace PresentationLayer.Areas.Admin.Controllers
             }
             return Unauthorized();
         }
+        [Authorize(Roles = "Admin")]
 
         [HttpGet("brand/changestatus/{id}")]
         public async Task<IActionResult> ChangeStatus(Guid id)

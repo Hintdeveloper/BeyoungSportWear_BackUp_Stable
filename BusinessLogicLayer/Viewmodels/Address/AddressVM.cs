@@ -3,9 +3,9 @@
     public class AddressVM
     {
         public Guid ID { get; set; }
-        public string FirstAndLastName { get; set; }
-        public string PhoneNumber { get; set; }
-        public string Gmail { get; set; }
+        public string? FirstAndLastName { get; set; }
+        public string? PhoneNumber { get; set; }
+        public string? Gmail { get; set; }
         public bool IsDefault { get; set; }
         public string IDUser { get; set; }
         public string City { get; set; }

@@ -12,14 +12,16 @@ using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace PresentationLayer.Areas.Admin.Controllers
 {
+    [Authorize(Roles = "Admin,Staff")]
     [Area("Admin")]
     public class ManagerStaffController : Controller
     {
         [HttpGet("home/index_staff")]
-        public async Task<IActionResult> Index(string name, string phone, string email)
+        public async Task<IActionResult> Index(string searchQuery)
         {
             if (HttpContext.Request.Cookies.TryGetValue("jwt", out string jwtToken))
             {
@@ -30,29 +32,36 @@ namespace PresentationLayer.Areas.Admin.Controllers
 
                     List<UserDataVM> users = null;
 
-                    // Kiểm tra từng tiêu chí và gọi các phương thức tương ứng
-                    if (!string.IsNullOrEmpty(email))
+                    if (!string.IsNullOrEmpty(searchQuery))
                     {
-                        var result = await GetUserByEmail(email);
-                        if (result is ViewResult viewResult && viewResult.Model is List<UserDataVM> userList)
+                        searchQuery = searchQuery.Trim();  // Loại bỏ khoảng trắng thừa ở đầu và cuối
+
+                        // Nếu là số điện thoại (chính xác 10 số)
+                        if (Regex.IsMatch(searchQuery, @"^0\d{9}$"))
                         {
-                            users = userList;
+                            var result = await GetUserByPhoneNumber(searchQuery);
+                            if (result is ViewResult viewResult && viewResult.Model is List<UserDataVM> userList)
+                            {
+                                users = userList;
+                            }
                         }
-                    }
-                    else if (!string.IsNullOrEmpty(phone))
-                    {
-                        var result = await GetUserByPhoneNumber(phone);
-                        if (result is ViewResult viewResult && viewResult.Model is List<UserDataVM> userList)
+                        // Nếu là email (chứa ký tự @)
+                        else if (searchQuery.Contains('@'))
                         {
-                            users = userList;
+                            var result = await GetUserByEmail(searchQuery);
+                            if (result is ViewResult viewResult && viewResult.Model is List<UserDataVM> userList)
+                            {
+                                users = userList;
+                            }
                         }
-                    }
-                    else if (!string.IsNullOrEmpty(name))
-                    {
-                        var result = await GetUserByName(name);
-                        if (result is ViewResult viewResult && viewResult.Model is List<UserDataVM> userList)
+                        // Ngược lại, tìm theo tên
+                        else
                         {
-                            users = userList;
+                            var result = await GetUserByName(searchQuery);
+                            if (result is ViewResult viewResult && viewResult.Model is List<UserDataVM> userList)
+                            {
+                                users = userList;
+                            }
                         }
                     }
                     else
@@ -73,26 +82,9 @@ namespace PresentationLayer.Areas.Admin.Controllers
                         }
                     }
 
-                    // Lọc người dùng theo tất cả các tiêu chí (name, phone, email) và role
+                    // Lọc người dùng có vai trò là Staff
                     if (users != null)
                     {
-                        if (!string.IsNullOrEmpty(name))
-                        {
-                            users = users.Where(u =>
-                                    u.FirstAndLastName.Split(' ', StringSplitOptions.RemoveEmptyEntries)
-                                    .Any(part => part.Equals(name, StringComparison.OrdinalIgnoreCase))
-                                    ).ToList();
-                        }
-                        if (!string.IsNullOrEmpty(phone))
-                        {
-                            users = users.Where(u => u.PhoneNumber == phone).ToList();
-                        }
-                        if (!string.IsNullOrEmpty(email))
-                        {
-                            users = users.Where(u => u.Email.Equals(email, StringComparison.OrdinalIgnoreCase)).ToList();
-                        }
-
-                        // Lọc người dùng có vai trò là Staff
                         users = users.Where(u => u.RoleName == "Staff").ToList();
                     }
 
@@ -113,11 +105,15 @@ namespace PresentationLayer.Areas.Admin.Controllers
             }
             return Unauthorized();
         }
+        [Authorize(Roles = "Admin")]
+
         [HttpGet("home/index_staff/create")]
         public async Task<IActionResult> Create()
         {
             return View();
         }
+        [Authorize(Roles = "Admin")]
+
         [HttpPost("home/index_staff/create")]
         public async Task<IActionResult> Create(RegisterUser registerUser, string role)
         {
@@ -129,6 +125,11 @@ namespace PresentationLayer.Areas.Admin.Controllers
                     var token = handler.ReadJwtToken(jwtToken);
 
                     role = "Staff";
+
+                    registerUser.City = "none";
+                    registerUser.DistrictCounty = "none";
+                    registerUser.Commune = "none";
+                    registerUser.SpecificAddress = "none";
 
                     registerUser.Password = GenerateRandomPassword(10);
                     registerUser.ConfirmPassword = registerUser.Password;
@@ -148,6 +149,10 @@ namespace PresentationLayer.Areas.Admin.Controllers
                     formData.Add(new StringContent(registerUser.PhoneNumber ?? string.Empty), nameof(registerUser.PhoneNumber));
                     formData.Add(new StringContent(registerUser.Gender.ToString() ?? string.Empty), nameof(registerUser.Gender));
                     formData.Add(new StringContent(registerUser.DateOfBirth.ToString("yyyy-MM-dd") ?? string.Empty), nameof(registerUser.DateOfBirth));
+                    formData.Add(new StringContent(registerUser.City ?? string.Empty), nameof(registerUser.City));
+                    formData.Add(new StringContent(registerUser.DistrictCounty ?? string.Empty), nameof(registerUser.DistrictCounty));
+                    formData.Add(new StringContent(registerUser.Commune ?? string.Empty), nameof(registerUser.Commune));
+                    formData.Add(new StringContent(registerUser.SpecificAddress ?? string.Empty), nameof(registerUser.SpecificAddress));
 
                     // Thêm hình ảnh nếu có
                     if (registerUser.Images != null)
@@ -157,12 +162,6 @@ namespace PresentationLayer.Areas.Admin.Controllers
                         fileContent.Headers.ContentType = new MediaTypeHeaderValue(registerUser.Images.ContentType);
                         formData.Add(fileContent, nameof(registerUser.Images), registerUser.Images.FileName);
                     }
-
-                    // Thêm địa chỉ nếu có
-                        formData.Add(new StringContent(registerUser.SpecificAddress ?? string.Empty), "SpecificAddress");
-                        formData.Add(new StringContent(registerUser.City ?? string.Empty), "City");
-                        formData.Add(new StringContent(registerUser.DistrictCounty ?? string.Empty), "DistrictCounty");
-                        formData.Add(new StringContent(registerUser.Commune ?? string.Empty), "Commune");
 
                     var response = await httpClient.PostAsync(requestURL, formData);
                     if (response.IsSuccessStatusCode)
@@ -220,6 +219,8 @@ namespace PresentationLayer.Areas.Admin.Controllers
             }
             return Unauthorized();
         }
+        [Authorize(Roles = "Admin")]
+
         [HttpGet("home/index_staff/edit/{ID}")]
         public async Task<IActionResult> Edit(Guid ID)
         {
@@ -251,6 +252,8 @@ namespace PresentationLayer.Areas.Admin.Controllers
             }
             return Unauthorized();
         }
+        [Authorize(Roles = "Admin")]
+
         [HttpPost("home/index_staff/edit/{ID}")]
         public async Task<IActionResult> Edit(UserUpdateVM userUpdate, Guid ID)
         {
@@ -321,6 +324,8 @@ namespace PresentationLayer.Areas.Admin.Controllers
             }
             return Unauthorized();
         }
+        [Authorize(Roles = "Admin")]
+
         [HttpGet("home/index_staff/changestatus/{ID}")]
         public async Task<IActionResult> ChangeStatus(Guid ID)
         {

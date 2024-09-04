@@ -52,11 +52,15 @@ namespace PresentationLayer.Areas.Admin.Controllers
             }
             return Unauthorized();
         }
+        [Authorize(Roles = "Admin")]
+
         [HttpGet("manufacturer/create")]
         public async Task<IActionResult> Create()
         {
             return View();
         }
+        [Authorize(Roles = "Admin")]
+
         [HttpPost("manufacturer/create")]
         public async Task<IActionResult> Create(ManufacturerCreateVM manufacturer)
         {
@@ -129,6 +133,7 @@ namespace PresentationLayer.Areas.Admin.Controllers
             }
             return Unauthorized();
         }
+        [Authorize(Roles = "Admin")]
 
         [HttpGet("manufacturer/edit/{ID}")]
         public async Task<IActionResult> Edit(Guid ID)
@@ -152,6 +157,7 @@ namespace PresentationLayer.Areas.Admin.Controllers
             }
             return Unauthorized();
         }
+        [Authorize(Roles = "Admin")]
 
         [HttpPost("manufacturer/edit/{ID}")]
         public async Task<IActionResult> Edit(Guid ID, ManufacturerUpdateVM manufacturer)
@@ -192,6 +198,7 @@ namespace PresentationLayer.Areas.Admin.Controllers
             }
             return Unauthorized();
         }
+        [Authorize(Roles = "Admin")]
 
         [HttpGet("manufacturer/changestatus/{id}")]
         public async Task<IActionResult> ChangeStatus(Guid id)

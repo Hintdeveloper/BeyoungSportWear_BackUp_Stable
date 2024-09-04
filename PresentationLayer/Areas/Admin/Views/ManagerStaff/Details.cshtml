@@ -89,7 +89,7 @@
         </div>
 
         <!-- Địa chỉ người dùng -->
-        <div class="col-md-6">
+@*         <div class="col-md-6">
             <h2>Địa chỉ người dùng</h2>
             <button id="createAddressButton" class="btn btn-success" onclick="openCreateModal()">Thêm địa chỉ</button>
             <table class="table table-borderless">
@@ -122,12 +122,12 @@
                 </tbody>
             </table>
         </div>
-    </div>
+ *@    </div>
 </div>
 
 
 <!-- Modal for editing address -->
-<div class="modal fade" id="editAddressModal" tabindex="-1" role="dialog" aria-labelledby="editAddressModalLabel" aria-hidden="true">
+@* <div class="modal fade" id="editAddressModal" tabindex="-1" role="dialog" aria-labelledby="editAddressModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <!-- Modal Header -->
@@ -187,7 +187,7 @@
         </div>
     </div>
 </div>
-
+ *@
 <div>
     <a asp-action="Edit" asp-route-id="@Model.ID" class="btn btn-warning">Edit</a> |
     <a asp-action="Index" class="btn btn-link">Back to List</a>

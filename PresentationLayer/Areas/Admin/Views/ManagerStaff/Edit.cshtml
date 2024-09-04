@@ -23,6 +23,7 @@
                     <option value="">Chọn giới tính</option>
                     <option value="0">Nam</option>
                     <option value="1">Nữ</option>
+                    <option value="2">Khác</option>
                 </select>
                 <span asp-validation-for="Gender" class="text-danger"></span>
             </div>
@@ -42,7 +43,7 @@
                 <input asp-for="PhoneNumber" class="form-control" />
                 <span asp-validation-for="PhoneNumber" class="text-danger"></span>
             </div>
-            <div>
+@*             <div>
                 <label for="city">Thành phố:</label>
                 <select id="city" class="form-control" asp-for="AddressUpdateVM.City"></select>
             </div>
@@ -60,7 +61,7 @@
                 <label asp-for="AddressUpdateVM.SpecificAddress" class="control-label">Địa chỉ cụ thể</label>
                 <input asp-for="AddressUpdateVM.SpecificAddress" class="form-control" />
                 <span asp-validation-for="AddressUpdateVM.SpecificAddress" class="text-danger"></span>
-            </div>
+            </div> *@
 
             <div class="form-group">
                 <input type="submit" value="Update" class="btn btn-primary" />

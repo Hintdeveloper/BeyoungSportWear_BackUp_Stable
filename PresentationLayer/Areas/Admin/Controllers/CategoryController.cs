@@ -44,11 +44,15 @@ namespace PresentationLayer.Areas.Admin.Controllers
             }
             return Unauthorized();
         }
+        [Authorize(Roles = "Admin")]
+
         [HttpGet("Category/create")]
         public async Task<IActionResult> Create()
         {
             return View();
         }
+        [Authorize(Roles = "Admin")]
+
         [HttpPost("Category/create")]
         public async Task<IActionResult> Create(CategoryCreateVM category)
         {
@@ -124,7 +128,7 @@ namespace PresentationLayer.Areas.Admin.Controllers
             }
             return Unauthorized();
         }
-
+        [Authorize(Roles = "Admin")]
 
         [HttpGet("Category/edit/{ID}")]
         public async Task<IActionResult> Edit(Guid ID)
@@ -155,6 +159,7 @@ namespace PresentationLayer.Areas.Admin.Controllers
             }
             return Unauthorized();
         }
+        [Authorize(Roles = "Admin")]
 
         [HttpPost("Category/edit/{ID}")]
         public async Task<IActionResult> Edit(Guid ID, CategoryUpdateVM category)
@@ -196,6 +201,7 @@ namespace PresentationLayer.Areas.Admin.Controllers
             }
             return Unauthorized();
         }
+        [Authorize(Roles = "Admin")]
 
         [HttpGet("Category/changestatus/{id}")]
         public async Task<IActionResult> ChangeStatus(Guid id)

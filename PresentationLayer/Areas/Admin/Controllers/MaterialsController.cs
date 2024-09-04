@@ -21,6 +21,7 @@ namespace PresentationLayer.Areas.Admin.Controllers
     [Route("home")]
     public class MaterialsController : Controller
     {
+
         [HttpGet("material/index")]
         public async Task<IActionResult> Index()
         {
@@ -52,11 +53,15 @@ namespace PresentationLayer.Areas.Admin.Controllers
             }
             return Unauthorized();
         }
+        [Authorize(Roles = "Admin")]
+
         [HttpGet("material/create")]
         public async Task<IActionResult> Create()
         {
             return View();
         }
+        [Authorize(Roles = "Admin")]
+
         [HttpPost("material/create")]
         public async Task<IActionResult> Create(MaterialCreateVM material)
         {
@@ -127,6 +132,7 @@ namespace PresentationLayer.Areas.Admin.Controllers
             }
             return Unauthorized();
         }
+        [Authorize(Roles = "Admin")]
 
         [HttpGet("material/edit/{ID}")]
         public async Task<IActionResult> Edit(Guid ID)
@@ -155,6 +161,7 @@ namespace PresentationLayer.Areas.Admin.Controllers
             }
             return Unauthorized();
         }
+        [Authorize(Roles = "Admin")]
 
         [HttpPost("material/edit/{ID}")]
         public async Task<IActionResult> Edit(Guid ID, MaterialUpdateVM material)
@@ -195,6 +202,7 @@ namespace PresentationLayer.Areas.Admin.Controllers
             }
             return Unauthorized();
         }
+        [Authorize(Roles = "Admin")]
 
         [HttpGet("material/changestatus/{id}")]
         public async Task<IActionResult> ChangeStatus(Guid id)

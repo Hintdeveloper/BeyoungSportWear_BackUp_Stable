@@ -152,17 +152,17 @@
                     <div class="mb-3">
                         <div class="form-check form-check-inline">
                             <input class="form-check-input" type="radio" name="Gender"
-                                   id="inlineRadio1" value="1">
+                                   id="inlineRadio1" value="0">
                             <label class="form-check-label" for="inlineRadio1">Nam</label>
                         </div>
                         <div class="form-check form-check-inline">
                             <input class="form-check-input" type="radio" name="Gender"
-                                   id="inlineRadio2" value="2">
+                                   id="inlineRadio2" value="1">
                             <label class="form-check-label" for="inlineRadio2">Nữ</label>
                         </div>
                         <div class="form-check form-check-inline">
                             <input class="form-check-input" type="radio" name="Gender"
-                                   id="inlineRadio3" value="3">
+                                   id="inlineRadio3" value="2">
                             <label class="form-check-label" for="inlineRadio2">Khác</label>
                         </div>
                     </div>
@@ -173,7 +173,7 @@
             <div class="card mb-4">
                 <div class="card-header">Địa chỉ nhận hàng</div>
                 <div class="card-body">
-                    <a class="btn-new-address" data-toggle="modal" data-target="#addAddressModal">+ Thêm địa chỉ mới</a>
+                    <a class="btn-new-address" data-toggle="modal" onclick="openCreateModal()">+ Thêm địa chỉ mới</a>
                     <ul class="address-list" id="address-list">
                     </ul>
                 </div>
@@ -185,12 +185,12 @@
         <button type="button" class="btn btn-warning" id="updateButton">Cập nhật</button>
     </div>
 </div>
-<div class="modal fade" id="updateAddressModal" tabindex="-1" role="dialog" aria-labelledby="updateAddressModalLabel" aria-hidden="true">
+<div class="modal fade" id="editAddressModal" tabindex="-1" role="dialog" aria-labelledby="updateAddressModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <!-- Modal Header -->
             <div class="modal-header">
-                <h4 class="modal-title" id="updateAddressModalLabel">Cập nhật địa chỉ</h4>
+                <h4 class="modal-title" id="editAddressModalLabel">Cập nhật địa chỉ</h4>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -199,30 +199,16 @@
             <!-- Modal Body -->
             <div class="modal-body">
                 <div class="row">
-                    <div class="col-md-6">
-                        <label for="firstAndLastName">Họ và tên:</label>
-                        <input type="text" class="form-control" id="firstAndLastName" required>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="phoneNumber">Số điện thoại:</label>
-                        <input type="text" class="form-control" id="phoneNumber" required>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="gmail">Gmail:</label>
-                    <input type="email" class="form-control" id="gmail" required>
-                </div>
-                <div class="row">
                     <div class="col-md-4">
                         <label for="city">Thành phố:</label>
                         <select id="city" class="form-control"></select>
                     </div>
                     <div class="col-md-4">
-                        <label for="districtCounty">Quận/Huyện:</label>
+                        <label for="district">Quận/Huyện:</label>
                         <select id="district" class="form-control"></select>
                     </div>
                     <div class="col-md-4">
-                        <label for="commune">Phường/Xã:</label>
+                        <label for="ward">Phường/Xã:</label>
                         <select id="ward" class="form-control"></select>
                     </div>
                 </div>
@@ -240,65 +226,6 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-danger" data-dismiss="modal">Đóng</button>
                 <button type="button" class="btn btn-primary" id="saveButton">Lưu</button>
-            </div>
-        </div>
-    </div>
-</div>
-<div class="modal fade" id="addAddressModal" tabindex="-1" role="dialog" aria-labelledby="addAddressModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <!-- Modal Header -->
-            <div class="modal-header">
-                <h4 class="modal-title" id="addAddressModalLabel">Thêm địa chỉ mới</h4>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-
-            <!-- Modal Body -->
-            <div class="modal-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <label for="firstAndLastName">Họ và tên:</label>
-                        <input type="text" class="form-control" id="firstAndLastName" required>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="phoneNumber">Số điện thoại:</label>
-                        <input type="text" class="form-control" id="phoneNumber" required>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="gmail">Gmail:</label>
-                    <input type="email" class="form-control" id="gmail" required>
-                </div>
-                <div class="row">
-                    <div class="col-md-4">
-                        <label for="city">Thành phố:</label>
-                        <select id="city" class="form-control"></select>
-                    </div>
-                    <div class="col-md-4">
-                        <label for="districtCounty">Quận/Huyện:</label>
-                        <select id="district" class="form-control"></select>
-                    </div>
-                    <div class="col-md-4">
-                        <label for="commune">Phường/Xã:</label>
-                        <select id="ward" class="form-control"></select>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="specificAddress">Địa chỉ cụ thể:</label>
-                    <input type="text" class="form-control" id="specificAddress" required>
-                </div>
-                <div class="form-group">
-                    <label for="specificAddress">Chọn làm mặc định?</label>
-                    <input type="checkbox" class="form-control" id="IsDefault" required>
-                </div>
-            </div>
-
-            <!-- Modal Footer -->
-            <div class="modal-footer">
-                <button type="button" class="btn btn-danger" data-dismiss="modal">Đóng</button>
-                <button type="button" class="btn btn-primary" id="addresscreateButton">Lưu</button>
             </div>
         </div>
     </div>
