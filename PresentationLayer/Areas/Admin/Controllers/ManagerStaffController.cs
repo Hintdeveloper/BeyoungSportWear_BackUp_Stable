@@ -126,13 +126,10 @@ namespace PresentationLayer.Areas.Admin.Controllers
 
                     role = "Staff";
 
-                    registerUser.AddressCreateVM.FirstAndLastName = registerUser.FirstAndLastName;
-                    registerUser.AddressCreateVM.PhoneNumber = registerUser.PhoneNumber;
-                    registerUser.AddressCreateVM.Gmail = registerUser.Email;
-                    registerUser.AddressCreateVM.City = "none";
-                    registerUser.AddressCreateVM.DistrictCounty = "none";
-                    registerUser.AddressCreateVM.Commune = "none";
-                    registerUser.AddressCreateVM.SpecificAddress = "none";
+                    registerUser.City = "none";
+                    registerUser.DistrictCounty = "none";
+                    registerUser.Commune = "none";
+                    registerUser.SpecificAddress = "none";
 
                     registerUser.Password = GenerateRandomPassword(10);
                     registerUser.ConfirmPassword = registerUser.Password;
@@ -152,6 +149,10 @@ namespace PresentationLayer.Areas.Admin.Controllers
                     formData.Add(new StringContent(registerUser.PhoneNumber ?? string.Empty), nameof(registerUser.PhoneNumber));
                     formData.Add(new StringContent(registerUser.Gender.ToString() ?? string.Empty), nameof(registerUser.Gender));
                     formData.Add(new StringContent(registerUser.DateOfBirth.ToString("yyyy-MM-dd") ?? string.Empty), nameof(registerUser.DateOfBirth));
+                    formData.Add(new StringContent(registerUser.City ?? string.Empty), nameof(registerUser.City));
+                    formData.Add(new StringContent(registerUser.DistrictCounty ?? string.Empty), nameof(registerUser.DistrictCounty));
+                    formData.Add(new StringContent(registerUser.Commune ?? string.Empty), nameof(registerUser.Commune));
+                    formData.Add(new StringContent(registerUser.SpecificAddress ?? string.Empty), nameof(registerUser.SpecificAddress));
 
                     // Thêm hình ảnh nếu có
                     if (registerUser.Images != null)
@@ -161,12 +162,6 @@ namespace PresentationLayer.Areas.Admin.Controllers
                         fileContent.Headers.ContentType = new MediaTypeHeaderValue(registerUser.Images.ContentType);
                         formData.Add(fileContent, nameof(registerUser.Images), registerUser.Images.FileName);
                     }
-
-                    // Thêm địa chỉ nếu có
-                        formData.Add(new StringContent(registerUser.SpecificAddress ?? string.Empty), "SpecificAddress");
-                        formData.Add(new StringContent(registerUser.City ?? string.Empty), "City");
-                        formData.Add(new StringContent(registerUser.DistrictCounty ?? string.Empty), "DistrictCounty");
-                        formData.Add(new StringContent(registerUser.Commune ?? string.Empty), "Commune");
 
                     var response = await httpClient.PostAsync(requestURL, formData);
                     if (response.IsSuccessStatusCode)
