@@ -15,6 +15,7 @@ namespace DataAccessLayer.Entity
         public DateTime ChangeDate { get; set; }
         public string ChangeType { get; set; }
         public string ChangeDetails { get; set; }
+        public string? BillOfLadingCode { get; set; }
 
         public virtual Order Order { get; set; }    
     }

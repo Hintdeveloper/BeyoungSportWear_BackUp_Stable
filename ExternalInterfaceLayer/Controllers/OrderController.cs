@@ -281,13 +281,13 @@ namespace ExternalInterfaceLayer.Controllers
             return Ok(order);
         }
 
-        [HttpGet("GetByStatus/{orderStatus}")]
+        [HttpGet("GetByStatus/{OrderStatus}")]
         public async Task<IActionResult> GetByStatus(OrderStatus OrderStatus)
         {
             var orders = await _orderService.GetByStatusAsync(OrderStatus);
             if (orders == null || orders.Count == 0)
             {
-                return NotFound("Không có đơn hàng nào");
+                return BadRequest("Không có đơn hàng nào");
             }
             return Ok(orders);
         }
@@ -369,7 +369,7 @@ namespace ExternalInterfaceLayer.Controllers
                 return BadRequest("Invalid request data");
             }
 
-            var result = await _orderService.UpdateOrderStatusAsync(orderId, request.Status, request.IDUser);
+            var result = await _orderService.UpdateOrderStatusAsync(orderId, request.Status, request.IDUser, request.BillOfLadingCode);
 
             if (result)
             {

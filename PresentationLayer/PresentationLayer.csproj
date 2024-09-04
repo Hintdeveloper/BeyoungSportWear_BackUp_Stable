@@ -15,7 +15,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="Areas\Admin\Views\ManagerOrder\Index.cshtml" />
+    <None Include="Areas\Admin\Views\ManagerOrder\Index_Ver_II.cshtml" />
+    <None Include="Areas\Admin\Views\ManagerOrder\Order_Success.cshtml" />
     <None Include="wwwroot\ajax\address.js" />
+    <None Include="wwwroot\ajax\client\index\cart.js" />
+    <None Include="wwwroot\ajax\client\index\function_view.js" />
+    <None Include="wwwroot\ajax\client\index\index_product.js" />
+    <None Include="wwwroot\ajax\client\index\productdetails_cart.js" />
     <None Include="wwwroot\js\createvoucher.js" />
   </ItemGroup>
 

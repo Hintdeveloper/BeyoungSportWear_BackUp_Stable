@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace ExternalInterfaceLayer.Controllers
 {
-    [Authorize(Roles = "Admin,Staff,Client")]
     [Route("api/[controller]")]
     [ApiController]
     public class ProductDetailsController : ControllerBase
@@ -19,7 +18,6 @@ namespace ExternalInterfaceLayer.Controllers
         {
             _IProductDetailsService = IProductDetailsService;
         }
-        [Authorize(Roles = "Admin,Staff")]
         [HttpPost]
         [Route("productdetails_create")]
         public async Task<IActionResult> Create([FromBody] ProductDetailsCreateVM request)
@@ -55,7 +53,6 @@ namespace ExternalInterfaceLayer.Controllers
             var obj = await _IProductDetailsService.GetAllAsync(pageIndex, pageSize);
             return Ok(obj);
         }
-        [Authorize(Roles = "Admin,Staff")]
         [HttpPost("UpdateIsActive")]
         public async Task<IActionResult> UpdateIsActive([FromBody] UpdateIsActiveRequest request)
         {
@@ -107,7 +104,6 @@ namespace ExternalInterfaceLayer.Controllers
             }
             return Ok(obj);
         }
-        [Authorize(Roles = "Admin,Staff")]
         [HttpPut]
         [Route("Update/{ID}")]
         public async Task<IActionResult> Update(Guid ID, [FromBody] ProductDetailsUpdateVM request)

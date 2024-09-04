@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                   
 
-                    const barcodeUrl = await getBarcode(keycode);
+                    //const barcodeUrl = await getBarcode(keycode);
 
                     await saveProduct({
                         CreateBy: userId,
@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         Origin: product_origin,
                         Description: product_description,
                         IsActive: true,
-                        BarCode: barcodeUrl,
+                        //BarCode: barcodeUrl,
                         ImagePaths: [],
                         OptionsCreateVM: optionsData,
                     });

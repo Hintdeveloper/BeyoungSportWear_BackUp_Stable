@@ -218,18 +218,14 @@ function loadTabsFromCookies() {
     }
 }
 function addTabFromCookie(tabId, invoiceNumber, iframeSrc) {
-    // Kiểm tra sự tồn tại của phần tử tabsContainer
     var tabsContainer = document.querySelector('.tabs');
     if (!tabsContainer) {
-        console.error('Element with class ".tabs" not found.');
-        return; // Ngừng thực hiện nếu phần tử không tồn tại
+        return; 
     }
 
-    // Kiểm tra sự tồn tại của phần tử tabContainer
     var tabContainer = document.querySelector('#tabContainer');
     if (!tabContainer) {
-        console.error('Element with id "#tabContainer" not found.');
-        return; // Ngừng thực hiện nếu phần tử không tồn tại
+        return; 
     }
 
     // Nếu tab không tồn tại, tạo và thêm tab mới

@@ -1,4 +1,6 @@
-﻿@{
+﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@{
     ViewData["Title"] = "Index";
     Layout = "~/Areas/Admin/Views/Shared/_layoutAdmin.cshtml";
 }
@@ -148,25 +150,24 @@
     </ul>
     <div id="clock"></div>
 </div>
-<div>
-    <input type="text" id="searchHexCode" placeholder="Nhập mã HexCode">
-    <button onclick="searchOrder()">Tìm kiếm</button>
-    <select id="orderTypeFilter">
-        <option value="">Tất cả</option>
+<div style="display: flex; align-items: center; gap: 10px;">
+    <input type="text" id="searchHexCode" placeholder="Nhập mã HexCode" style="padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
+    <button onclick="searchOrder()" style="padding: 5px 10px; border: none; background-color: #007bff; color: white; border-radius: 4px; cursor: pointer;">Tìm kiếm</button>
+    <select id="orderTypeFilter" style="padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
+        <option value="">-- Chọn --</option>
         <option value="0">Đặt hàng online</option>
         <option value="1">Đặt hàng tại cửa hàng</option>
     </select>
-    <button onclick="filterOrders()">Lọc</button>
-    
-    <select id="orderStatusFilter">
-
+    <button onclick="filterOrders()" style="padding: 5px 10px; border: none; background-color: #28a745; color: white; border-radius: 4px; cursor: pointer;">Lọc</button>
+    <select id="orderStatusFilter" style="padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
+        <option value="">-- Chọn --</option>
         <option value="0">Chưa giải quyết</option>
         <option value="1">Chờ xử lý</option>
         <option value="2">Chờ vận chuyển</option>
         <option value="3">Đã hoàn thành</option>
         <option value="4">Đã Hủy</option>
     </select>
-    <button onclick="filterOrdersStatus()">Lọc</button>
+    <button onclick="filterOrdersStatus()" style="padding: 5px 10px; border: none; background-color: #17a2b8; color: white; border-radius: 4px; cursor: pointer;">Lọc</button>
 </div>
 
 <div class="row">
@@ -177,7 +178,6 @@
                 <table class="table table-hover table-bordered" id="sampleTable">
                     <thead>
                         <tr>
-                            <th width="10"><input type="checkbox" id="all"></th>
                             <th>Mã đơn hàng</th>
                             <th>Khách hàng</th>
                             <th>Số điện thoại</th>
@@ -276,6 +276,7 @@
                                 <th class="col-2">Ngày thay đổi</th>
                                 <th class="col-4">Lịch sử chỉnh sửa</th>
                                 <th class="col-4">Chi tiết chỉnh sửa</th>
+                                <th class="col-4">Ghi chú</th>
                             </tr>
                         </thead>
                         <tbody id="orderhistory_body">

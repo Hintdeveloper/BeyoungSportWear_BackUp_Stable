@@ -37,7 +37,7 @@ namespace DataAccessLayer.Entity.Base
             Processing,     //Xử lý
             [Description("Đã vận chuyển")]
             Shipped,        //Đã vận chuyển
-            [Description("Đã giao hàng")]
+            [Description("Hoàn thành")]
             Delivered,      //Đã giao hàng <=> success
             [Description("Đã hủy")]
             Cancelled,      //Đã hủy

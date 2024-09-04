@@ -717,7 +717,6 @@ namespace BusinessLogicLayer.Services.Implements
 
             return userDataList;
         }
-
         public async Task<List<UserDataVM>> GetUsersByEmailAsync(string email)
         {
             return await GetUsersByCriteriaAsync(u => u.Email.Contains(email));
