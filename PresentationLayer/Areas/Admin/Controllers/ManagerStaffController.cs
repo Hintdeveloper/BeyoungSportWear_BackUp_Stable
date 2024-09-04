@@ -82,10 +82,10 @@ namespace PresentationLayer.Areas.Admin.Controllers
                         }
                     }
 
-                    // Lọc người dùng có vai trò là Client
+                    // Lọc người dùng có vai trò là Staff
                     if (users != null)
                     {
-                        users = users.Where(u => u.RoleName == "Client").ToList();
+                        users = users.Where(u => u.RoleName == "Staff").ToList();
                     }
 
                     if (users == null || !users.Any())
@@ -125,6 +125,14 @@ namespace PresentationLayer.Areas.Admin.Controllers
                     var token = handler.ReadJwtToken(jwtToken);
 
                     role = "Staff";
+
+                    registerUser.AddressCreateVM.FirstAndLastName = registerUser.FirstAndLastName;
+                    registerUser.AddressCreateVM.PhoneNumber = registerUser.PhoneNumber;
+                    registerUser.AddressCreateVM.Gmail = registerUser.Email;
+                    registerUser.AddressCreateVM.City = "none";
+                    registerUser.AddressCreateVM.DistrictCounty = "none";
+                    registerUser.AddressCreateVM.Commune = "none";
+                    registerUser.AddressCreateVM.SpecificAddress = "none";
 
                     registerUser.Password = GenerateRandomPassword(10);
                     registerUser.ConfirmPassword = registerUser.Password;
