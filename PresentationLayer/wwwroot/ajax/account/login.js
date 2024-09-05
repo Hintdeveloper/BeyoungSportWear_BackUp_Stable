@@ -307,7 +307,7 @@ function registerUser() {
         } else {
             Swal.fire({
                 title: 'Lỗi!',
-                text: 'Có lỗi xảy ra trong quá trình đăng ký.',
+                text: 'Lỗi xảy ra: ' + xhr.responseText,
                 icon: 'error',
                 confirmButtonText: 'OK'
             });

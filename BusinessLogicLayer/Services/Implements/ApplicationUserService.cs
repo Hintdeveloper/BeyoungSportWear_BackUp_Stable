@@ -685,7 +685,7 @@ namespace BusinessLogicLayer.Services.Implements
 
                     var host = _httpContextAccessor.HttpContext.Request.Host;
 
-                    var callbackUrl = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{host}/login";
+                    var callbackUrl = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{host}/Login";
 
                     var callbackUri = new Uri(callbackUrl);
                     await SendConfirmationEmailAsync(newUser.Email, newUser.FirstAndLastName, callbackUri, registerUser.Password);
