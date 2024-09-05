@@ -832,9 +832,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (orderData) {
         displayOrders([orderData]);
-    } else {
-        console.error('Không tìm thấy dữ liệu cho hóa đơn số:', invoiceNumber);
-    }
+    } 
 });
 function saveDataToCookies() {
     const selectedProducts = [];

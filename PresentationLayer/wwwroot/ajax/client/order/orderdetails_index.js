@@ -34,7 +34,6 @@ function maskPhoneNumber(phoneNumber) {
     }
     return phoneNumber;
 }
-
 function maskEmail(email) {
     if (email) {
         const [localPart, domain] = email.split('@');
@@ -43,7 +42,6 @@ function maskEmail(email) {
     }
     return email;
 }
-
 async function viewDetails(ID) {
     try {
         const response = await fetch(`https://localhost:7241/api/Order/GetByIDAsync/${ID}`);
@@ -97,29 +95,7 @@ async function viewDetails(ID) {
             console.error('Không tìm thấy phần tử có id "orderBody" trong DOM.');
         }
 
-        const orderhistoryBody = document.getElementById('orderhistory_body');
-        if (orderhistoryBody) {
-            orderhistoryBody.innerHTML = '';
-            if (data.orderHistoryVM && data.orderHistoryVM.length > 0) {
-                data.orderHistoryVM.forEach(history => {
-                    const formattedEditingHistory = history.editingHistory.replace(/\n/g, '<br>');
-                    const formattedChangeDetails = history.changeDetails.replace(/\n/g, '<br>');
-
-                    const row = `
-                        <tr>
-                            <td>${formatDateTime(history.changeDate)}</td>
-                            <td>${formattedEditingHistory}</td>
-                            <td>${formattedChangeDetails}</td>
-                        </tr>
-                    `;
-                    orderhistoryBody.insertAdjacentHTML('beforeend', row);
-                });
-            } else {
-                orderhistoryBody.innerHTML = '<tr><td colspan="6">Không có chi tiết đơn hàng</td></tr>';
-            }
-        } else {
-            console.error('Không tìm thấy phần tử có id "orderhistory_body" trong DOM.');
-        }
+       
     } catch (error) {
         console.error('Error fetching order details:', error.message);
     } finally {

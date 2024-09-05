@@ -23,7 +23,6 @@ function getUserIdFromJwt(jwt) {
 }
 const jwt = getJwtFromCookie();
 const userId = getUserIdFromJwt(jwt);
-console.log('userId', userId);
 function manageCart() {
     if (jwt) {
 
@@ -366,7 +365,7 @@ function deleteCartOptionCookies(idOptions) {
             icon: 'success',
             confirmButtonText: 'OK'
         }).then(() => {
-            displayCartCookies(cartDataList);
+            manageCart();
         });
     } else {
         Swal.fire({
@@ -479,17 +478,41 @@ async function addToCartFromCookies(idcart) {
         }
     }
 }
-document.addEventListener('DOMContentLoaded', function () {
-    const updateCartBtn = document.getElementById('update-cart-btn');
 
-    if (updateCartBtn) {
-        updateCartBtn.addEventListener('click', function (event) {
-            event.preventDefault();
-            updateCart();
-        });
+function updateCartInCookies(selectedIdOptions, quantity) {
+    const product = {
+        idOptions: selectedIdOptions,
+        quantity: quantity,
+    };
+
+    const cartCookie = getCookieValue('cart');
+    let cartDataList = cartCookie ? JSON.parse(cartCookie) : [];
+
+    const existingProductIndex = cartDataList.findIndex(item => item.idOptions === product.idOptions);
+
+    if (existingProductIndex !== -1) {
+        cartDataList[existingProductIndex].quantity = product.quantity;
+    } else {
+        cartDataList.push(product);
     }
-});
-function updateCart() {
+
+    document.cookie = `cart=${encodeURIComponent(JSON.stringify(cartDataList))}; path=/; max-age=${60 * 60 * 24 * 7}`;
+
+    Swal.fire({
+        title: 'Thành công!',
+        text: 'Sản phẩm đã được cập nhật trong giỏ hàng.',
+        icon: 'success',
+        showCancelButton: true,
+        confirmButtonText: 'Đến giỏ hàng',
+        cancelButtonText: 'Tiếp tục mua sắm'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = '/cart_index';
+        }
+    });
+}
+
+function updateCartOnServer() {
     const cartItems = getCartItems();
 
     for (const item of cartItems) {

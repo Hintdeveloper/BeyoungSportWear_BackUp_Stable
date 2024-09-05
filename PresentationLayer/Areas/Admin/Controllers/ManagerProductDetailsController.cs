@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace PresentationLayer.Areas.Admin.Controllers
 {
-    [Authorize(Roles = "Admin,Staff")]
+    [Authorize(Roles = "Admin")]
     [Area("admin")]
     public class ManagerProductDetailsController : Controller
     {

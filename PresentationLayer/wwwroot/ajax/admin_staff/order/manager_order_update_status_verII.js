@@ -172,7 +172,7 @@ function viewOrderDetails(orderData) {
     ` : ''}
 
     ${orderData.orderStatus === 0 || orderData.orderStatus === 1 ? `
-        <button class="btn btn-danger btn-sm cancel" type="button" onclick="cancelOrder('${orderData.id}')" title="Hủy đơn hàng">
+        <button class="btn btn-danger btn-sm cancel" type="button" onclick="updateOrderStatus('4','${orderData.id}')" title="Hủy đơn hàng">
             <i class="fas fa-times-circle"></i> Hủy đơn
         </button>
     ` : ''}
@@ -197,56 +197,6 @@ function viewOrderDetails(orderData) {
     `;
     document.getElementById('btn_view_orderhistory').addEventListener('click', function () {
         fetchOrderHistory(orderData.id);
-    });
-}
-function cancelOrder(orderId) {
-    Swal.fire({
-        title: 'Xác nhận',
-        text: "Bạn có chắc chắn muốn hủy đơn hàng này không?",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Có',
-        cancelButtonText: 'Hủy'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            const xhr = new XMLHttpRequest();
-            xhr.open('PUT', `https://localhost:7241/api/Order/MarkAsCancelled/${orderId}/${userId}`, true);
-            xhr.setRequestHeader('Content-Type', 'application/json');
-            xhr.setRequestHeader('Authorization', `Bearer ${getJwtFromCookie()}`);
-
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === XMLHttpRequest.DONE) {
-                    if (xhr.status === 200) {
-                        Swal.fire(
-                            'Thành công!',
-                            'Đơn hàng đã được hủy.',
-                            'success'
-                        );
-                        fetchOrder();
-                    } else {
-                        Swal.fire(
-                            'Lỗi!',
-                            'Có lỗi xảy ra khi hủy đơn hàng.',
-                            'error'
-                        );
-                        console.error('Error:', xhr.statusText);
-                    }
-                }
-            };
-
-            xhr.onerror = function () {
-                Swal.fire(
-                    'Lỗi!',
-                    'Có lỗi xảy ra khi hủy đơn hàng.',
-                    'error'
-                );
-                console.error('Request failed');
-            };
-
-            xhr.send();
-        }
     });
 }
 document.getElementById('btn_printf_order_pdf').addEventListener('click', function () {
@@ -503,7 +453,7 @@ document.getElementById('btn_update_order').addEventListener('click', function (
         }
     });
 });
-function updateOrderStatus(status) {
+function updateOrderStatus(status, idorder) {
     const statusMap = {
         0: '',
         1: 'Xác nhận đơn hàng',
@@ -512,19 +462,26 @@ function updateOrderStatus(status) {
         4: 'Hủy đơn'
     };
 
-
     const vietnameseStatus = statusMap[status];
     Swal.fire({
         title: 'Xác nhận',
         text: `Bạn có chắc chắn muốn cập nhật trạng thái đơn hàng thành "${vietnameseStatus}" không?`,
-        icon: 'warning',
+        input: 'text',
+        inputPlaceholder: 'Nhập ghi chú (tùy chọn)',
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
         confirmButtonText: 'Có',
-        cancelButtonText: 'Hủy'
+        cancelButtonText: 'Hủy',
+        preConfirm: (billOfLadingCode) => {
+            if (!billOfLadingCode) {
+                Swal.showValidationMessage('Mã vận đơn là bắt buộc!');
+            }
+            return billOfLadingCode;
+        }
     }).then((result) => {
         if (result.isConfirmed) {
+            const billOfLadingCode = result.value;
             Swal.fire({
                 title: 'Đang xử lý',
                 text: 'Vui lòng chờ trong khi cập nhật đơn hàng...',
@@ -534,12 +491,13 @@ function updateOrderStatus(status) {
                 }
             });
 
-            const apiUrl = `https://localhost:7241/api/Order/UpdateOrderStatus/${ID}`;
+            const apiUrl = `https://localhost:7241/api/Order/UpdateOrderStatus/${idorder}`;
             var xhr = new XMLHttpRequest();
             xhr.open('PUT', apiUrl, true);
             xhr.setRequestHeader('Content-Type', 'application/json');
 
             xhr.onload = function () {
+                Swal.close();
                 if (xhr.status >= 200 && xhr.status < 300) {
                     Swal.fire({
                         icon: 'success',
@@ -561,6 +519,7 @@ function updateOrderStatus(status) {
             };
 
             xhr.onerror = function () {
+                Swal.close();
                 Swal.fire({
                     icon: 'error',
                     title: 'Lỗi!',
@@ -572,7 +531,8 @@ function updateOrderStatus(status) {
 
             xhr.send(JSON.stringify({
                 status: status,
-                idUser: userId
+                idUser: userId,
+                billOfLadingCode: billOfLadingCode
             }));
         }
     });
@@ -612,6 +572,7 @@ function populateOrderHistoryModal(orderHistoryData) {
                     <td>${formatDateTime(history.changeDate)}</td>
                     <td>${formattedEditingHistory}</td>
                     <td>${formattedChangeDetails}</td>
+                    <td>${history.billOfLadingCode}</td>
                 </tr>
             `;
             orderhistoryBody.insertAdjacentHTML('beforeend', row);

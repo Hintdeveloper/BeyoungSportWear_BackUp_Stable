@@ -10,5 +10,6 @@ namespace BusinessLogicLayer.Viewmodels.Order
     {
         public int Status { get; set; }
         public string IDUser { get; set; }
+        public string BillOfLadingCode { get; set; }
     }
 }

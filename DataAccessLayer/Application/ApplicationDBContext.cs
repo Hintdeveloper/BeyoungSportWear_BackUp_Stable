@@ -66,22 +66,7 @@ namespace DataAccessLayer.Application
             };
 
         }
-        private void CreateUsers(ModelBuilder builder)
-        {
-            var adminUser = new IdentityUser()
-            {
-                Id = Guid.NewGuid().ToString(),
-                UserName = "admin",
-                NormalizedUserName = "ADMIN",
-                Email = "admin@gmail.com",
-                NormalizedEmail = "ADMIN@GMAIL.COM",
-                EmailConfirmed = true
-            };
-
-            adminUser.PasswordHash = new PasswordHasher<IdentityUser>().HashPassword(adminUser, "Admin@123");
-
-            builder.Entity<IdentityUser>().HasData(adminUser);
-        }
+     
 
         private void CreateColor(ModelBuilder builder)
         {
@@ -103,7 +88,22 @@ namespace DataAccessLayer.Application
                     new Sizes() { ID = Guid.NewGuid(), Name = "XL", Description = "", CreateBy = "", CreateDate = DateTime.Now, Status = 1 }
                 );
         }
+        private void CreateUsers(ModelBuilder builder)
+        {
+            var adminUser = new IdentityUser()
+            {
+                Id = Guid.NewGuid().ToString(),
+                UserName = "admin",
+                NormalizedUserName = "ADMIN",
+                Email = "admin@gmail.com",
+                NormalizedEmail = "ADMIN@GMAIL.COM",
+                EmailConfirmed = true
+            };
 
+            adminUser.PasswordHash = new PasswordHasher<IdentityUser>().HashPassword(adminUser, "Admin@123");
+
+            builder.Entity<IdentityUser>().HasData(adminUser);
+        }
         public virtual DbSet<ApplicationUser> ApplicationUser { get; set; } = null!;
         public virtual DbSet<Brand> Brand { get; set; } 
         public virtual DbSet<Options> Options { get; set; } = null!;

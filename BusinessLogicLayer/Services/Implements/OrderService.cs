@@ -10,7 +10,6 @@ using System.Text;
 using static DataAccessLayer.Entity.Base.EnumBase;
 using static DataAccessLayer.Entity.Voucher;
 using BusinessLogicLayer.Viewmodels.OrderHistory;
-using System.Net.NetworkInformation;
 
 namespace BusinessLogicLayer.Services.Implements
 {
@@ -63,6 +62,15 @@ namespace BusinessLogicLayer.Services.Implements
                     var option = await _dbcontext.Options.FirstOrDefaultAsync(c => c.ID == directItem.IDOptions);
                     if (option != null)
                     {
+                        if (option.StockQuantity < directItem.Quantity)
+                        {
+                            await transaction.RollbackAsync();
+                            return new OrderResult
+                            {
+                                Success = false,
+                                ErrorMessage = $"Số lượng không đủ cho sản phẩm (Số lượng còn lại: {option.StockQuantity})"
+                            };
+                        }
                         var ordervariant = new OrderDetails()
                         {
                             ID = Guid.NewGuid(),
@@ -405,13 +413,13 @@ namespace BusinessLogicLayer.Services.Implements
         public async Task<OrderVM> GetByHexCodeAsync(string HexCode)
         {
             var order = await _dbcontext.Order
-                .Include(o => o.OrderDetails)
-                    .ThenInclude(od => od.Options.ProductDetails.Products)
-                .Include(o => o.OrderDetails)
-                    .ThenInclude(od => od.Options.Sizes)
-                .Include(o => o.OrderDetails)
-                    .ThenInclude(od => od.Options.Colors)
-                .FirstOrDefaultAsync(o => o.HexCode == HexCode && o.Status != 0);
+         .Include(o => o.OrderDetails)
+             .ThenInclude(od => od.Options.ProductDetails.Products)
+         .Include(o => o.OrderDetails)
+             .ThenInclude(od => od.Options.Sizes)
+         .Include(o => o.OrderDetails)
+             .ThenInclude(od => od.Options.Colors)
+         .FirstOrDefaultAsync(o => o.HexCode != null && o.HexCode.ToLower().Contains(HexCode.ToLower()) && o.Status != 0);
 
             if (order == null)
             {
@@ -932,7 +940,7 @@ namespace BusinessLogicLayer.Services.Implements
             await _dbcontext.SaveChangesAsync();
             return true;
         }
-        public async Task<bool> UpdateOrderStatusAsync(Guid IDOrder, int status, string IDUserUpdate)
+        public async Task<bool> UpdateOrderStatusAsync(Guid IDOrder, int status, string IDUserUpdate, string BillOfLadingCode)
         {
             var order = await _dbcontext.Order
                            .Include(o => o.OrderDetails)
@@ -988,6 +996,14 @@ namespace BusinessLogicLayer.Services.Implements
                 }
                 changeDetails = $"Trạng thái: Từ {oldStatusDescription} sang {newStatusDescription},<br> Người sửa: <a data-user-id='{IDUserUpdate}'>{username}</a>";
             }
+            if (newStatus == OrderStatus.Cancelled)
+            {
+                foreach (var orderItem in order.OrderDetails)
+                {
+                    await IncreaseStockAsync(orderItem.IDOptions, orderItem.Quantity);
+                }
+            }
+
             order.OrderStatus = newStatus;
             order.ModifiedBy = IDUserUpdate;
             order.ModifiedDate = DateTime.Now;
@@ -1005,6 +1021,7 @@ namespace BusinessLogicLayer.Services.Implements
                 ChangeDate = DateTime.Now,
                 EditingHistory = editingHistory,
                 ChangeType = changeType.ToString(),
+                BillOfLadingCode = BillOfLadingCode,
                 ChangeDetails = changeDetails,
                 CreateBy = IDUserUpdate,
                 CreateDate = DateTime.Now,
@@ -1022,8 +1039,8 @@ namespace BusinessLogicLayer.Services.Implements
                     { OrderStatus.Pending, new List<OrderStatus> { OrderStatus.Processing, OrderStatus.Cancelled } },
                     { OrderStatus.Processing, new List<OrderStatus> { OrderStatus.Shipped, OrderStatus.Cancelled } },
                     { OrderStatus.Shipped, new List<OrderStatus> { OrderStatus.Delivered } },
-                    { OrderStatus.Delivered, new List<OrderStatus>() }, // Không có chuyển tiếp từ Delivered
-                    { OrderStatus.Cancelled, new List<OrderStatus>() }  // Không có chuyển tiếp từ Cancelled
+                    { OrderStatus.Delivered, new List<OrderStatus>() }, 
+                    { OrderStatus.Cancelled, new List<OrderStatus>() }  
                 };
 
             return validTransitions.ContainsKey(currentStatus) && validTransitions[currentStatus].Contains(newStatus);

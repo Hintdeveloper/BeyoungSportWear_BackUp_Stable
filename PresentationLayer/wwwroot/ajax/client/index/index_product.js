@@ -4,7 +4,6 @@ let hotSaleProducts = [];
 
 document.addEventListener("DOMContentLoaded", function () {
     loadAllProducts();
-
     loadBestSellingProducts();
 });
 
@@ -17,8 +16,8 @@ function loadAllProducts() {
             allProducts = JSON.parse(xhr.responseText);
             newProducts = allProducts.filter(product => calculateIsNew(product.createDate));
             hotSaleProducts = allProducts.filter(product => product.isHotSale);
-            renderProducts(allProducts); 
-            setupFilterControls();
+            renderProducts(allProducts); // Hiển thị tất cả sản phẩm khi trang được tải
+            setupFilterControls(); // Cài đặt các điều khiển lọc
         }
     };
 
@@ -88,14 +87,10 @@ function renderProducts(products) {
         } else {
             priceHtml = `<span class="stext-105 cl3">${formatCurrency(product.smallestPrice)} - ${formatCurrency(product.biggestPrice)}</span>`;
         }
-
         const isNew = calculateIsNew(product.createDate);
         const isHotSale = product.isHotSale || false;
-
-        var productItemClass = `col-lg-3 col-md-6 col-sm-6 col-md-6 col-sm-6 mix ${isHotSale ? 'hot-sales' : ''} ${isNew ? 'new-arrivals' : ''}`;
-
         var productItem = `
-            <div class="${productItemClass}">
+            <div class="col-lg-3 col-md-6 col-sm-6 col-md-6 col-sm-6 mix ${isHotSale ? 'hot-sales' : ''}">
                 <div class="product__item">
                      <div class="product__item__pic set-bg" data-setbg="${product.imagePaths[0]}">
                         ${isNew ? '<span class="label" style="background-color: red; color: yellow;">New</span>' : ''}

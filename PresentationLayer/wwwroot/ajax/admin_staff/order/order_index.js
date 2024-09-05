@@ -24,7 +24,6 @@ function getUserIdFromJwt(jwt) {
 const jwt = getJwtFromCookie();
 const userId = getUserIdFromJwt(jwt);
 
-
 async function fetchOrder() {
     try {
         const response = await fetch('https://localhost:7241/api/Order/allactive');
@@ -108,6 +107,7 @@ async function viewDetails(IDOrder) {
                             <td>${formatDateTime(history.changeDate)}</td>
                             <td>${formattedEditingHistory}</td>
                             <td>${formattedChangeDetails}</td>
+                            <td>${history.billOfLadingCode}</td>
                         </tr>
                     `;
                     orderhistoryBody.insertAdjacentHTML('beforeend', row);
@@ -263,10 +263,8 @@ function orderList(order) {
 
     if (Array.isArray(order)) {
         order.forEach(item => {
-            console.log(item.orderStatus)
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td width="10"><input type="checkbox" name="check1" value="${item.id}"></td>
                 <td>${item.hexCode}</td>
                 <td>${item.customerName}</td>
                 <td>${item.customerPhone}</td>
@@ -297,7 +295,7 @@ function orderList(order) {
                     </button>
                 ` : ''}
                  ${item.orderStatus === 0 || item.orderStatus === 1 ? `
-                    <button class="btn btn-danger btn-sm cancel" type="button" onclick="cancelOrder('${item.id}')" title="Hủy đơn hàng">
+                    <button class="btn btn-danger btn-sm cancel" type="button" onclick="updateOrderStatus('4','${item.id}')" title="Hủy đơn hàng">
                         <i class="fas fa-times-circle"></i> Hủy đơn
                     </button>
                 ` : ''}
@@ -313,10 +311,8 @@ function orderList(order) {
             orderListBody.appendChild(row);
         });
     } else {
-        console.log(item.orderStatus)
         const row = document.createElement('tr');
         row.innerHTML = `
-                <td width="10"><input type="checkbox" name="check1" value="${item.id}"></td>
                 <td>${item.hexCode}</td>
                 <td>${item.customerName}</td>
                 <td>${item.customerPhone}</td>
@@ -348,7 +344,7 @@ function orderList(order) {
                     </button>
                 ` : ''}
                  ${item.orderStatus === 0 || item.orderStatus === 1 ? `
-                    <button class="btn btn-danger btn-sm cancel" type="button" onclick="cancelOrder('${item.id}')" title="Hủy đơn hàng">
+                     <button class="btn btn-danger btn-sm cancel" type="button" onclick="updateOrderStatus('4','${item.id}')" title="Hủy đơn hàng">
                         <i class="fas fa-times-circle"></i> Hủy đơn
                     </button>
                 ` : ''}
@@ -384,14 +380,22 @@ function updateOrderStatus(status, idorder) {
     Swal.fire({
         title: 'Xác nhận',
         text: `Bạn có chắc chắn muốn cập nhật trạng thái đơn hàng thành "${vietnameseStatus}" không?`,
-        icon: 'warning',
+        input: 'text', 
+        inputPlaceholder: 'Nhập ghi chú (tùy chọn)',
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
         confirmButtonText: 'Có',
-        cancelButtonText: 'Hủy'
+        cancelButtonText: 'Hủy',
+        preConfirm: (billOfLadingCode) => {
+            if (!billOfLadingCode) {
+                Swal.showValidationMessage('Mã vận đơn là bắt buộc!');
+            }
+            return billOfLadingCode; 
+        }
     }).then((result) => {
         if (result.isConfirmed) {
+            const billOfLadingCode = result.value;
             Swal.fire({
                 title: 'Đang xử lý',
                 text: 'Vui lòng chờ trong khi cập nhật đơn hàng...',
@@ -441,12 +445,12 @@ function updateOrderStatus(status, idorder) {
 
             xhr.send(JSON.stringify({
                 status: status,
-                idUser: userId
+                idUser: userId,
+                billOfLadingCode: billOfLadingCode
             }));
         }
     });
 }
-
 function getOrderStatusButtons(orderStatus, idorder) {
     const statusButtons = {
         0: `
@@ -481,56 +485,6 @@ function getOrderStatusButtons(orderStatus, idorder) {
             <i class="fas fa-eye"></i>
         </button>
     `;
-}
-function cancelOrder(orderId) {
-    Swal.fire({
-        title: 'Xác nhận',
-        text: "Bạn có chắc chắn muốn hủy đơn hàng này không?",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Có',
-        cancelButtonText: 'Hủy'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            const xhr = new XMLHttpRequest();
-            xhr.open('PUT', `https://localhost:7241/api/Order/MarkAsCancelled/${orderId}/${userId}`, true);
-            xhr.setRequestHeader('Content-Type', 'application/json');
-            xhr.setRequestHeader('Authorization', `Bearer ${getJwtFromCookie()}`);
-
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === XMLHttpRequest.DONE) {
-                    if (xhr.status === 200) {
-                        Swal.fire(
-                            'Thành công!',
-                            'Đơn hàng đã được hủy.',
-                            'success'
-                        );
-                        fetchOrder();
-                    } else {
-                        Swal.fire(
-                            'Lỗi!',
-                            'Có lỗi xảy ra khi hủy đơn hàng.',
-                            'error'
-                        );
-                        console.error('Error:', xhr.statusText);
-                    }
-                }
-            };
-
-            xhr.onerror = function () {
-                Swal.fire(
-                    'Lỗi!',
-                    'Có lỗi xảy ra khi hủy đơn hàng.',
-                    'error'
-                );
-                console.error('Request failed');
-            };
-
-            xhr.send();
-        }
-    });
 }
 function searchOrder() {
     var hexCode = document.getElementById('searchHexCode').value;
@@ -598,12 +552,10 @@ function getOrdersByType(orderType) {
     xhr.setRequestHeader('accept', '*/*');
 
     xhr.onreadystatechange = function () {
-        if (xhr.readyState === XMLHttpRequest.DONE) {
+        if (xhr.readyState === 4) {
             if (xhr.status === 200) {
                 var response = JSON.parse(xhr.responseText);
                 orderList(Array.isArray(response) ? response : [response]);
-
-                console.log(response);
             } else {
                 console.error('Có lỗi xảy ra: ' + xhr.status);
             }
@@ -612,56 +564,81 @@ function getOrdersByType(orderType) {
 
     xhr.send();
 }
-
 function filterOrders() {
     var selectElement = document.getElementById('orderTypeFilter');
-    var selectedValue = selectElement.value;
-    getOrdersByType(selectedValue);
+    if (selectElement && selectElement.value) {
+        getOrdersByType(selectElement.value);
+    } else {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Chưa chọn trạng thái',
+            text: 'Vui lòng chọn trạng thái đơn hàng để lọc kết quả.',
+        });
+    }
 }
-
-
 function getOrdersByStatus(orderType) {
     var xhr = new XMLHttpRequest();
     var url = 'https://localhost:7241/api/Order/GetByStatus/' + orderType;
 
     xhr.open('GET', url, true);
-    xhr.setRequestHeader('accept', '*/*');
+    xhr.setRequestHeader('accept', 'application/json');
+    if (jwt) {
+        xhr.setRequestHeader('Authorization', 'Bearer ' + jwt);
+    }
 
     xhr.onreadystatechange = function () {
-        if (xhr.readyState === XMLHttpRequest.DONE) {
-
+        if (xhr.readyState === 4) {
             if (xhr.status === 200) {
-                var response = JSON.parse(xhr.responseText);
-
-                if (response.length === 0) {
+                try {
+                    var response = JSON.parse(xhr.responseText);
+                    console.log('Parsed Response:', response);
+                    if (response.length === 0) {
+                        Swal.fire({
+                            icon: 'info',
+                            title: 'Không có kết quả',
+                            text: 'Không có đơn hàng nào phù hợp với tiêu chí lọc.',
+                        });
+                    } else {
+                        orderList(Array.isArray(response) ? response : [response]);
+                    }
+                } catch (e) {
                     Swal.fire({
-                        icon: 'info',
-                        title: 'Không có kết quả',
-                        text: 'Không có đơn hàng nào phù hợp với tiêu chí lọc.',
+                        icon: 'error',
+                        title: 'Lỗi!',
+                        text: xhr.responseText,
                     });
-                    orderResultsDiv.innerHTML = 'Không có đơn hàng nào phù hợp với tiêu chí lọc.';
-                } else {
-                    orderList(Array.isArray(response) ? response : [response]);
-                    orderResultsDiv.innerHTML = ''; // Xóa nội dung cũ nếu có
+                    console.error('JSON parse error:', e);
                 }
-
-                console.log(response);
             } else {
                 Swal.fire({
                     icon: 'error',
                     title: 'Lỗi!',
-                    text: 'Không có đơn hàng nào phù hợp với tiêu chí lọc.',
+                    text: xhr.responseText,
                 });
-                console.error('Có lỗi xảy ra: ' + xhr.statusText);
             }
         }
     };
 
+    xhr.onerror = function () {
+        Swal.fire({
+            icon: 'error',
+            title: 'Lỗi mạng!',
+            text: 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng của bạn.',
+        });
+    };
+
     xhr.send();
 }
-
 function filterOrdersStatus() {
     var selectElement = document.getElementById('orderStatusFilter');
-    var selectedValue = selectElement ? selectElement.value : '';
-    getOrdersByStatus(selectedValue);
+
+    if (selectElement && selectElement.value) {
+        getOrdersByStatus(selectElement.value);
+    } else {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Chưa chọn trạng thái',
+            text: 'Vui lòng chọn trạng thái đơn hàng để lọc kết quả.',
+        });
+    }
 }

@@ -15,6 +15,8 @@ namespace PresentationLayer.Controllers
         {
             _logger = logger;
         }
+        [HttpGet]
+        [Route("warning/page_error_404")]
         public async Task<IActionResult> Error_404()
         {
             return View();

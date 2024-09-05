@@ -16,6 +16,7 @@ namespace BusinessLogicLayer.Viewmodels.OrderHistory
         public string ChangeType { get; set; }
         public string ChangeDetails { get; set; }
         public int Status { get; set; }
+        public string? BillOfLadingCode { get; set; }
 
     }
 }

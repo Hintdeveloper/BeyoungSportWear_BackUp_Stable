@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DataAccessLayer.Migrations
 {
     /// <inheritdoc />
-    public partial class db_successDATN_1 : Migration
+    public partial class db1 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -181,7 +181,7 @@ namespace DataAccessLayer.Migrations
                     ShippingAddressLine2 = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ShipDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     TotalAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Cotsts = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    Cotsts = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     VoucherCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     TrackingCheck = table.Column<bool>(type: "bit", nullable: false),
@@ -230,7 +230,7 @@ namespace DataAccessLayer.Migrations
                     ID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreateBy = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreateBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreateDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ModifiedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -440,6 +440,7 @@ namespace DataAccessLayer.Migrations
                     ChangeDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ChangeType = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ChangeDetails = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    BillOfLadingCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreateBy = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreateDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ModifiedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -682,29 +683,20 @@ namespace DataAccessLayer.Migrations
                 });
 
             migrationBuilder.InsertData(
-              table: "AspNetRoles",
-              columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
-              values: new object[,]
-              {
-                    { "1a5d00a6-2548-4ff2-ae6e-c879cefff04f", null, "Admin", "Admin" },
-                    { "4f17d077-eab6-4049-b27a-32eac87fe61a", null, "Staff", "Staff" },
-                    { "36a9e232-f6d9-4a79-a91f-4ed702da8427", null, "Client", "Client" }
-              });
-            migrationBuilder.InsertData(
                 table: "AspNetUsers",
                 columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "Discriminator", "Email", "EmailConfirmed", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UserName" },
-                values: new object[] { "76393af2-7ae8-44e4-acaf-f47516499aa8", 0, "2312a78f-dcda-4081-a6e0-dc4bea7f19b3", "IdentityUser", "admin@gmail.com", true, false, null, "ADMIN@GMAIL.COM", "ADMIN", "AQAAAAIAAYagAAAAEDhq4bZUrlE9H4/hzUqCNogng+p/Sh7p5NBacPcJm5JKHeHy5wnLhv54U/pDJCwF3Q==", null, false, "7ceebe18-d7f6-4382-a37d-441ab0fb9249", false, "admin" });
+                values: new object[] { "0be40e8d-3f4b-4707-a01f-050f797a9af8", 0, "cdfedf23-6fae-4f89-a37a-454f73b8040a", "IdentityUser", "admin@gmail.com", true, false, null, "ADMIN@GMAIL.COM", "ADMIN", "AQAAAAIAAYagAAAAENY6u5Na7oHyospdduqZ5F2Ozd41KH+3xLoFvMXp8mEMbdyBF+J1vcr6GBnJzdcJvQ==", null, false, "5926012e-3326-4788-a91c-466ba6653f03", false, "admin" });
 
             migrationBuilder.InsertData(
                 table: "Colors",
                 columns: new[] { "ID", "CreateBy", "CreateDate", "DeleteBy", "DeleteDate", "Description", "ModifiedBy", "ModifiedDate", "Name", "Status" },
                 values: new object[,]
                 {
-                    { new Guid("1ac5cda0-b2a4-4c66-a0a2-b7f655873aef"), "", new DateTime(2024, 7, 28, 11, 12, 45, 331, DateTimeKind.Local).AddTicks(13), null, null, "", null, null, "White", 1 },
-                    { new Guid("20dc31bc-84e6-45bc-87a1-233a6f66422b"), "", new DateTime(2024, 7, 28, 11, 12, 45, 331, DateTimeKind.Local).AddTicks(28), null, null, "", null, null, "Black", 1 },
-                    { new Guid("52a0db55-7e82-4dad-a8e6-e4366fa61774"), "", new DateTime(2024, 7, 28, 11, 12, 45, 331, DateTimeKind.Local).AddTicks(34), null, null, "", null, null, "Green", 1 },
-                    { new Guid("69219117-f1eb-4d2f-95bf-138ecc850123"), "", new DateTime(2024, 7, 28, 11, 12, 45, 331, DateTimeKind.Local).AddTicks(32), null, null, "", null, null, "Blue", 1 },
-                    { new Guid("c9097d4f-efaf-4330-8f46-bb12be39bb91"), "", new DateTime(2024, 7, 28, 11, 12, 45, 331, DateTimeKind.Local).AddTicks(30), null, null, "", null, null, "Red", 1 }
+                    { new Guid("01822efe-a344-4aa9-a74c-cc06742ae69f"), "", new DateTime(2024, 9, 3, 3, 8, 55, 350, DateTimeKind.Local).AddTicks(9876), null, null, "", null, null, "White", 1 },
+                    { new Guid("2e4ade72-b296-4a56-a97b-969d423c1a6d"), "", new DateTime(2024, 9, 3, 3, 8, 55, 350, DateTimeKind.Local).AddTicks(9915), null, null, "", null, null, "Black", 1 },
+                    { new Guid("3e52dde2-59ba-46e9-9979-27da78c9a150"), "", new DateTime(2024, 9, 3, 3, 8, 55, 350, DateTimeKind.Local).AddTicks(9918), null, null, "", null, null, "Red", 1 },
+                    { new Guid("497aa989-4631-4d01-893e-13d177b769c9"), "", new DateTime(2024, 9, 3, 3, 8, 55, 350, DateTimeKind.Local).AddTicks(9920), null, null, "", null, null, "Blue", 1 },
+                    { new Guid("db74d7aa-6f82-482a-bed1-701a5db639db"), "", new DateTime(2024, 9, 3, 3, 8, 55, 350, DateTimeKind.Local).AddTicks(9921), null, null, "", null, null, "Green", 1 }
                 });
 
             migrationBuilder.InsertData(
@@ -712,11 +704,11 @@ namespace DataAccessLayer.Migrations
                 columns: new[] { "ID", "CreateBy", "CreateDate", "DeleteBy", "DeleteDate", "Description", "ModifiedBy", "ModifiedDate", "Name", "Status" },
                 values: new object[,]
                 {
-                    { new Guid("4b93f0f9-660f-40bf-bd1c-ef2effd82398"), "", new DateTime(2024, 7, 28, 11, 12, 45, 331, DateTimeKind.Local).AddTicks(206), null, null, "", null, null, "M", 1 },
-                    { new Guid("55971d42-131e-4252-8ea8-a4dc9cbcc7db"), "", new DateTime(2024, 7, 28, 11, 12, 45, 331, DateTimeKind.Local).AddTicks(204), null, null, "", null, null, "S", 1 },
-                    { new Guid("765212d0-935b-4cbf-a789-bf8712fca64c"), "", new DateTime(2024, 7, 28, 11, 12, 45, 331, DateTimeKind.Local).AddTicks(208), null, null, "", null, null, "L", 1 },
-                    { new Guid("88f94b89-4ffd-4e7a-805d-0e8eebb13265"), "", new DateTime(2024, 7, 28, 11, 12, 45, 331, DateTimeKind.Local).AddTicks(199), null, null, "", null, null, "XS", 1 },
-                    { new Guid("8fd4e720-bf10-4eeb-b798-42b742a9072a"), "", new DateTime(2024, 7, 28, 11, 12, 45, 331, DateTimeKind.Local).AddTicks(210), null, null, "", null, null, "XL", 1 }
+                    { new Guid("2e976485-b970-4379-b2a5-9f72cc7b9130"), "", new DateTime(2024, 9, 3, 3, 8, 55, 351, DateTimeKind.Local).AddTicks(148), null, null, "", null, null, "XL", 1 },
+                    { new Guid("32c89139-e8ea-4081-8282-ea96d42da20e"), "", new DateTime(2024, 9, 3, 3, 8, 55, 351, DateTimeKind.Local).AddTicks(142), null, null, "", null, null, "M", 1 },
+                    { new Guid("73aec868-0a80-44f8-a23a-5d4f25a648f7"), "", new DateTime(2024, 9, 3, 3, 8, 55, 351, DateTimeKind.Local).AddTicks(140), null, null, "", null, null, "S", 1 },
+                    { new Guid("a6c201de-6554-4b3c-aca9-2a575fa9982d"), "", new DateTime(2024, 9, 3, 3, 8, 55, 351, DateTimeKind.Local).AddTicks(144), null, null, "", null, null, "L", 1 },
+                    { new Guid("ccabe5ba-2126-412f-9f7d-f316b90a65e2"), "", new DateTime(2024, 9, 3, 3, 8, 55, 351, DateTimeKind.Local).AddTicks(137), null, null, "", null, null, "XS", 1 }
                 });
 
             migrationBuilder.CreateIndex(

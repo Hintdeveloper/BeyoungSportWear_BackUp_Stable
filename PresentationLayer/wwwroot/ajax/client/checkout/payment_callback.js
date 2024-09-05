@@ -102,7 +102,7 @@ function deleteCartOption(cartId, idOptions) {
             if (xhr.status === 200) {
                 console.log(`Deleted cart option ${idOptions} from cart ${cartId}`);
             } else {
-                console.error('Error deleting cart option:', xhr.statusText);
+                console.error('Error deleting cart option:', xhr.responseText);
             }
         }
     };
