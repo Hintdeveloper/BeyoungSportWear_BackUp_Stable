@@ -86,6 +86,10 @@
                     </tr>
                 </tbody>
             </table>
+            <div>
+                <a asp-action="Edit" asp-route-id="@Model.ID" class="btn btn-warning">Edit</a> |
+                <a asp-action="Index" class="btn btn-link">Back to List</a>
+            </div>
         </div>
 
         <!-- Địa chỉ người dùng -->
@@ -188,10 +192,6 @@
     </div>
 </div>
  *@
-<div>
-    <a asp-action="Edit" asp-route-id="@Model.ID" class="btn btn-warning">Edit</a> |
-    <a asp-action="Index" class="btn btn-link">Back to List</a>
-</div>
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <!-- Thêm SweetAlert2 CDN -->
