@@ -605,7 +605,7 @@ namespace BusinessLogicLayer.Services.Implements
                     {
                         IsSuccess = false,
                         StatusCode = 400,
-                        Message = "Tuổi cần cao hơn 18"
+                        Message = "Tuổi cần cao hơn 18 hoặc nhỏ hơn 65"
                     };
 
                 }
@@ -765,6 +765,11 @@ namespace BusinessLogicLayer.Services.Implements
         {
             var user = await _userManager.FindByIdAsync(ID);
             if (user == null)
+            {
+                return false;
+            }
+            var existingUser = await _userManager.FindByEmailAsync(userUpdateVM.Email);
+            if (existingUser != null)
             {
                 return false;
             }
