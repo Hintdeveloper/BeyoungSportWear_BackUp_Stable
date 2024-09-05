@@ -768,11 +768,6 @@ namespace BusinessLogicLayer.Services.Implements
             {
                 return false;
             }
-            var existingUser = await _userManager.FindByEmailAsync(userUpdateVM.Email);
-            if (existingUser != null)
-            {
-                return false;
-            }
 
             user.FirstAndLastName = userUpdateVM.FirstAndLastName ?? user.FirstAndLastName;
             user.Email = userUpdateVM.Email ?? user.Email;
