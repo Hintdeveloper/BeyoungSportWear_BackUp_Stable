@@ -200,4 +200,32 @@ namespace BusinessLogicLayer.Viewmodels.VoucherM
             return $"Trường {name} phải là số nguyên.";
         }
     }
+    public class CustomDecimalLessThanAttribute : ValidationAttribute
+    {
+        private readonly string _maximumAmountPropertyName;
+
+        public CustomDecimalLessThanAttribute(string maximumAmountPropertyName)
+        {
+            _maximumAmountPropertyName = maximumAmountPropertyName;
+        }
+
+        protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+        {
+            var maximumAmountProperty = validationContext.ObjectType.GetProperty(_maximumAmountPropertyName);
+            if (maximumAmountProperty == null)
+            {
+                return new ValidationResult($"Unknown property: {_maximumAmountPropertyName}");
+            }
+
+            var maximumAmount = (decimal)maximumAmountProperty.GetValue(validationContext.ObjectInstance);
+
+            if (value is decimal minimumAmount && minimumAmount <= maximumAmount)
+            {
+                return new ValidationResult(ErrorMessage ?? "Số tiền giảm tối thiểu phải lớn hơn số tiền giảm tối đa");
+            }
+
+            return ValidationResult.Success;
+        }
+    }
+
 }
