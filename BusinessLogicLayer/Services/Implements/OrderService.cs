@@ -567,7 +567,7 @@ namespace BusinessLogicLayer.Services.Implements
                     return false;
                 }
 
-                if (order.OrderStatus == OrderStatus.Shipped ||
+                if (order.OrderStatus == OrderStatus.Shipping ||
                     order.OrderStatus == OrderStatus.Delivered ||
                     order.OrderStatus == OrderStatus.Cancelled)
                 {
@@ -841,7 +841,7 @@ namespace BusinessLogicLayer.Services.Implements
                 return false;
             }
 
-            if (order.OrderStatus == OrderStatus.Shipped ||
+            if (order.OrderStatus == OrderStatus.Shipping ||
                 order.OrderStatus == OrderStatus.Cancelled ||
                 order.PaymentStatus == PaymentStatus.Success)
             {
@@ -994,7 +994,7 @@ namespace BusinessLogicLayer.Services.Implements
             {
                 changeDetails = $"Trạng thái: Từ {oldStatusDescription} sang {newStatusDescription},<br> Người sửa: <a data-user-id='{IDUserUpdate}'>{username}</a>";
             }
-            if (order.OrderStatus == OrderStatus.Pending && newStatus == OrderStatus.Processing)
+            if (order.OrderStatus == OrderStatus.Processed)
             {
                 bool stockUpdated = true;
                 foreach (var orderItem in order.OrderDetails)
@@ -1054,9 +1054,9 @@ namespace BusinessLogicLayer.Services.Implements
         {
             var validTransitions = new Dictionary<OrderStatus, List<OrderStatus>>
                 {
-                    { OrderStatus.Pending, new List<OrderStatus> { OrderStatus.Processing, OrderStatus.Cancelled } },
-                    { OrderStatus.Processing, new List<OrderStatus> { OrderStatus.Shipped, OrderStatus.Cancelled } },
-                    { OrderStatus.Shipped, new List<OrderStatus> { OrderStatus.Delivered } },
+                    { OrderStatus.Pending, new List<OrderStatus> { OrderStatus.Processed, OrderStatus.Cancelled } },
+                    { OrderStatus.Processed, new List<OrderStatus> { OrderStatus.Shipping, OrderStatus.Cancelled } },
+                    { OrderStatus.Shipping, new List<OrderStatus> { OrderStatus.Delivered } },
                     { OrderStatus.Delivered, new List<OrderStatus>() }, 
                     { OrderStatus.Cancelled, new List<OrderStatus>() }  
                 };

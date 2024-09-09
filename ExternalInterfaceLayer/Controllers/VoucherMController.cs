@@ -153,5 +153,35 @@ namespace ExternalInterfaceLayer.Controllers
 
             return Ok(vouchers);
         }
-    }
+        [HttpGet("filter-by-date")]
+        public async Task<IActionResult> FilterVouchersByDate(DateTime startDate, DateTime endDate)
+        {
+            try
+            {
+                var vouchers = await _voucherService.FilterVouchersByDateRangeAsync(startDate, endDate);
+                return Ok(vouchers); 
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = "Error filtering vouchers", details = ex.Message });
+            }
+        }
+        [HttpGet("search-by-status")]
+        public async Task<IActionResult> SearchByStatus(int isActive)
+        {
+            try
+            {
+                var vouchers = await _voucherService.GetVouchersByStatus(isActive);
+                return Ok(vouchers);
+
+            }
+            catch (Exception ex)
+            {
+
+                return BadRequest(new { message = "Error filtering vouchers", details = ex.Message });
+            }
+        }
+            
+        }
+    
 }

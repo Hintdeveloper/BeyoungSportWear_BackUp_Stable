@@ -33,10 +33,10 @@ namespace DataAccessLayer.Entity.Base
         {
             [Description("Chưa giải quyết")]
             Pending,        //Chưa giải quyết
-            [Description("Đang xử lý")]
-            Processing,     //Xử lý
-            [Description("Đã vận chuyển")]
-            Shipped,        //Đã vận chuyển
+            [Description("Đã xác nhận")]
+            Processed,     //Đã Xử lý
+            [Description("Đang vận chuyển")]
+            Shipping,        //Đang vận chuyển
             [Description("Hoàn thành")]
             Delivered,      //Đã giao hàng <=> success
             [Description("Đã hủy")]

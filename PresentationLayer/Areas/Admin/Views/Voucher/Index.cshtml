@@ -38,6 +38,30 @@
             </div>
         </form>
     </div>
+    <div class="col-sm-3">
+        <form id="searchByDateForm" method="get" action="@Url.Action("SearchByDate", "Voucher", new { area = "Admin" })">
+            <div class="input-group">
+                <input type="date" name="startDate" class="form-control" placeholder="Ngày bắt đầu" />
+                <input type="date" name="endDate" class="form-control" placeholder="Ngày kết thúc" />
+                <div class="input-group-append">
+                    <button class="btn btn-secondary" type="submit">Tìm kiếm theo ngày</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <form id="searchForm" method="get" action="@Url.Action("SearchByStatus", "Voucher", new { area = "Admin" })">
+        <div class="input-group">
+            <select name="isActive" class="form-control">
+                <option value="">Chọn trạng thái</option>
+                <option value="0">Chưa bắt đầu</option>
+                <option value="1">Đang diễn ra</option>
+                <option value="2">Đã kết thúc</option>
+            </select>
+            <div class="input-group-append">
+                <button class="btn btn-primary" type="submit">Tìm kiếm</button>
+            </div>
+        </div>
+    </form>
 </div>
 <table id="voucherTable" class="table">
     <thead>
@@ -71,7 +95,7 @@
                 Gỉam tối đa
             </th>
             <th>
-                Số tiền giảm
+                Giá trị giảm
             </th>
             <th>
                 Trạng thái hoạt động
@@ -144,9 +168,9 @@
                 </td>
                
                 <td>
-                    <a asp-action="UpdateVoucherUser" asp-route-id="@item.ID" class="btn btn-warning">Edit</a> |
-                    <a asp-action="Detail" asp-route-id="@item.ID" class="btn btn-info">Details</a> |
-                <form asp-action="ToggleStatus" asp-controller="Voucher" asp-route-id="@item.ID" method="post" id="toggleForm-@item.ID" style="display:inline;">
+                    <a asp-action="UpdateVoucherUser" asp-route-id="@item.ID" class="btn btn-warning">Cập nhật</a> 
+                    <a asp-action="Detail" asp-route-id="@item.ID" class="btn btn-info">Chi tiết</a> 
+                    <form asp-action="ToggleStatus" asp-controller="Voucher" asp-route-id="@item.ID" method="post" id="toggleForm-@item.ID" style="display:inline;">
                         <input type="hidden" name="id" value="@item.ID" />
 
                         <input style="display: none;" type="checkbox" id="toggle-@item.ID" onchange="toggleVoucherStatus('@item.ID');"
@@ -159,8 +183,7 @@
 
             </tr>
             count++;
-        }
-        <button onclick="refreshVoucherStatus()">Refresh Status</button>
+        }       
     </tbody>
 </table>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.7/signalr.min.js"></script>

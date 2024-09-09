@@ -45,6 +45,7 @@ namespace BusinessLogicLayer.Viewmodels.VoucherM
 
         [Required(ErrorMessage = "Số tiền giảm tối thiểu không được để trống")]
         [Range(0.01, 10000000, ErrorMessage = "Số tiền chi tối thiểu phải lớn hơn 0 và nhỏ hơn hoặc bằng 10,000,000")]
+        [CustomDecimalLessThan(nameof(MaximumAmount), ErrorMessage = "Số tiền chi tối thiểu phải lớn hơn số tiền giảm tối đa")]
         public decimal MinimumAmount { get; set; }  
 
         [Required(ErrorMessage = "Số tiền giảm tối đa không được để trống")]

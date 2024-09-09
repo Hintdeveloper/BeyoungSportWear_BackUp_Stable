@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BusinessLogicLayer.Services.Interface;
 using BusinessLogicLayer.Services.SignalR;
+using BusinessLogicLayer.Viewmodels;
 using BusinessLogicLayer.Viewmodels.Voucher;
 using BusinessLogicLayer.Viewmodels.VoucherM;
 using DataAccessLayer.Application;
@@ -8,11 +9,14 @@ using DataAccessLayer.Entity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Net.Mail;
 using System.Text;
 using System.Threading.Tasks;
 using static DataAccessLayer.Entity.Base.EnumBase;
@@ -24,15 +28,17 @@ namespace BusinessLogicLayer.Services.Implements
         private readonly IHubContext<VoucherHub> _hubContext;
         private readonly ApplicationDBContext _dbcontext;
         private readonly IMapper _mapper;
+        private readonly MailSettings _mailSettings;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
-        public VoucherMServiece(ApplicationDBContext ApplicationDBContext, IMapper mapper, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IHubContext<VoucherHub> hubContext)
+        public VoucherMServiece(ApplicationDBContext ApplicationDBContext, IMapper mapper, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IHubContext<VoucherHub> hubContext, IOptions<MailSettings> mailSettings)
         {
             _dbcontext = ApplicationDBContext;
             _mapper = mapper;
             _userManager = userManager;
             _roleManager = roleManager;
             _hubContext = hubContext;
+            _mailSettings = mailSettings.Value;
         }
         public async Task<bool> Create(CreateVoucherVM request)
         {
@@ -41,6 +47,7 @@ namespace BusinessLogicLayer.Services.Implements
                 var newVoucher = new Voucher
                 {
                     Code = request.Code,
+                    CreateDate = DateTime.Now,
                     Name = request.Name,
                     StartDate = request.StartDate,
                     EndDate = request.EndDate,
@@ -54,23 +61,7 @@ namespace BusinessLogicLayer.Services.Implements
                     CreateBy = request.CreateBy,
                 };
                 _dbcontext.Voucher.Add(newVoucher);
-
-                if (request.ApplyToAllUsers)
-                {
-                    var allUsers = await _dbcontext.Users.Select(u => u.Id).ToListAsync();
-                    foreach (var userId in allUsers)
-                    {
-                        var voucherUser = new VoucherUser
-                        {
-                            IDUser = userId,
-                            IDVoucher = newVoucher.ID,
-                            Status = 1,
-                            CreateBy = request.CreateBy
-                        };
-                        await _dbcontext.VoucherUser.AddAsync(voucherUser);
-                    }
-                }
-                else
+                if (!request.ApplyToAllUsers)
                 {
                     foreach (var userId in request.SelectedUser)
                     {
@@ -86,6 +77,27 @@ namespace BusinessLogicLayer.Services.Implements
                 }
 
                 await _dbcontext.SaveChangesAsync();
+                if (!request.ApplyToAllUsers)
+                {
+                    foreach (var userId in request.SelectedUser)
+                    {
+                        var user = await _dbcontext.Users.FindAsync(userId);
+                        if (user != null)
+                        {
+                            
+                            var emailResponse = await SendConfirmationEmailAsync(
+                                user.Email,  
+                                newVoucher.Code,  
+                                user.UserName,
+                                newVoucher.Name);
+
+                            if (!emailResponse.IsSuccess)
+                            {
+                               
+                            }
+                        }
+                    }
+                }
                 return true;
             }
             catch (Exception)
@@ -497,6 +509,169 @@ namespace BusinessLogicLayer.Services.Implements
                                          .ToListAsync();
 
             return voucherList;
+        }
+        public async Task<List<GetAllVoucherVM>> FilterVouchersByDateRangeAsync(DateTime startDate, DateTime endDate)
+        {         
+            var vouchers = await _dbcontext.Voucher
+                                           .Include(c => c.VoucherUser)
+                                           .Where(v => v.StartDate >= startDate && v.EndDate <= endDate) // Điều kiện lọc theo ngày
+                                           .OrderBy(v => v.IsActive.HasValue ? (int)v.IsActive.Value : int.MaxValue)
+                                           .ThenByDescending(v => v.CreateDate)
+                                           .Select(v => new GetAllVoucherVM
+                                           {
+                                               ID = v.ID,
+                                               CreateDate = v.CreateDate,
+                                               Code = v.Code,
+                                               Name = v.Name,
+                                               StartDate = v.StartDate,
+                                               EndDate = v.EndDate,
+                                               Quantity = v.Quantity,
+                                               Type = v.Type,
+                                               MinimumAmount = v.MinimumAmount,
+                                               MaximumAmount = v.MaximumAmount,
+                                               ReducedValue = v.ReducedValue,
+                                               IsActive = v.IsActive,
+                                               Status = v.Status,
+                                               IDUser = v.VoucherUser.Select(pv => pv.IDUser).ToList()
+                                           })
+                                           .ToListAsync();
+
+            return vouchers;
+        }
+        public async Task<List<GetAllVoucherVM>> GetVouchersByStatus(int isActive)
+        {
+            var vouchers = await _dbcontext.Voucher
+                .Where(v => v.IsActive.HasValue && (int)v.IsActive.Value == isActive)
+                .OrderBy(v => v.CreateDate)
+                .Select(v => new GetAllVoucherVM
+                {
+                    ID = v.ID,
+                    CreateDate = v.CreateDate,
+                    Code = v.Code,
+                    Name = v.Name,
+                    StartDate = v.StartDate,
+                    EndDate = v.EndDate,
+                    Quantity = v.Quantity,
+                    Type = v.Type,
+                    MinimumAmount = v.MinimumAmount,
+                    MaximumAmount = v.MaximumAmount,
+                    ReducedValue = v.ReducedValue,
+                    IsActive = v.IsActive,
+                    Status = v.Status,
+                    IDUser = v.VoucherUser.Select(vu => vu.IDUser).ToList()
+                })
+                .ToListAsync();
+
+            return vouchers;
+        }
+        private async Task<Response> SendConfirmationEmailAsync(string email, string keycode, string name,string Namecode)
+        {
+            string body = $@"
+                    <html>
+                    <head>
+                        <style>
+                            body {{
+                                font-family: Arial, sans-serif;
+                                line-height: 1.6;
+                                color: #333;
+                                margin: 0;
+                                padding: 0;
+                            }}
+                            .container {{
+                                max-width: 600px;
+                                margin: 0 auto;
+                                padding: 20px;
+                                border: 1px solid #ddd;
+                                border-radius: 10px;
+                                background-color: #f9f9f9;
+                            }}
+                            .header {{
+                                text-align: center;
+                                padding-bottom: 20px;
+                            }}
+                            .header img {{
+                                max-width: 100px;
+                            }}
+                            .content {{
+                                padding: 20px;
+                                background-color: #fff;
+                                border-radius: 10px;
+                            }}
+                            .order-info {{
+                                margin-top: 20px;
+                                padding: 10px;
+                                background-color: #eee;
+                                border-radius: 5px;
+                            }}
+                            .product-item {{
+                                margin-top: 10px;
+                                padding: 10px;
+                                border-bottom: 1px solid #ddd;
+                                display: flex;
+                                align-items: center;
+                            }}
+                            .product-item img {{
+                                max-width: 130px;
+                                margin-right: 10px;
+                            }}
+                            .product-details {{
+                                flex: 1;
+                            }}
+                            .footer {{
+                                text-align: center;
+                                font-size: 12px;
+                                color: #999;
+                                margin-top: 20px;
+                            }}
+                        </style>
+                    </head>
+                    <body>
+                        <div class='container'>
+                            <div class='header'>
+                                <img src='https://res.cloudinary.com/dqcxurnpa/image/upload/v1723407933/BeyoungSportWear/ImageProduct/Options/l1zudx2ihhv6noe0ecga.webp' alt='Company Logo' />
+                                <h2>Chào mừng bạn đến với trang web bán quần áo thể thao Beyoung Sport Wear!</h2>
+                            </div>
+                            <div class='content'>
+                                <p>Chào {name},</p>
+                                <p>Bạn được tặng mã voucher {Namecode} với mã voucher là : {keycode}</p>
+                                ";
+
+            try
+            {
+                MailMessage mail = new MailMessage
+                {
+                    From = new MailAddress(_mailSettings.Mail, _mailSettings.DisplayName),
+                    Subject = "Thư thông báo khách hàng được nhận voucher",
+                    Body = body,
+                    IsBodyHtml = true
+                };
+                mail.To.Add(new MailAddress(email));
+
+                using (SmtpClient smtp = new SmtpClient(_mailSettings.Host, _mailSettings.Port))
+                {
+                    smtp.Credentials = new NetworkCredential(_mailSettings.Mail, _mailSettings.Password);
+                    smtp.EnableSsl = true;
+
+                    await smtp.SendMailAsync(mail);
+                }
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    StatusCode = 200,
+                    Message = "Email xác nhận đã được gửi."
+                };
+            }
+            catch (Exception ex)
+            {
+                // Xử lý lỗi và trả về thông báo lỗi
+                return new Response
+                {
+                    IsSuccess = false,
+                    StatusCode = 500,
+                    Message = $"Lỗi khi gửi email xác nhận: {ex.Message}"
+                };
+            }
         }
     }
 }
