@@ -170,6 +170,13 @@ namespace BusinessLogicLayer.Services.Implements
                         voucher.IsActive = StatusVoucher.Finished;
                     }
                     _dbcontext.Voucher.Update(voucher);
+                    var voucherUser = await _dbcontext.VoucherUser
+                       .FirstOrDefaultAsync(vu => vu.IDVoucher == voucher.ID && vu.IDUser == request.IDUser);
+                    if (voucherUser != null)
+                    {
+                        voucherUser.Status = 1; // Cập nhật trạng thái
+                        _dbcontext.VoucherUser.Update(voucherUser);
+                    }
                 }
                 totalAmount += request.Cotsts ?? 0;
 
