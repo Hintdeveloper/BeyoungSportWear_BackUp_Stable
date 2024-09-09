@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BusinessLogicLayer.Services.Interface;
 using BusinessLogicLayer.Services.SignalR;
+using BusinessLogicLayer.Viewmodels;
 using BusinessLogicLayer.Viewmodels.Voucher;
 using BusinessLogicLayer.Viewmodels.VoucherM;
 using DataAccessLayer.Application;
@@ -8,11 +9,14 @@ using DataAccessLayer.Entity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Net.Mail;
 using System.Text;
 using System.Threading.Tasks;
 using static DataAccessLayer.Entity.Base.EnumBase;
@@ -24,15 +28,17 @@ namespace BusinessLogicLayer.Services.Implements
         private readonly IHubContext<VoucherHub> _hubContext;
         private readonly ApplicationDBContext _dbcontext;
         private readonly IMapper _mapper;
+        private readonly MailSettings _mailSettings;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
-        public VoucherMServiece(ApplicationDBContext ApplicationDBContext, IMapper mapper, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IHubContext<VoucherHub> hubContext)
+        public VoucherMServiece(ApplicationDBContext ApplicationDBContext, IMapper mapper, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IHubContext<VoucherHub> hubContext, IOptions<MailSettings> mailSettings)
         {
             _dbcontext = ApplicationDBContext;
             _mapper = mapper;
             _userManager = userManager;
             _roleManager = roleManager;
             _hubContext = hubContext;
+            _mailSettings = mailSettings.Value;
         }
         public async Task<bool> Create(CreateVoucherVM request)
         {
@@ -71,6 +77,27 @@ namespace BusinessLogicLayer.Services.Implements
                 }
 
                 await _dbcontext.SaveChangesAsync();
+                if (!request.ApplyToAllUsers)
+                {
+                    foreach (var userId in request.SelectedUser)
+                    {
+                        var user = await _dbcontext.Users.FindAsync(userId);
+                        if (user != null)
+                        {
+                            
+                            var emailResponse = await SendConfirmationEmailAsync(
+                                user.Email,  
+                                newVoucher.Code,  
+                                user.UserName,
+                                newVoucher.Name);
+
+                            if (!emailResponse.IsSuccess)
+                            {
+                               
+                            }
+                        }
+                    }
+                }
                 return true;
             }
             catch (Exception)
@@ -536,6 +563,115 @@ namespace BusinessLogicLayer.Services.Implements
                 .ToListAsync();
 
             return vouchers;
+        }
+        private async Task<Response> SendConfirmationEmailAsync(string email, string keycode, string name,string Namecode)
+        {
+            string body = $@"
+                    <html>
+                    <head>
+                        <style>
+                            body {{
+                                font-family: Arial, sans-serif;
+                                line-height: 1.6;
+                                color: #333;
+                                margin: 0;
+                                padding: 0;
+                            }}
+                            .container {{
+                                max-width: 600px;
+                                margin: 0 auto;
+                                padding: 20px;
+                                border: 1px solid #ddd;
+                                border-radius: 10px;
+                                background-color: #f9f9f9;
+                            }}
+                            .header {{
+                                text-align: center;
+                                padding-bottom: 20px;
+                            }}
+                            .header img {{
+                                max-width: 100px;
+                            }}
+                            .content {{
+                                padding: 20px;
+                                background-color: #fff;
+                                border-radius: 10px;
+                            }}
+                            .order-info {{
+                                margin-top: 20px;
+                                padding: 10px;
+                                background-color: #eee;
+                                border-radius: 5px;
+                            }}
+                            .product-item {{
+                                margin-top: 10px;
+                                padding: 10px;
+                                border-bottom: 1px solid #ddd;
+                                display: flex;
+                                align-items: center;
+                            }}
+                            .product-item img {{
+                                max-width: 130px;
+                                margin-right: 10px;
+                            }}
+                            .product-details {{
+                                flex: 1;
+                            }}
+                            .footer {{
+                                text-align: center;
+                                font-size: 12px;
+                                color: #999;
+                                margin-top: 20px;
+                            }}
+                        </style>
+                    </head>
+                    <body>
+                        <div class='container'>
+                            <div class='header'>
+                                <img src='https://res.cloudinary.com/dqcxurnpa/image/upload/v1723407933/BeyoungSportWear/ImageProduct/Options/l1zudx2ihhv6noe0ecga.webp' alt='Company Logo' />
+                                <h2>Chào mừng bạn đến với trang web bán quần áo thể thao Beyoung Sport Wear!</h2>
+                            </div>
+                            <div class='content'>
+                                <p>Chào {name},</p>
+                                <p>Bạn được tặng mã voucher {Namecode} với mã voucher là : {keycode}</p>
+                                ";
+
+            try
+            {
+                MailMessage mail = new MailMessage
+                {
+                    From = new MailAddress(_mailSettings.Mail, _mailSettings.DisplayName),
+                    Subject = "Thư thông báo đăng ký tài khoản thành công",
+                    Body = body,
+                    IsBodyHtml = true
+                };
+                mail.To.Add(new MailAddress(email));
+
+                using (SmtpClient smtp = new SmtpClient(_mailSettings.Host, _mailSettings.Port))
+                {
+                    smtp.Credentials = new NetworkCredential(_mailSettings.Mail, _mailSettings.Password);
+                    smtp.EnableSsl = true;
+
+                    await smtp.SendMailAsync(mail);
+                }
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    StatusCode = 200,
+                    Message = "Email xác nhận đã được gửi."
+                };
+            }
+            catch (Exception ex)
+            {
+                // Xử lý lỗi và trả về thông báo lỗi
+                return new Response
+                {
+                    IsSuccess = false,
+                    StatusCode = 500,
+                    Message = $"Lỗi khi gửi email xác nhận: {ex.Message}"
+                };
+            }
         }
     }
 }
