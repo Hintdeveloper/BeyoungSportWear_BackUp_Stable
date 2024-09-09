@@ -102,7 +102,7 @@ function viewOrderDetails(orderData) {
     document.getElementById('customer_name').value = orderData.customerName;
     document.getElementById('customer_phone').value = orderData.customerPhone;
     document.getElementById('customer_gmail').value = orderData.customerEmail;
-    document.getElementById('shippingadress').textContent = orderData.shippingAddress;
+    document.getElementById('shippingadress').value = orderData.shippingAddress;
     document.getElementById('shippingadress2').value = orderData.shippingAddressLine2;
     document.getElementById('total_price').textContent = `${orderData.totalAmount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })} (Phí giao hàng:${orderData.cotsts.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })})`;
     document.getElementById('paymentstatus').textContent = translatePaymentStatus(orderData.paymentStatus);
@@ -454,6 +454,7 @@ document.getElementById('btn_update_order').addEventListener('click', function (
     });
 });
 function updateOrderStatus(status, idorder) {
+    console.log('status', status)
     const statusMap = {
         0: '',
         1: 'Xác nhận đơn hàng',
@@ -462,26 +463,37 @@ function updateOrderStatus(status, idorder) {
         4: 'Hủy đơn'
     };
 
+    const inputField = status === '2' || status === '4' ? 'text' : null;
+    console.log('Input Field:', inputField);
+
+    let inputPlaceholder = 'Nhập ghi chú (tùy chọn)';
+    if (status === '2') {
+        inputPlaceholder = 'Nhập mã vận đơn';
+    } else if (status === '4') {
+        inputPlaceholder = 'Nhập lý do hủy đơn';
+    }
     const vietnameseStatus = statusMap[status];
     Swal.fire({
         title: 'Xác nhận',
         text: `Bạn có chắc chắn muốn cập nhật trạng thái đơn hàng thành "${vietnameseStatus}" không?`,
-        input: 'text',
-        inputPlaceholder: 'Nhập ghi chú (tùy chọn)',
+        input: inputField,
+        inputPlaceholder: inputPlaceholder,
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
         confirmButtonText: 'Có',
         cancelButtonText: 'Hủy',
         preConfirm: (billOfLadingCode) => {
-            if (!billOfLadingCode) {
-                Swal.showValidationMessage('Mã vận đơn là bắt buộc!');
+            // Kiểm tra giá trị khi status = 2 hoặc 4
+            if ((status === 2 || status === 4) && !inputValue) {
+                Swal.showValidationMessage(status === 2 ? 'Mã vận đơn là bắt buộc!' : 'Lý do hủy đơn là bắt buộc!');
+                return false;
             }
-            return billOfLadingCode;
+            return billOfLadingCode || '';
         }
     }).then((result) => {
         if (result.isConfirmed) {
-            const billOfLadingCode = result.value;
+            const billOfLadingCode = result.value ? String(result.value) : '';
             Swal.fire({
                 title: 'Đang xử lý',
                 text: 'Vui lòng chờ trong khi cập nhật đơn hàng...',
@@ -511,10 +523,10 @@ function updateOrderStatus(status, idorder) {
                     Swal.fire({
                         icon: 'error',
                         title: 'Lỗi!',
-                        text: 'Có lỗi xảy ra khi cập nhật trạng thái đơn hàng.',
+                        text: `Có lỗi xảy ra khi cập nhật trạng thái đơn hàng: ${xhr.responseText}`,
                         confirmButtonText: 'OK'
                     });
-                    console.error('Error:', xhr.statusText);
+                    console.error('Error:', xhr.responseText);
                 }
             };
 
@@ -526,13 +538,14 @@ function updateOrderStatus(status, idorder) {
                     text: 'Có lỗi xảy ra khi gửi yêu cầu.',
                     confirmButtonText: 'OK'
                 });
-                console.error('Network Error:', xhr.statusText);
+                console.error('Network Error:', xhr.responseText);
             };
 
             xhr.send(JSON.stringify({
                 status: status,
                 idUser: userId,
-                billOfLadingCode: billOfLadingCode
+                billOfLadingCode: billOfLadingCode,
+                request: "UpdateOrderStatus"
             }));
         }
     });
@@ -639,4 +652,220 @@ function handleUserLinkClick(event) {
     event.preventDefault();
     var userID = this.getAttribute('data-user-id');
     getUserInfoByID(userID);
+}
+document.addEventListener("DOMContentLoaded", function () {
+    var modal = document.getElementById("addressModal");
+    var btn = document.getElementById("openAddressModalBtn1");
+    var span = document.getElementsByClassName("close")[0];
+
+    btn.onclick = function () {
+        modal.style.display = "block";
+    }
+
+    span.onclick = function () {
+        modal.style.display = "none";
+    }
+
+    window.onclick = function (event) {
+        if (event.target === modal) {
+            modal.style.display = "none";
+        }
+    }
+    var token = 'd01771f0-3f8b-11ef-8f55-4ee3d82283af';
+    var Parameter = {
+        url: "https://raw.githubusercontent.com/kenzouno1/DiaGioiHanhChinhVN/master/data.json",
+        method: "GET",
+        responseType: "json",
+    };
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', Parameter.url, true);
+    xhr.responseType = 'json';
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            renderCity(xhr.response);
+        } else {
+            console.error('Error fetching data: ', xhr.statusText);
+        }
+    };
+    xhr.onerror = function () {
+        console.error('Request failed');
+    };
+    xhr.send();
+    function renderCity(data) {
+        var citiesSelect = document.getElementById("city_1");
+        var districtsSelect = document.getElementById("district_1");
+        var wardsSelect = document.getElementById("ward_1");
+
+        citiesSelect.innerHTML = '<option value="" selected>Chọn tỉnh thành</option>';
+        data.forEach(function (city) {
+            var option = document.createElement("option");
+            option.value = city.Name;
+            option.textContent = city.Name;
+            citiesSelect.appendChild(option);
+        });
+
+        citiesSelect.addEventListener('change', function () {
+            districtsSelect.innerHTML = '<option value="" selected>Chọn quận huyện</option>';
+            wardsSelect.innerHTML = '<option value="" selected>Chọn phường xã</option>';
+
+            var selectedCity = data.find(city => city.Name === this.value);
+            if (selectedCity) {
+                selectedCity.Districts.forEach(function (district) {
+                    var option = document.createElement("option");
+                    option.value = district.Name;
+                    option.textContent = district.Name;
+                    districtsSelect.appendChild(option);
+                });
+            }
+            calculateShippingFee();
+        });
+
+
+        districtsSelect.addEventListener('change', function () {
+            wardsSelect.innerHTML = '<option value="" selected>Chọn phường xã</option>';
+            var selectedCity = data.find(city => city.Name === citiesSelect.value);
+            if (selectedCity) {
+                var selectedDistrict = selectedCity.Districts.find(district => district.Name === this.value);
+                if (selectedDistrict) {
+                    selectedDistrict.Wards.forEach(function (ward) {
+                        var option = document.createElement("option");
+                        option.value = ward.Name;
+                        option.textContent = ward.Name;
+                        wardsSelect.appendChild(option);
+                    });
+                }
+            }
+            calculateShippingFee();
+        });
+
+        wardsSelect.addEventListener('change', function () {
+            calculateShippingFee();
+        });
+    }
+    async function calculateShippingFee() {
+        var city = document.getElementById('city_1').value;
+        var district = document.getElementById('district_1').value;
+        var ward = document.getElementById('ward_1').value;
+
+        if (city && district && ward) {
+            await loadTinhThanh();
+        }
+    }
+    async function loadTinhThanh() {
+        var tinhthanh = document.getElementById('city_1').value;
+        let provinceID;
+        let districtID;
+        let wardCode;
+        try {
+            const response = await fetch('https://online-gateway.ghn.vn/shiip/public-api/master-data/province', {
+                method: 'GET',
+                headers: {
+                    'Token': token
+                }
+            });
+
+            const data = await response.json();
+
+            data.data.forEach(function (item) {
+                if (item.ProvinceName.trim() === tinhthanh.replace(/^Tỉnh\s+|\s+$/g, '').trim()) {
+                    provinceID = item.ProvinceID;
+                }
+            });
+            await loadQuanHuyen(provinceID);
+        } catch (error) {
+            alert('Không tìm thấy mã tỉnh.');
+        }
+
+        async function loadQuanHuyen(provinceId) {
+            var quanhuyen = document.getElementById('district_1').value;
+            try {
+                const response = await fetch('https://online-gateway.ghn.vn/shiip/public-api/master-data/district', {
+                    method: 'GET',
+                    headers: {
+                        'Token': token
+                    }
+                });
+
+                const data = await response.json();
+
+                data.data.forEach(function (item) {
+                    if (item.DistrictName.trim() === quanhuyen.trim()) {
+                        districtID = item.DistrictID;
+                    }
+                });
+                await loadXaPhuong(districtID);
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function loadXaPhuong(districtID) {
+            var xaphuong = document.getElementById('ward_1').value;
+            try {
+                const response = await fetch('https://online-gateway.ghn.vn/shiip/public-api/master-data/ward?district_id=' + districtID, {
+                    method: 'GET',
+                    headers: {
+                        'Token': token
+                    }
+                });
+
+                const data = await response.json();
+
+                data.data.forEach(function (item) {
+                    if (item.WardName.trim() === xaphuong.trim()) {
+                        wardCode = item.WardCode;
+                    }
+                });
+                getShippingFee(provinceID, districtID, wardCode),
+                console.log('Mã Tỉnh: ' + provinceID + ', Mã quận: ' + districtID + ', Mã xã: ' + wardCode);
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+    }
+});
+async function getShippingFee(provinceID, districtID, wardCode) {
+    const shopID = 4145900;
+    var token = 'd01771f0-3f8b-11ef-8f55-4ee3d82283af';
+
+    try {
+        const response = await fetch('https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Token': token
+            },
+            body: JSON.stringify({
+                "service_type_id": 2,
+                "from_district_id": 3440,
+                "from_ward_code": "13009",
+                "to_district_id": districtID,
+                "to_ward_code": wardCode,
+                "height": 20,
+                "length": 30,
+                "weight": 3000,
+                "width": 40,
+                "insurance_value": 0,
+                "coupon": null
+            })
+        });
+
+        const responseData = await response.json();
+
+        console.log('API Response:', responseData);
+
+        if (responseData.code === 200) {
+            let shippingFee = responseData.data.total;
+            shippingFee = responseData.data.total;
+            document.getElementById('costs_1').innerText = shippingFee;
+            document.getElementById('costs_display_1').innerText = shippingFee.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+
+          
+            console.log('Giá:', shippingFee);
+        } else {
+            console.error('API Error:', responseData.message);
+        }
+    } catch (error) {
+        console.error('Fetch Error:', error);
+    }
 }

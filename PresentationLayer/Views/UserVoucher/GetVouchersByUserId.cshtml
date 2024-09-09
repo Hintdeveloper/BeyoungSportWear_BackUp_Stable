@@ -1,4 +1,5 @@
 ﻿@using BusinessLogicLayer.Viewmodels.VoucherM
+@using static DataAccessLayer.Entity.Voucher
 @model IEnumerable<VoucherViewModel>
 
 @{
@@ -120,7 +121,15 @@
                 Mã Voucher :  @item.Code
             </div>
             <div class="card-body">
-                Giảm : @Currency.FormatCurrency(item.ReducedValue.ToString()) đ
+                Giảm :
+                @if (item.Type == Types.Percent)
+                {
+                    @($"{item.ReducedValue.ToString("0")} %")
+                }
+                else
+                {
+                    @($"{Currency.FormatCurrency(item.ReducedValue.ToString())} đ")
+                }
                 <br />
                 Đơn hàng từ: @Currency.FormatCurrency(item.MinimumAmount.ToString()) đ
             </div>
@@ -128,5 +137,5 @@
                 <div class="card-footer-left">HSD Còn : @item.DaysLeft </div>
             </div>
         </div>
-    }  
+    }
 </div>

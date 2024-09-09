@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var urlParts = currentUrl.split('/');
     var ID = urlParts[urlParts.length - 1];
     viewDetails(ID);
+
     document.getElementById('btnUpdateOrder').addEventListener('click', function (event) {
         event.preventDefault();
 
@@ -57,11 +58,23 @@ document.addEventListener('DOMContentLoaded', function () {
                     customerName: document.getElementById('modalcusname').value,
                     customerPhone: document.getElementById('modalcusphone').value,
                     customerEmail: document.getElementById('modalemail').value,
+                    shippingAddress: document.getElementById('modalshipaddess').value,
                     shippingAddressLine2: document.getElementById('modalshipaddress2').value,
-                    cotsts: 0,
+                    cotsts: document.getElementById('modalcosts').innerText,
                     orderDetails: orderDetails
                 };
-                console.log(orderData)
+
+                // Hiển thị thông báo chờ
+                Swal.fire({
+                    title: 'Đang xử lý...',
+                    text: 'Vui lòng chờ trong giây lát!',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
                 var xhr = new XMLHttpRequest();
                 xhr.open('PUT', apiUrl, true);
                 xhr.setRequestHeader('Content-Type', 'application/json');
@@ -152,29 +165,6 @@ async function viewDetails(ID) {
             console.error('Không tìm thấy phần tử có id "orderBody" trong DOM.');
         }
 
-        const orderhistoryBody = document.getElementById('orderhistory_body');
-        if (orderhistoryBody) {
-            orderhistoryBody.innerHTML = '';
-            if (data.orderHistoryVM && data.orderHistoryVM.length > 0) {
-                data.orderHistoryVM.forEach(history => {
-                    const formattedEditingHistory = history.editingHistory.replace(/\n/g, '<br>');
-                    const formattedChangeDetails = history.changeDetails.replace(/\n/g, '<br>');
-
-                    const row = `
-                        <tr>
-                            <td>${formatDateTime(history.changeDate)}</td>
-                            <td>${formattedEditingHistory}</td>
-                            <td>${formattedChangeDetails}</td>
-                        </tr>
-                    `;
-                    orderhistoryBody.insertAdjacentHTML('beforeend', row);
-                });
-            } else {
-                orderhistoryBody.innerHTML = '<tr><td colspan="6">Không có chi tiết đơn hàng</td></tr>';
-            }
-        } else {
-            console.error('Không tìm thấy phần tử có id "orderhistory_body" trong DOM.');
-        }
     } catch (error) {
         console.error('Error fetching order details:', error.message);
     } finally {
@@ -253,7 +243,6 @@ function formatDateTime(dateTimeString) {
 
     return date.toLocaleString('vi-VN', options) + ` ${period}`;
 }
-
 function formatLink(text) {
     var tempDiv = document.createElement('div');
     tempDiv.innerHTML = text;
@@ -268,13 +257,11 @@ function formatLink(text) {
     });
     return tempDiv.innerHTML;
 }
-
 function handleUserLinkClick(event) {
     event.preventDefault();
     var userID = this.getAttribute('data-user-id');
     getUserInfoByID(userID);
 }
-
 function addClickEventToUserLinks() {
     document.querySelectorAll('a[data-user-id]').forEach(link => {
         link.style.fontWeight = 'bold';
@@ -282,12 +269,9 @@ function addClickEventToUserLinks() {
         link.addEventListener('click', handleUserLinkClick);
     });
 }
-
 const observer = new MutationObserver(addClickEventToUserLinks);
 observer.observe(document.body, { childList: true, subtree: true });
-
 addClickEventToUserLinks();
-
 function getUserInfoByID(userID) {
     var apiUrl = `https://localhost:7241/api/ApplicationUser/GetInformationUser/${userID}`;
 
@@ -320,3 +304,276 @@ function getUserInfoByID(userID) {
     xhr.send();
 }
 
+document.addEventListener('DOMContentLoaded', function () {
+    var citySelect = document.getElementById("city");
+    var districtSelect = document.getElementById("district");
+    var wardSelect = document.getElementById("ward");
+    var shippingAddressInput = document.getElementById("modalshipaddess");
+
+    function updateShippingAddress() {
+        var city = citySelect.value;
+        var district = districtSelect.value;
+        var ward = wardSelect.value;
+
+        var shippingAddress = "";
+
+        if (ward !== "") {
+            shippingAddress += (shippingAddress !== "" ? ', ' : '') + ward;
+        }
+        if (district !== "") {
+            shippingAddress += (shippingAddress !== "" ? ', ' : '') + district;
+        }
+        if (city !== "") {
+            shippingAddress += (shippingAddress !== "" ? ', ' : '') + city;
+        }
+
+        shippingAddressInput.value = shippingAddress;
+    }
+
+
+    citySelect.addEventListener('change', updateShippingAddress);
+    districtSelect.addEventListener('change', updateShippingAddress);
+    wardSelect.addEventListener('change', updateShippingAddress);
+});
+document.addEventListener("DOMContentLoaded", function () {
+    var modal = document.getElementById("addressModal");
+    var btn = document.getElementById("openAddressModalBtn");
+    var span = document.getElementsByClassName("close")[0];
+
+    btn.onclick = function () {
+        modal.style.display = "block";
+    }
+
+    span.onclick = function () {
+        modal.style.display = "none";
+    }
+
+    window.onclick = function (event) {
+        if (event.target === modal) {
+            modal.style.display = "none";
+        }
+    }
+    function updateNiceSelect(id) {
+        var select = document.getElementById(id);
+        var niceSelect = select.nextElementSibling;
+        var options = select.querySelectorAll('option');
+        var list = niceSelect.querySelector('.list');
+        var current = niceSelect.querySelector('.current');
+
+        list.innerHTML = '';
+        options.forEach(function (option) {
+            var li = document.createElement('li');
+            li.textContent = option.textContent;
+            li.setAttribute('data-value', option.value);
+            li.className = 'option' + (option.selected ? ' selected focus' : '');
+            li.addEventListener('click', function () {
+                select.value = option.value;
+                current.textContent = option.textContent;
+                select.dispatchEvent(new Event('change'));
+            });
+            list.appendChild(li);
+        });
+
+        var selectedOption = select.querySelector('option:checked');
+        current.textContent = selectedOption ? selectedOption.textContent : 'Chọn';
+    }
+    var token = 'd01771f0-3f8b-11ef-8f55-4ee3d82283af';
+    var Parameter = {
+        url: "https://raw.githubusercontent.com/kenzouno1/DiaGioiHanhChinhVN/master/data.json",
+        method: "GET",
+        responseType: "json",
+    };
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', Parameter.url, true);
+    xhr.responseType = 'json';
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            renderCity(xhr.response);
+        } else {
+            console.error('Error fetching data: ', xhr.statusText);
+        }
+    };
+    xhr.onerror = function () {
+        console.error('Request failed');
+    };
+    xhr.send();
+    function renderCity(data) {
+        var citiesSelect = document.getElementById("city");
+        var districtsSelect = document.getElementById("district");
+        var wardsSelect = document.getElementById("ward");
+
+        citiesSelect.innerHTML = '<option value="" selected>Chọn tỉnh thành</option>';
+        data.forEach(function (city) {
+            var option = document.createElement("option");
+            option.value = city.Name;
+            option.textContent = city.Name;
+            citiesSelect.appendChild(option);
+
+        });
+        updateNiceSelect('city');
+        citiesSelect.addEventListener('change', function () {
+            districtsSelect.innerHTML = '<option value="" selected>Chọn quận huyện</option>';
+            wardsSelect.innerHTML = '<option value="" selected>Chọn phường xã</option>';
+
+            var selectedCity = data.find(city => city.Name === this.value);
+            if (selectedCity) {
+                selectedCity.Districts.forEach(function (district) {
+                    var option = document.createElement("option");
+                    option.value = district.Name;
+                    option.textContent = district.Name;
+                    districtsSelect.appendChild(option);
+                });
+            }
+            updateNiceSelect('district');
+            updateNiceSelect('ward');
+            calculateShippingFee();
+        });
+
+
+        districtsSelect.addEventListener('change', function () {
+            wardsSelect.innerHTML = '<option value="" selected>Chọn phường xã</option>';
+            var selectedCity = data.find(city => city.Name === citiesSelect.value);
+            if (selectedCity) {
+                var selectedDistrict = selectedCity.Districts.find(district => district.Name === this.value);
+                if (selectedDistrict) {
+                    selectedDistrict.Wards.forEach(function (ward) {
+                        var option = document.createElement("option");
+                        option.value = ward.Name;
+                        option.textContent = ward.Name;
+                        wardsSelect.appendChild(option);
+                    });
+                }
+            }
+            updateNiceSelect('ward');
+            calculateShippingFee();
+        });
+
+        wardsSelect.addEventListener('change', function () {
+            calculateShippingFee();
+        });
+    }
+    async function calculateShippingFee() {
+        var city = document.getElementById('city').value;
+        var district = document.getElementById('district').value;
+        var ward = document.getElementById('ward').value;
+
+        if (city && district && ward) {
+            await loadTinhThanh();
+        }
+    }
+    async function loadTinhThanh() {
+        var tinhthanh = document.getElementById('city').value;
+        let provinceID;
+        let districtID;
+        let wardCode;
+        try {
+            const response = await fetch('https://online-gateway.ghn.vn/shiip/public-api/master-data/province', {
+                method: 'GET',
+                headers: {
+                    'Token': token
+                }
+            });
+
+            const data = await response.json();
+
+            data.data.forEach(function (item) {
+                if (item.ProvinceName.trim() === tinhthanh.replace(/^Tỉnh\s+|\s+$/g, '').trim()) {
+                    provinceID = item.ProvinceID;
+                }
+            });
+            await loadQuanHuyen(provinceID);
+        } catch (error) {
+            alert('Không tìm thấy mã tỉnh.');
+        }
+
+        async function loadQuanHuyen(provinceId) {
+            var quanhuyen = document.getElementById('district').value;
+            try {
+                const response = await fetch('https://online-gateway.ghn.vn/shiip/public-api/master-data/district', {
+                    method: 'GET',
+                    headers: {
+                        'Token': token
+                    }
+                });
+
+                const data = await response.json();
+
+                data.data.forEach(function (item) {
+                    if (item.DistrictName.trim() === quanhuyen.trim()) {
+                        districtID = item.DistrictID;
+                    }
+                });
+                await loadXaPhuong(districtID);
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function loadXaPhuong(districtID) {
+            var xaphuong = document.getElementById('ward').value;
+            try {
+                const response = await fetch('https://online-gateway.ghn.vn/shiip/public-api/master-data/ward?district_id=' + districtID, {
+                    method: 'GET',
+                    headers: {
+                        'Token': token
+                    }
+                });
+
+                const data = await response.json();
+
+                data.data.forEach(function (item) {
+                    if (item.WardName.trim() === xaphuong.trim()) {
+                        wardCode = item.WardCode;
+                    }
+                });
+
+                console.log('Mã Tỉnh: ' + provinceID + ', Mã quận: ' + districtID + ', Mã xã: ' + wardCode);
+                await getShippingFee(provinceID, districtID, wardCode);
+
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+        async function getShippingFee(provinceID, districtID, wardCode) {
+            const shopID = 4145900;
+            var token = 'd01771f0-3f8b-11ef-8f55-4ee3d82283af';
+
+            try {
+                const response = await fetch('https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Token': token
+                    },
+                    body: JSON.stringify({
+                        "service_type_id": 2,
+                        "from_district_id": 3440,
+                        "from_ward_code": "13009",
+                        "to_district_id": districtID,
+                        "to_ward_code": wardCode,
+                        "height": 20,
+                        "length": 30,
+                        "weight": 3000,
+                        "width": 40,
+                        "insurance_value": 0,
+                        "coupon": null
+                    })
+                });
+
+                const data = await response.json();
+
+                console.log('API Response:', data);
+                if (data.code === 200) {
+                    let shippingFee = data.data.total;
+                    document.getElementById('modalcosts').innerText = shippingFee;
+                    console.log('Giá:' + shippingFee);
+                } else {
+                    console.error('Error:', data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+    }
+});

@@ -13,6 +13,7 @@ namespace BusinessLogicLayer.Viewmodels.Order
         public string? ShippingAddressLine2 { get; set; }
         public DateTime ShipDate { get; set; } = DateTime.UtcNow.AddDays(3);
         public string? Notes { get; set; }
+        public decimal Cotsts { get; set; }
         public List<OrderDetailsUpdateVM> OrderDetails { get; set; } = new();
     }
 }

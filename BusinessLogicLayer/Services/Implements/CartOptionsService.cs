@@ -97,6 +97,7 @@ namespace BusinessLogicLayer.Services.Implements
         {
             var cartOptions = await _dbcontext.CartOptions
                                                         .Where(co => co.IDCart == IDCart)
+                                                        .OrderByDescending(co => co.CreateDate)
                                                         .Select(co => new CartOptionsVM
                                                         {
                                                             IDCart = co.IDCart,
@@ -107,7 +108,7 @@ namespace BusinessLogicLayer.Services.Implements
                                                             SizeName = co.Options.Sizes.Name,
                                                             ColorName = co.Options.Colors.Name,
                                                             UnitPrice = co.UnitPrice,
-                                                            TotalPrice = co.Quantity * co.UnitPrice
+                                                            TotalPrice = co.Quantity * co.UnitPrice,
                                                         })
                                                         .ToListAsync();
             return cartOptions;

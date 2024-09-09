@@ -2,63 +2,52 @@
     ViewData["Title"] = "Cart";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
-<section class="breadcrumb-option">
+<section class="breadcrumb-option" style="background-color: #f3f3f3; padding: 20px 0;">
     <div class="container">
         <div class="row">
             <div class="col-lg-12">
-                <div class="breadcrumb__text">
-                    <h4>Shopping Cart</h4>
-                    <div class="breadcrumb__links">
-                        <a href="./index.html">Home</a>
-                        <a href="./shop.html">Shop</a>
-                        <span>Shopping Cart</span>
-                    </div>
+                <div class="breadcrumb__text" style="text-align: center;">
+                    <h4 style="font-size: 24px; font-weight: bold;">Giỏ hàng</h4>
                 </div>
             </div>
         </div>
     </div>
 </section>
-<section class="shopping-cart spad">
+<section class="shopping-cart spad" style="padding: 50px 0;">
     <div class="container">
         <div class="row">
             <div class="col-lg-8">
-                <div class="shopping__cart__table">
-                    <table>
+                <div class="shopping__cart__table" style="margin-bottom: 30px;">
+                    <table style="width: 100%; text-align: left; border-collapse: collapse;">
                         <thead>
                             <tr>
-                                <th>Sản phẩm</th>
-                                <th>Số lượng</th>
-                                <th>Giá</th>
-                                <th>Tổng</th>
-                                <th></th>
+                                <th style="padding: 10px; border-bottom: 1px solid #ddd;">Sản phẩm</th>
+                                <th style="padding: 10px; border-bottom: 1px solid #ddd;">Số lượng</th>
+                                <th style="padding: 10px; border-bottom: 1px solid #ddd;">Giá</th>
+                                <th style="padding: 10px; border-bottom: 1px solid #ddd;">Tổng</th>
+                                <th style="padding: 10px; border-bottom: 1px solid #ddd;"></th>
                             </tr>
                         </thead>
                         <tbody id="data_cart_table">
-                           
+                            <!-- Dữ liệu giỏ hàng sẽ được render tại đây -->
                         </tbody>
                     </table>
                 </div>
                 <div class="row">
                     <div class="col-lg-6 col-md-6 col-sm-6">
-                        <div class="continue__btn">
-                            <a href="/main">Tiếp tục mua sắm</a>
+                        <div class="continue__btn" style="text-align: left;">
+                            <a href="/main" style="padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;">Tiếp tục mua sắm</a>
                         </div>
                     </div>
-                    <div class="col-lg-6 col-md-6 col-sm-6">
-                        <div id="update-cart-btn" class="continue__btn update__btn">
-                            <a href="#"><i class="fa fa-spinner"></i>Cập nhật giỏ hàng</a>
-                        </div>
-                    </div>
-
                 </div>
             </div>
             <div class="col-lg-4">
-                <div class="cart__total">
-                    <h6>Tổng giỏ hàng</h6>
-                    <ul>
-                        <li><span id="total_amount">0đ</span></li>
+                <div class="cart__total" style="border: 1px solid #ddd; padding: 20px; border-radius: 5px;">
+                    <h6 style="font-size: 20px; font-weight: bold; margin-bottom: 20px;">Tổng giỏ hàng</h6>
+                    <ul style="list-style: none; padding: 0; margin-bottom: 20px;">
+                        <li style="font-size: 18px; font-weight: bold;"><span id="total_amount" style="color: #ff0000;">0đ</span></li>
                     </ul>
-                    <button type="button" id="btn_checkout" class="primary-btn">Thanh toán</button>
+                    <button type="button" id="btn_checkout" class="primary-btn" style="padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px;">Thanh toán</button>
                 </div>
             </div>
         </div>

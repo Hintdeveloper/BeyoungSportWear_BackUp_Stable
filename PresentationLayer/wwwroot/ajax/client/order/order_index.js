@@ -41,7 +41,7 @@ function OrderList(orders) {
             <td>${order.totalAmount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</td>
             <td><span class="badge bg-success">${translateOrderStatus(order.orderStatus)}</span></td>
             <td>
-                <button class="btn btn-danger btn-sm trash" type="button" data-id="${order.id}" id="cancelOrderButton" ${isCancelled ? "disabled" : ""}>
+                <button class="btn btn-danger btn-sm trash"onclick="updateOrderStatus('4','${order.id}')"  type="button" data-id="${order.id}" id="cancelOrderButton" ${isCancelled ? "disabled" : ""}>
                     <i class="fa fa-ban"></i>
                 </button>
                  <button class="btn btn-primary btn-sm edit" type="button" title="Sửa" onclick="navigateToUpdatePageEdit('${order.id}')">
@@ -54,61 +54,101 @@ function OrderList(orders) {
         `;
         orderListBody.appendChild(row);
     });
-
-    document.querySelectorAll('.trash').forEach(button => {
-        button.addEventListener('click', function () {
-            const orderId = this.getAttribute('data-id');
-            cancelOrder(orderId);
-        });
-    });
 }
-function cancelOrder(orderId) {
+function updateOrderStatus(status, idorder) {
+    console.log('status', status)
+    const statusMap = {
+        0: '',
+        1: 'Xác nhận đơn hàng',
+        2: 'Vận chuyển',
+        3: 'Đã giao hàng',
+        4: 'Hủy đơn'
+    };
+
+    const inputField = status === '2' || status === '4' ? 'text' : null;
+    console.log('Input Field:', inputField);
+
+    let inputPlaceholder = 'Nhập ghi chú (tùy chọn)';
+    if (status === '2') {
+        inputPlaceholder = 'Nhập mã vận đơn';
+    } else if (status === '4') {
+        inputPlaceholder = 'Nhập lý do hủy đơn';
+    }
+    const vietnameseStatus = statusMap[status];
     Swal.fire({
         title: 'Xác nhận',
-        text: "Bạn có chắc chắn muốn hủy đơn hàng này không?",
-        icon: 'warning',
+        text: `Bạn có chắc chắn muốn cập nhật trạng thái đơn hàng thành "${vietnameseStatus}" không?`,
+        input: inputField,
+        inputPlaceholder: inputPlaceholder,
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
         confirmButtonText: 'Có',
-        cancelButtonText: 'Hủy'
+        cancelButtonText: 'Hủy',
+        preConfirm: (billOfLadingCode) => {
+            // Kiểm tra giá trị khi status = 2 hoặc 4
+            if ((status === 2 || status === 4) && !inputValue) {
+                Swal.showValidationMessage(status === 2 ? 'Mã vận đơn là bắt buộc!' : 'Lý do hủy đơn là bắt buộc!');
+                return false;
+            }
+            return billOfLadingCode || '';
+        }
     }).then((result) => {
         if (result.isConfirmed) {
-            const xhr = new XMLHttpRequest();
-            xhr.open('PUT', `https://localhost:7241/api/Order/MarkAsCancelled/${orderId}/${userId}`, true);
-            xhr.setRequestHeader('Content-Type', 'application/json');
-            xhr.setRequestHeader('Authorization', `Bearer ${getJwtFromCookie()}`);
+            const billOfLadingCode = result.value ? String(result.value) : '';
+            Swal.fire({
+                title: 'Đang xử lý',
+                text: 'Vui lòng chờ trong khi cập nhật đơn hàng...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
 
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === XMLHttpRequest.DONE) {
-                    if (xhr.status === 200) {
-                        Swal.fire(
-                            'Thành công!',
-                            'Đơn hàng đã được hủy.',
-                            'success'
-                        );
-                        fetchOrderList();
-                    } else {
-                        Swal.fire(
-                            'Lỗi!',
-                            'Có lỗi xảy ra khi hủy đơn hàng.',
-                            'error'
-                        );
-                        console.error('Error:', xhr.statusText);
-                    }
+            const apiUrl = `https://localhost:7241/api/Order/UpdateOrderStatus/${idorder}`;
+            var xhr = new XMLHttpRequest();
+            xhr.open('PUT', apiUrl, true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+
+            xhr.onload = function () {
+                Swal.close();
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Thành công!',
+                        text: `Trạng thái đơn hàng đã được cập nhật thành "${vietnameseStatus}".`,
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi!',
+                        text: `Có lỗi xảy ra khi cập nhật trạng thái đơn hàng: ${xhr.responseText}`,
+                        confirmButtonText: 'OK'
+                    });
+                    console.error('Error:', xhr.responseText);
                 }
             };
 
             xhr.onerror = function () {
-                Swal.fire(
-                    'Lỗi!',
-                    'Có lỗi xảy ra khi hủy đơn hàng.',
-                    'error'
-                );
-                console.error('Request failed');
+                Swal.close();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi!',
+                    text: 'Có lỗi xảy ra khi gửi yêu cầu.',
+                    confirmButtonText: 'OK'
+                });
+                console.error('Network Error:', xhr.responseText);
             };
 
-            xhr.send();
+            xhr.send(JSON.stringify({
+                status: status,
+                idUser: userId,
+                billOfLadingCode: billOfLadingCode,
+                request: "UpdateOrderStatus"
+            }));
         }
     });
 }

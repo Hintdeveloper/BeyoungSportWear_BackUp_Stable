@@ -31,6 +31,7 @@ function createOrderAfterPayment() {
         return;
     }
     orderData.paymentStatus = 1;
+    orderData.orderStatus = 1;
 
     const xhr = new XMLHttpRequest();
     xhr.open('POST', 'https://localhost:7241/api/Order/create?printInvoice=false', true);

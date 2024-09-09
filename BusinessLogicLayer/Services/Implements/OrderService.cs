@@ -608,6 +608,13 @@ namespace BusinessLogicLayer.Services.Implements
                     order.CustomerEmail = request.CustomerEmail;
                 }
 
+                if (order.ShippingAddress != request.ShippingAddress)
+                {
+                    changeDetails.AppendLine($"Địa chỉ giao hàng: {order.ShippingAddress} => {request.ShippingAddress}");
+                    editingHistory.AppendLine("Thay đổi địa chỉ giao hàng");
+                    order.ShippingAddress = request.ShippingAddress;
+                }
+                
                 if (order.ShippingAddressLine2 != request.ShippingAddressLine2)
                 {
                     changeDetails.AppendLine($"Địa chỉ giao hàng cụ thể: {order.ShippingAddressLine2} => {request.ShippingAddressLine2}");
@@ -615,6 +622,13 @@ namespace BusinessLogicLayer.Services.Implements
                     order.ShippingAddressLine2 = request.ShippingAddressLine2;
                 }
 
+                if (order.Cotsts != request.Cotsts)
+                {
+                    changeDetails.AppendLine($"Giá vận chuyển: {order.Cotsts} => {request.Cotsts}");
+                    editingHistory.AppendLine("Thay đổi giá vận chuyển");
+                    order.Cotsts = request.Cotsts;
+                }
+                
                 if (order.Notes != request.Notes)
                 {
                     changeDetails.AppendLine($"Ghi chú: {order.Notes} => {request.Notes}");
@@ -955,7 +969,11 @@ namespace BusinessLogicLayer.Services.Implements
             var username = user != null ? user.UserName : "Unknown User";
 
             var newStatus = (OrderStatus)status;
-
+            if (order.PaymentStatus == PaymentStatus.Success && newStatus == OrderStatus.Cancelled)
+            {
+                Console.WriteLine($"Không thể hủy đơn hàng đã thanh toán. IDOrder: {IDOrder}");
+                return false;
+            }
             if (order.OrderStatus == newStatus)
             {
                 return true;

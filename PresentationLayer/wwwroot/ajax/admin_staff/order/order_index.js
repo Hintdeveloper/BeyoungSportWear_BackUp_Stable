@@ -368,6 +368,7 @@ function orderList(order) {
     });
 }
 function updateOrderStatus(status, idorder) {
+    console.log('status', status)
     const statusMap = {
         0: '',
         1: 'Xác nhận đơn hàng',
@@ -376,26 +377,37 @@ function updateOrderStatus(status, idorder) {
         4: 'Hủy đơn'
     };
 
+    const inputField = status === '2' || status === '4' ? 'text' : null;
+    console.log('Input Field:', inputField);
+
+    let inputPlaceholder = 'Nhập ghi chú (tùy chọn)';
+    if (status === '2') {
+        inputPlaceholder = 'Nhập mã vận đơn';
+    } else if (status === '4') {
+        inputPlaceholder = 'Nhập lý do hủy đơn';
+    }
     const vietnameseStatus = statusMap[status];
     Swal.fire({
         title: 'Xác nhận',
         text: `Bạn có chắc chắn muốn cập nhật trạng thái đơn hàng thành "${vietnameseStatus}" không?`,
-        input: 'text', 
-        inputPlaceholder: 'Nhập ghi chú (tùy chọn)',
+        input: inputField,
+        inputPlaceholder: inputPlaceholder,
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
         confirmButtonText: 'Có',
         cancelButtonText: 'Hủy',
         preConfirm: (billOfLadingCode) => {
-            if (!billOfLadingCode) {
-                Swal.showValidationMessage('Mã vận đơn là bắt buộc!');
+            // Kiểm tra giá trị khi status = 2 hoặc 4
+            if ((status === 2 || status === 4) && !inputValue) {
+                Swal.showValidationMessage(status === 2 ? 'Mã vận đơn là bắt buộc!' : 'Lý do hủy đơn là bắt buộc!');
+                return false;
             }
-            return billOfLadingCode; 
+            return billOfLadingCode || '';
         }
     }).then((result) => {
         if (result.isConfirmed) {
-            const billOfLadingCode = result.value;
+            const billOfLadingCode = result.value ? String(result.value) : '';
             Swal.fire({
                 title: 'Đang xử lý',
                 text: 'Vui lòng chờ trong khi cập nhật đơn hàng...',
@@ -425,10 +437,10 @@ function updateOrderStatus(status, idorder) {
                     Swal.fire({
                         icon: 'error',
                         title: 'Lỗi!',
-                        text: 'Có lỗi xảy ra khi cập nhật trạng thái đơn hàng.',
+                        text: `Có lỗi xảy ra khi cập nhật trạng thái đơn hàng: ${xhr.responseText}`,
                         confirmButtonText: 'OK'
                     });
-                    console.error('Error:', xhr.statusText);
+                    console.error('Error:', xhr.responseText);
                 }
             };
 
@@ -440,13 +452,14 @@ function updateOrderStatus(status, idorder) {
                     text: 'Có lỗi xảy ra khi gửi yêu cầu.',
                     confirmButtonText: 'OK'
                 });
-                console.error('Network Error:', xhr.statusText);
+                console.error('Network Error:', xhr.responseText);
             };
 
             xhr.send(JSON.stringify({
                 status: status,
                 idUser: userId,
-                billOfLadingCode: billOfLadingCode
+                billOfLadingCode: billOfLadingCode,
+                request: "UpdateOrderStatus"
             }));
         }
     });

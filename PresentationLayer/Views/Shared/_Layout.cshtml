@@ -39,19 +39,17 @@
                     <div class="col-lg-6 col-md-5">
                         <div class="header__top__right">
                             <div class="header__top__links" id="function_view" style="display: none;">
-                                <a asp-controller="UserVoucher" asp-action="GetVouchersByUserId">
-                                    <i class="fas fa-shopping-cart"></i>Ưu đãi
-                                </a>
+
                                 <a href="/cart_index">
                                     <i class="fas fa-shopping-cart"></i> Giỏ hàng
-                                </a> 
+                                </a>
                                 <a href="/order_user">
                                     <i class="fas fa-shopping-cart"></i> Đơn hàng
                                 </a>
                                 <a href="/account">
                                     <i class="fas fa-shopping-cart"></i> Tài khoản
                                 </a>
-                                
+
                             </div>
                             <div class="header__top__links" id="login_message" style="display: none;">
                                 <a href="/cart_index"><i class="fas fa-shopping-cart"></i> Giỏ hàng</a>
@@ -74,11 +72,13 @@
                     <nav class="header__menu mobile-menu">
                         <ul>
                             <li class="active"><a href="/main">Trang chủ</a></li>
-
-                            <li><a asp-action="Index" asp-controller="Category">Sản phẩm</a></li>
-                            <li><a href="">Giới thiệu</a></li>
+                            <li>
+                                <a asp-action="Index" asp-controller="Category">Sản phẩm</a>
+                            </li>
+                            <li>
+                                <a asp-controller="UserVoucher" asp-action="GetVouchersByUserId">Ưu đãi</a>
+                            </li>
                             <li><a href="/contact_hotline">Thông tin liên hệ</a></li>
-                            <li><a href="/">Vị trí cửa hàng</a></li>
                         </ul>
                     </nav>
                 </div>

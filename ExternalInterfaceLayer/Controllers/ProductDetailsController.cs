@@ -53,10 +53,7 @@ namespace ExternalInterfaceLayer.Controllers
             var obj = await _IProductDetailsService.GetAllAsync(pageIndex, pageSize);
             return Ok(obj);
         }
-<<<<<<< HEAD
-=======
-        [Authorize(Roles = "Admin")]
->>>>>>> 702a9372b4a75282c91184b728ce29aea5e0310c
+
         [HttpPost("UpdateIsActive")]
         public async Task<IActionResult> UpdateIsActive([FromBody] UpdateIsActiveRequest request)
         {

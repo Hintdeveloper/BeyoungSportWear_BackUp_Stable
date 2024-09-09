@@ -145,7 +145,11 @@
 
         </div>
         <div class="col-md-6">
-            <p><strong>Địa chỉ nhận hàng:</strong> <input id="modalshipaddess" readonly/></p>
+            <p>
+                <strong>Địa chỉ nhận hàng:</strong> 
+                <input id="modalshipaddess" readonly /> 
+                <button id="openAddressModalBtn" type="button" class="btn btn-secondary">Chọn địa chỉ</button>
+            </p>
             <p><strong>Địa chỉ cụ thể:</strong> <input id="modalshipaddress2" /></p>
             <p><strong>Phí giao hàng (nếu có):</strong> <span id="modalcosts"></span></p>
             <p><strong>Hình thức thanh toán:</strong> <span id="modalpaymentmethod"></span></p>
@@ -170,20 +174,6 @@
                 </tr>
             </thead>
             <tbody id="orderBody"></tbody>
-        </table>
-    </div>
-    <div class="order-history" id="orderHistorySection">
-        <h2>Lịch sử đơn hàng</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th class="col-2">Ngày thay đổi</th>
-                    <th class="col-4">Lịch sử chỉnh sửa</th>
-                    <th class="col-4">Chi tiết chỉnh sửa</th>
-                </tr>
-            </thead>
-            <tbody id="orderhistory_body">
-            </tbody>
         </table>
     </div>
     <div class="modal-footer">
@@ -215,6 +205,29 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal -->
+<div id="addressModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Chọn địa chỉ giao hàng</h2>
+        <div class="modal-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <label for="city">Thành phố:</label>
+                    <select id="city" class="form-control"></select>
+                </div>
+                <div class="col-md-4">
+                    <label for="district">Quận/Huyện:</label>
+                    <select id="district" class="form-control"></select>
+                </div>
+                <div class="col-md-4">
+                    <label for="ward">Phường/Xã:</label>
+                    <select id="ward" class="form-control"></select>
+                </div>
             </div>
         </div>
     </div>

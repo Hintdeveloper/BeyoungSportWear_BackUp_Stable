@@ -38,6 +38,8 @@ namespace BusinessLogicLayer.Viewmodels.VoucherM
         public decimal ReducedValue { get; set; }
         public StatusVoucher? IsActive { get; set; }
         public int status { get; set; }
+        public Types Type { get; set; }
+
         public int DaysLeft
         {
             get

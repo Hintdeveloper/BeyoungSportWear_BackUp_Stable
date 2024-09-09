@@ -101,7 +101,6 @@ function fetchProductDetails(idOptions, callback) {
         if (xhr.status >= 200 && xhr.status < 300) {
             const productData = JSON.parse(xhr.responseText);
             callback(null, productData);
-            console.log(productData)
         } else {
             callback(new Error('Failed to fetch product details'));
         }
@@ -572,7 +571,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var closeModal = document.getElementsByClassName('close')[0];
     var selectAddressBtn = document.getElementById('selectAddressBtn');
     var userId = getUserIdFromJwt(getJwtFromCookie());
-
+    loadUserAddresses();
     openModalBtn.onclick = function () {
         modal.style.display = 'block';
         loadUserAddresses();
@@ -617,8 +616,13 @@ document.addEventListener('DOMContentLoaded', function () {
                         li.dataset.commune = address.commune;
                         li.dataset.specificAddress = address.specificAddress;
                         addressList.appendChild(li);
+                        if (address.isDefault) {
+                            defaultAddress = address;
+                        }
                     });
-
+                    if (defaultAddress) {
+                        fillAddressForm(defaultAddress);
+                    }
                     addressList.addEventListener('click', function (event) {
                         if (event.target.tagName === 'LI') {
                             const selectedAddress = event.target;
@@ -640,7 +644,28 @@ document.addEventListener('DOMContentLoaded', function () {
 
         xhr.send();
     }
+    async function fillAddressForm(address) {
+        document.getElementById('name').value = address.firstAndLastName;
+        document.getElementById('phone').value = address.phoneNumber;
+        document.getElementById('gmail').value = address.gmail;
+        document.getElementById('street').value = address.specificAddress;
+        const fullAddress = `${address.city}, ${address.districtCounty}, ${address.commune}, ${address.specificAddress}`;
 
+        document.getElementById('shippingAddress').value = fullAddress;
+        const provinceID = await fetchProvinces(address.city);
+        if (provinceID) {
+            const districtID = await fetchDistricts(provinceID, address.districtCounty);
+            if (districtID) {
+                const wardCode = await fetchWards(districtID, address.commune);
+                if (wardCode) {
+                    await getShippingFee(provinceID, districtID, wardCode);
+                    console.log('provinceID', provinceID);
+                    console.log('districtID', districtID);
+                    console.log('wardCode', wardCode);
+                }
+            }
+        }
+    }
     selectAddressBtn.onclick = function () {
         const selectedAddressId = this.dataset.selectedAddressId;
         if (selectedAddressId) {
@@ -672,7 +697,6 @@ function getFormData() {
     const ward = document.getElementById('ward').value;
     const existingHexCodes = [];
     const shippingAddress = `${ward}, ${district}, ${city}`;
-
     function generateHexCode(existingHexCodes) {
         let hexString;
         let randomPart;
@@ -722,10 +746,9 @@ function getFormData() {
     if (validateNotNull(customerName, "Tên khách hàng") &&
         validateNotNull(customerPhone, "Số điện thoại") &&
         validateNotNull(customerEmail, "Email") &&
-        validateNotNull(street, "Địa chỉ") &&
-        validateNotNull(city, "Thành phố") &&
-        validateNotNull(district, "Quận/Huyện") &&
-        validateNotNull(ward, "Phường/Xã")) {
+        validateNotNull(street, "Địa chỉ")
+
+    ) {
         return {
             createBy: userId || "Khách vãng lai",
             idUser: userId || "Khách vãng lai",
@@ -800,7 +823,6 @@ function sendOrderData() {
         processOrder(orderData);
     }
 }
-
 function processOrder(orderData) {
     Swal.fire({
         title: 'Xác nhận gửi đơn hàng',
@@ -1229,9 +1251,9 @@ async function getShippingFee(provinceID, districtID, wardCode) {
         console.log('API Response:', responseData);
         if (responseData.code === 200) {
             shippingFee = responseData.data.total;
-            document.getElementById('shippingFee').innerText = shippingFee;
-            document.getElementById('shippingFeeDisplay').innerText = shippingFee.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
-            calculateTotalPay();
+            document.getElementById('fee_ship').innerText = shippingFee;
+            document.getElementById('fee_shipDisplay').innerText = shippingFee.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+            updateTotalOrder();
             console.log('Giá:' + shippingFee)
         } else {
             console.error('Error:', data.message);
