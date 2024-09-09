@@ -4,6 +4,7 @@ using DataAccessLayer.Application;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccessLayer.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    partial class ApplicationDBContextModelSnapshot : ModelSnapshot
+    [Migration("20240909145914_db_2")]
+    partial class db_2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -85,7 +88,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasIndex("IDUser");
 
-                    b.ToTable("Address", (string)null);
+                    b.ToTable("Address");
                 });
 
             modelBuilder.Entity("DataAccessLayer.Entity.Brand", b =>
@@ -136,7 +139,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasKey("ID");
 
-                    b.ToTable("Brand", (string)null);
+                    b.ToTable("Brand");
                 });
 
             modelBuilder.Entity("DataAccessLayer.Entity.Cart", b =>
@@ -159,7 +162,7 @@ namespace DataAccessLayer.Migrations
                         .IsUnique()
                         .HasFilter("[IDUser] IS NOT NULL");
 
-                    b.ToTable("Cart", (string)null);
+                    b.ToTable("Cart");
                 });
 
             modelBuilder.Entity("DataAccessLayer.Entity.CartOptions", b =>
@@ -205,7 +208,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasIndex("IDCart");
 
-                    b.ToTable("CartOptions", (string)null);
+                    b.ToTable("CartOptions");
                 });
 
             modelBuilder.Entity("DataAccessLayer.Entity.Category", b =>
@@ -245,7 +248,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasKey("ID");
 
-                    b.ToTable("Category", (string)null);
+                    b.ToTable("Category");
                 });
 
             modelBuilder.Entity("DataAccessLayer.Entity.Colors", b =>
@@ -285,7 +288,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasKey("ID");
 
-                    b.ToTable("Colors", (string)null);
+                    b.ToTable("Colors");
 
                     b.HasData(
                         new
@@ -374,7 +377,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasIndex("IDProductDetails");
 
-                    b.ToTable("Images", (string)null);
+                    b.ToTable("Images");
                 });
 
             modelBuilder.Entity("DataAccessLayer.Entity.Manufacturer", b =>
@@ -430,7 +433,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasKey("ID");
 
-                    b.ToTable("Manufacturer", (string)null);
+                    b.ToTable("Manufacturer");
                 });
 
             modelBuilder.Entity("DataAccessLayer.Entity.Material", b =>
@@ -470,7 +473,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasKey("ID");
 
-                    b.ToTable("Material", (string)null);
+                    b.ToTable("Material");
                 });
 
             modelBuilder.Entity("DataAccessLayer.Entity.Options", b =>
@@ -533,7 +536,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasIndex("IDSize");
 
-                    b.ToTable("Options", (string)null);
+                    b.ToTable("Options");
                 });
 
             modelBuilder.Entity("DataAccessLayer.Entity.Order", b =>
@@ -628,7 +631,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasKey("ID");
 
-                    b.ToTable("Order", (string)null);
+                    b.ToTable("Order");
                 });
 
             modelBuilder.Entity("DataAccessLayer.Entity.OrderDetails", b =>
@@ -683,7 +686,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasIndex("IDOrder");
 
-                    b.ToTable("OrderDetails", (string)null);
+                    b.ToTable("OrderDetails");
                 });
 
             modelBuilder.Entity("DataAccessLayer.Entity.OrderHistory", b =>
@@ -743,7 +746,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasIndex("IDOrder");
 
-                    b.ToTable("OrderHistory", (string)null);
+                    b.ToTable("OrderHistory");
                 });
 
             modelBuilder.Entity("DataAccessLayer.Entity.Product", b =>
@@ -783,7 +786,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasKey("ID");
 
-                    b.ToTable("Product", (string)null);
+                    b.ToTable("Product");
                 });
 
             modelBuilder.Entity("DataAccessLayer.Entity.ProductDetails", b =>
@@ -860,7 +863,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasIndex("IDProduct");
 
-                    b.ToTable("ProductDetails", (string)null);
+                    b.ToTable("ProductDetails");
                 });
 
             modelBuilder.Entity("DataAccessLayer.Entity.Sizes", b =>
@@ -899,7 +902,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasKey("ID");
 
-                    b.ToTable("Sizes", (string)null);
+                    b.ToTable("Sizes");
 
                     b.HasData(
                         new
@@ -1011,7 +1014,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasKey("ID");
 
-                    b.ToTable("Voucher", (string)null);
+                    b.ToTable("Voucher");
                 });
 
             modelBuilder.Entity("DataAccessLayer.Entity.VoucherUser", b =>
@@ -1048,7 +1051,7 @@ namespace DataAccessLayer.Migrations
 
                     b.HasIndex("IDVoucher");
 
-                    b.ToTable("VoucherUser", (string)null);
+                    b.ToTable("VoucherUser");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
