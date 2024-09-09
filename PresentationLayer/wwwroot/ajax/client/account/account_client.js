@@ -345,7 +345,7 @@ function submitAddressForm(addressId) {
         districtCounty: document.getElementById('district').value,
         commune: document.getElementById('ward').value,
         specificAddress: document.getElementById('specificAddress').value,
-        isDefault: document.getElementById('IsDefault').checked ? true : false,
+        isDefault: false,
         IDUser: userId,
         ModifiedBy: userId
     };
