@@ -19,7 +19,7 @@ namespace DataAccessLayer.Application
             if (!optionsBuilder.IsConfigured)
             {
                 optionsBuilder.UseSqlServer(
-                    "Data Source=.;Initial Catalog=BeyoungSportWear;Integrated Security=True;TrustServerCertificate=True"
+                    "Data Source=.\\SQLEXPRESS;Initial Catalog=BeyoungSportWear;Integrated Security=True;TrustServerCertificate=True"
                 );
             }
         }
@@ -28,12 +28,12 @@ namespace DataAccessLayer.Application
             CreateRoles(modelBuilder);
             CreateColor(modelBuilder);
             CreateSizes(modelBuilder);
-            CreateUsers(modelBuilder);
+            //CreateUsers(modelBuilder);
 
-            modelBuilder.Entity<IdentityUser>()
-             .ToTable("AspNetUsers")
-             .HasIndex(u => u.Email)
-             .IsUnique();
+            //modelBuilder.Entity<IdentityUser>()
+            // .ToTable("AspNetUsers")
+            // .HasIndex(u => u.Email)
+            // .IsUnique();
             modelBuilder.ApplyConfiguration(new AddressConfiguration());
             modelBuilder.ApplyConfiguration(new OptionsConfiguration());
             modelBuilder.ApplyConfiguration(new BrandConfiguration());

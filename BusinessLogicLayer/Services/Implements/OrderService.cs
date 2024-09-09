@@ -1158,6 +1158,21 @@ namespace BusinessLogicLayer.Services.Implements
 
             _dbcontext.OrderHistory.Add(orderHistory);
             await _dbcontext.SaveChangesAsync();
+<<<<<<< HEAD
+=======
+            return true;
+        }
+        private bool IsValidStatusTransition(OrderStatus currentStatus, OrderStatus newStatus)
+        {
+            var validTransitions = new Dictionary<OrderStatus, List<OrderStatus>>
+                {
+                    { OrderStatus.Pending, new List<OrderStatus> { OrderStatus.Processed, OrderStatus.Cancelled } },
+                    { OrderStatus.Processed, new List<OrderStatus> { OrderStatus.Shipping, OrderStatus.Cancelled } },
+                    { OrderStatus.Shipping, new List<OrderStatus> { OrderStatus.Delivered } },
+                    { OrderStatus.Delivered, new List<OrderStatus>() },
+                    { OrderStatus.Cancelled, new List<OrderStatus>() }
+                };
+>>>>>>> 10310e2a9c6129705f687c9016cb2557833d3665
 
             return new OrderResult
             {

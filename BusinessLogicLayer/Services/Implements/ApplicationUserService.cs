@@ -208,7 +208,7 @@ namespace BusinessLogicLayer.Services.Implements
                 PhoneNumber = u.PhoneNumber,
                 Images = u.Images,
                 Status = u.Status,
-            }).ToList();
+            }).OrderByDescending(u=>u.JoinDate).ToList();
 
             return userDataList;
         }
@@ -231,7 +231,7 @@ namespace BusinessLogicLayer.Services.Implements
                 PhoneNumber = ur.user.PhoneNumber,
                 Status = ur.user.Status,
                 RoleName = ur.Name
-            }).ToList();
+            }).OrderByDescending(u => u.JoinDate).ToList();
 
             return userDataList;
         }
@@ -350,7 +350,7 @@ namespace BusinessLogicLayer.Services.Implements
                     var emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
 
                     var host = _httpContextAccessor.HttpContext.Request.Host;
-                    var callbackUrl = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{host}/Account/ConfirmEmail?userId={newUser.Id}&code={emailConfirmationToken}";
+                    var callbackUrl = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{host}/Login";
 
                     string emailBody = $@"
                     <html>
