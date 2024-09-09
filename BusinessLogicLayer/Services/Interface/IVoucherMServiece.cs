@@ -25,5 +25,7 @@ namespace BusinessLogicLayer.Services.Interface
         Task<bool> IsVoucherCodeExistsAsync(string code);
         public Task<bool> ToggleVoucherStatusAsync(Guid ID, string IDUser);
         public Task<List<VoucherViewModel>> GetVouchersByUserIdWithStatusAsync(string idUser);
+        Task<List<GetAllVoucherVM>> FilterVouchersByDateRangeAsync(DateTime startDate, DateTime endDate);
+        Task<List<GetAllVoucherVM>> GetVouchersByStatus(int isActive);
     }
 }

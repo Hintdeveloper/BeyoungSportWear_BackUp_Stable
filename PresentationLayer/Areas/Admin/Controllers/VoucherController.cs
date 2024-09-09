@@ -381,6 +381,42 @@ namespace PresentationLayer.Areas.Admin.Controllers
             }
         }
 
+        [HttpGet("search-by-date")]
+        public async Task<IActionResult> SearchByDate(DateTime startDate, DateTime endDate)
+        {
+            // Tạo HttpClient từ HttpClientFactory
+            var client = _httpClientFactory.CreateClient();
+
+            // Gọi API để lấy danh sách voucher theo ngày
+            var response = await client.GetAsync($"https://localhost:7241/api/VoucherM/filter-by-date?startDate={startDate:yyyy-MM-dd}&endDate={endDate:yyyy-MM-dd}");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                ViewBag.ErrorMessage = "Lỗi khi lấy dữ liệu từ API.";
+                return View("Index", new List<GetAllVoucherVM>()); // Trả về view Index rỗng
+            }
+
+            var vouchers = await response.Content.ReadFromJsonAsync<List<GetAllVoucherVM>>();
+
+            return View("Index", vouchers); // Sử dụng lại view Index với dữ liệu từ API
+        }
+
+        [HttpGet("search-by-status")]
+        public async Task<IActionResult> SearchByStatus(int isActive)
+        {
+            var client = _httpClientFactory.CreateClient();
+            var response = await client.GetAsync($"https://localhost:7241/api/VoucherM/search-by-status?isActive={isActive}");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                ViewBag.ErrorMessage = "Lỗi khi lấy dữ liệu từ API.";
+                return View("Index", new List<GetAllVoucherVM>()); // Trả về view Index rỗng
+            }
+
+            var vouchers = await response.Content.ReadFromJsonAsync<List<GetAllVoucherVM>>();
+
+            return View("Index", vouchers);
+        }
 
 
     }

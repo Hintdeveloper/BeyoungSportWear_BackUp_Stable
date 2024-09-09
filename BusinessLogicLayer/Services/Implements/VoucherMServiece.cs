@@ -41,6 +41,7 @@ namespace BusinessLogicLayer.Services.Implements
                 var newVoucher = new Voucher
                 {
                     Code = request.Code,
+                    CreateDate = DateTime.Now,
                     Name = request.Name,
                     StartDate = request.StartDate,
                     EndDate = request.EndDate,
@@ -54,23 +55,7 @@ namespace BusinessLogicLayer.Services.Implements
                     CreateBy = request.CreateBy,
                 };
                 _dbcontext.Voucher.Add(newVoucher);
-
-                if (request.ApplyToAllUsers)
-                {
-                    var allUsers = await _dbcontext.Users.Select(u => u.Id).ToListAsync();
-                    foreach (var userId in allUsers)
-                    {
-                        var voucherUser = new VoucherUser
-                        {
-                            IDUser = userId,
-                            IDVoucher = newVoucher.ID,
-                            Status = 1,
-                            CreateBy = request.CreateBy
-                        };
-                        await _dbcontext.VoucherUser.AddAsync(voucherUser);
-                    }
-                }
-                else
+                if (!request.ApplyToAllUsers)
                 {
                     foreach (var userId in request.SelectedUser)
                     {
@@ -497,6 +482,60 @@ namespace BusinessLogicLayer.Services.Implements
                                          .ToListAsync();
 
             return voucherList;
+        }
+        public async Task<List<GetAllVoucherVM>> FilterVouchersByDateRangeAsync(DateTime startDate, DateTime endDate)
+        {         
+            var vouchers = await _dbcontext.Voucher
+                                           .Include(c => c.VoucherUser)
+                                           .Where(v => v.StartDate >= startDate && v.EndDate <= endDate) // Điều kiện lọc theo ngày
+                                           .OrderBy(v => v.IsActive.HasValue ? (int)v.IsActive.Value : int.MaxValue)
+                                           .ThenByDescending(v => v.CreateDate)
+                                           .Select(v => new GetAllVoucherVM
+                                           {
+                                               ID = v.ID,
+                                               CreateDate = v.CreateDate,
+                                               Code = v.Code,
+                                               Name = v.Name,
+                                               StartDate = v.StartDate,
+                                               EndDate = v.EndDate,
+                                               Quantity = v.Quantity,
+                                               Type = v.Type,
+                                               MinimumAmount = v.MinimumAmount,
+                                               MaximumAmount = v.MaximumAmount,
+                                               ReducedValue = v.ReducedValue,
+                                               IsActive = v.IsActive,
+                                               Status = v.Status,
+                                               IDUser = v.VoucherUser.Select(pv => pv.IDUser).ToList()
+                                           })
+                                           .ToListAsync();
+
+            return vouchers;
+        }
+        public async Task<List<GetAllVoucherVM>> GetVouchersByStatus(int isActive)
+        {
+            var vouchers = await _dbcontext.Voucher
+                .Where(v => v.IsActive.HasValue && (int)v.IsActive.Value == isActive)
+                .OrderBy(v => v.CreateDate)
+                .Select(v => new GetAllVoucherVM
+                {
+                    ID = v.ID,
+                    CreateDate = v.CreateDate,
+                    Code = v.Code,
+                    Name = v.Name,
+                    StartDate = v.StartDate,
+                    EndDate = v.EndDate,
+                    Quantity = v.Quantity,
+                    Type = v.Type,
+                    MinimumAmount = v.MinimumAmount,
+                    MaximumAmount = v.MaximumAmount,
+                    ReducedValue = v.ReducedValue,
+                    IsActive = v.IsActive,
+                    Status = v.Status,
+                    IDUser = v.VoucherUser.Select(vu => vu.IDUser).ToList()
+                })
+                .ToListAsync();
+
+            return vouchers;
         }
     }
 }
