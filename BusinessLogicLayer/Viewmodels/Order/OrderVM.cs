@@ -22,6 +22,7 @@ namespace BusinessLogicLayer.Viewmodels.Order
         public string FullNameUser { get; set; } = null!;
         public string ShippingAddress { get; set; } = null!;
         public string? ShippingAddressLine2 { get; set; }
+        public string? BillOfLadingCode { get; set; }
         public DateTime ShipDate { get; set; } = DateTime.UtcNow.AddDays(3);
         public decimal TotalAmount { get; set; }
         public decimal? Cotsts { get; set; }

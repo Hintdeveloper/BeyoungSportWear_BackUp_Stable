@@ -621,7 +621,7 @@ namespace BusinessLogicLayer.Services.Implements
                     editingHistory.AppendLine("Thay đổi địa chỉ giao hàng");
                     order.ShippingAddress = request.ShippingAddress;
                 }
-                
+
                 if (order.ShippingAddressLine2 != request.ShippingAddressLine2)
                 {
                     changeDetails.AppendLine($"Địa chỉ giao hàng cụ thể: {order.ShippingAddressLine2} => {request.ShippingAddressLine2}");
@@ -635,7 +635,7 @@ namespace BusinessLogicLayer.Services.Implements
                     editingHistory.AppendLine("Thay đổi giá vận chuyển");
                     order.Cotsts = request.Cotsts;
                 }
-                
+
                 if (order.Notes != request.Notes)
                 {
                     changeDetails.AppendLine($"Ghi chú: {order.Notes} => {request.Notes}");
@@ -1064,8 +1064,8 @@ namespace BusinessLogicLayer.Services.Implements
                     { OrderStatus.Pending, new List<OrderStatus> { OrderStatus.Processed, OrderStatus.Cancelled } },
                     { OrderStatus.Processed, new List<OrderStatus> { OrderStatus.Shipping, OrderStatus.Cancelled } },
                     { OrderStatus.Shipping, new List<OrderStatus> { OrderStatus.Delivered } },
-                    { OrderStatus.Delivered, new List<OrderStatus>() }, 
-                    { OrderStatus.Cancelled, new List<OrderStatus>() }  
+                    { OrderStatus.Delivered, new List<OrderStatus>() },
+                    { OrderStatus.Cancelled, new List<OrderStatus>() }
                 };
 
             return validTransitions.ContainsKey(currentStatus) && validTransitions[currentStatus].Contains(newStatus);

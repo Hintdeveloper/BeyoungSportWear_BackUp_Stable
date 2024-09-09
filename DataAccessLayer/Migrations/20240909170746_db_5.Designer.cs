@@ -4,6 +4,7 @@ using DataAccessLayer.Application;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccessLayer.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    partial class ApplicationDBContextModelSnapshot : ModelSnapshot
+    [Migration("20240909170746_db_5")]
+    partial class db_5
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -290,45 +293,45 @@ namespace DataAccessLayer.Migrations
                     b.HasData(
                         new
                         {
-                            ID = new Guid("ffd04e06-c2d2-44fe-b8fc-42c799329540"),
+                            ID = new Guid("66e4b917-9eed-4e12-97d1-ecaf1f3b1680"),
                             CreateBy = "",
-                            CreateDate = new DateTime(2024, 9, 10, 0, 11, 41, 846, DateTimeKind.Local).AddTicks(5093),
+                            CreateDate = new DateTime(2024, 9, 10, 0, 7, 46, 499, DateTimeKind.Local).AddTicks(1411),
                             Description = "",
                             Name = "White",
                             Status = 1
                         },
                         new
                         {
-                            ID = new Guid("a4c2b98a-f047-40d1-9b42-c3ec8ad14e4f"),
+                            ID = new Guid("c926f3fd-7872-4cee-8a10-6bc0a5790bc3"),
                             CreateBy = "",
-                            CreateDate = new DateTime(2024, 9, 10, 0, 11, 41, 846, DateTimeKind.Local).AddTicks(5109),
+                            CreateDate = new DateTime(2024, 9, 10, 0, 7, 46, 499, DateTimeKind.Local).AddTicks(1427),
                             Description = "",
                             Name = "Black",
                             Status = 1
                         },
                         new
                         {
-                            ID = new Guid("e307daf3-1ef3-4e00-b8a6-9215df6c13c1"),
+                            ID = new Guid("98e9f851-89a5-4f4e-9ac5-306c187a72ef"),
                             CreateBy = "",
-                            CreateDate = new DateTime(2024, 9, 10, 0, 11, 41, 846, DateTimeKind.Local).AddTicks(5123),
+                            CreateDate = new DateTime(2024, 9, 10, 0, 7, 46, 499, DateTimeKind.Local).AddTicks(1430),
                             Description = "",
                             Name = "Red",
                             Status = 1
                         },
                         new
                         {
-                            ID = new Guid("5526c8a4-d6a2-488f-bdbc-bd16d3e6cfce"),
+                            ID = new Guid("8e20a739-9a94-4994-9f50-d6b5e4a3bd87"),
                             CreateBy = "",
-                            CreateDate = new DateTime(2024, 9, 10, 0, 11, 41, 846, DateTimeKind.Local).AddTicks(5126),
+                            CreateDate = new DateTime(2024, 9, 10, 0, 7, 46, 499, DateTimeKind.Local).AddTicks(1432),
                             Description = "",
                             Name = "Blue",
                             Status = 1
                         },
                         new
                         {
-                            ID = new Guid("32940775-50ab-4634-bb3e-6612d43ff33a"),
+                            ID = new Guid("1925fee1-058d-41a3-b6cd-74f54237aa5e"),
                             CreateBy = "",
-                            CreateDate = new DateTime(2024, 9, 10, 0, 11, 41, 846, DateTimeKind.Local).AddTicks(5128),
+                            CreateDate = new DateTime(2024, 9, 10, 0, 7, 46, 499, DateTimeKind.Local).AddTicks(1434),
                             Description = "",
                             Name = "Green",
                             Status = 1
@@ -900,45 +903,45 @@ namespace DataAccessLayer.Migrations
                     b.HasData(
                         new
                         {
-                            ID = new Guid("c90d5a97-9fb3-49e1-a0a5-2e63ce31c036"),
+                            ID = new Guid("50e9ed1b-fbe7-4f1e-a563-dea08c90bc72"),
                             CreateBy = "",
-                            CreateDate = new DateTime(2024, 9, 10, 0, 11, 41, 846, DateTimeKind.Local).AddTicks(5349),
+                            CreateDate = new DateTime(2024, 9, 10, 0, 7, 46, 499, DateTimeKind.Local).AddTicks(1595),
                             Description = "",
                             Name = "XS",
                             Status = 1
                         },
                         new
                         {
-                            ID = new Guid("2a575096-2e6c-4107-aa58-b039605190a3"),
+                            ID = new Guid("457c7eb8-a2b2-412c-b2ca-01150e4ccb6d"),
                             CreateBy = "",
-                            CreateDate = new DateTime(2024, 9, 10, 0, 11, 41, 846, DateTimeKind.Local).AddTicks(5351),
+                            CreateDate = new DateTime(2024, 9, 10, 0, 7, 46, 499, DateTimeKind.Local).AddTicks(1597),
                             Description = "",
                             Name = "S",
                             Status = 1
                         },
                         new
                         {
-                            ID = new Guid("20fd0478-197a-4d16-9150-a74b0b3fece1"),
+                            ID = new Guid("f68d2b79-43b2-44bd-ab87-4d94f0209fc6"),
                             CreateBy = "",
-                            CreateDate = new DateTime(2024, 9, 10, 0, 11, 41, 846, DateTimeKind.Local).AddTicks(5353),
+                            CreateDate = new DateTime(2024, 9, 10, 0, 7, 46, 499, DateTimeKind.Local).AddTicks(1599),
                             Description = "",
                             Name = "M",
                             Status = 1
                         },
                         new
                         {
-                            ID = new Guid("22022e15-01b6-435c-82ad-f938c3d2c452"),
+                            ID = new Guid("c2c78799-c74d-4d11-b2c3-d2fe988f8a5f"),
                             CreateBy = "",
-                            CreateDate = new DateTime(2024, 9, 10, 0, 11, 41, 846, DateTimeKind.Local).AddTicks(5355),
+                            CreateDate = new DateTime(2024, 9, 10, 0, 7, 46, 499, DateTimeKind.Local).AddTicks(1601),
                             Description = "",
                             Name = "L",
                             Status = 1
                         },
                         new
                         {
-                            ID = new Guid("400dc2ba-8d34-4eac-aeb3-b124ba857a79"),
+                            ID = new Guid("1d355f61-b5a0-4576-bd48-a902a6858baf"),
                             CreateBy = "",
-                            CreateDate = new DateTime(2024, 9, 10, 0, 11, 41, 846, DateTimeKind.Local).AddTicks(5356),
+                            CreateDate = new DateTime(2024, 9, 10, 0, 7, 46, 499, DateTimeKind.Local).AddTicks(1608),
                             Description = "",
                             Name = "XL",
                             Status = 1
