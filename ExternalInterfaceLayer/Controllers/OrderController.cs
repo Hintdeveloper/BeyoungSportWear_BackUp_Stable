@@ -363,20 +363,27 @@ namespace ExternalInterfaceLayer.Controllers
         [HttpPut("UpdateOrderStatus/{orderId}")]
         public async Task<IActionResult> UpdateOrderStatus(Guid orderId, [FromBody] UpdateOrderStatusRequest request)
         {
-            if (request == null || string.IsNullOrEmpty(request.ToString()) || string.IsNullOrEmpty(request.IDUser))
+            if (request == null || string.IsNullOrEmpty(request.IDUser) || !Enum.IsDefined(typeof(OrderStatus), request.Status))
             {
-                return BadRequest("Invalid request data");
+                return BadRequest("Dữ liệu yêu cầu không hợp lệ. Vui lòng kiểm tra lại.");
             }
 
             var result = await _orderService.UpdateOrderStatusAsync(orderId, request.Status, request.IDUser, request.BillOfLadingCode);
 
-            if (result)
+            if (result.Success)
             {
-                return Ok("Order status updated successfully");
+                return Ok("Trạng thái đơn hàng đã được cập nhật thành công.");
             }
             else
             {
-                return NotFound("Order not found");
+                if (result.ErrorMessage == "Không tìm thấy đơn hàng")
+                {
+                    return NotFound(result.ErrorMessage);
+                }
+                else
+                {
+                    return BadRequest(result.ErrorMessage);
+                }
             }
         }
         [HttpGet("GetByOrderType/{orderType}")]

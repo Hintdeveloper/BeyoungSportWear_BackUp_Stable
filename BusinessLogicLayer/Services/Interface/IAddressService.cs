@@ -12,5 +12,6 @@ namespace BusinessLogicLayer.Services.Interface
         public Task<bool> CreateAsync(AddressCreateVM request);
         public Task<bool> RemoveAsync(Guid ID, string IDUserDelete);
         public Task<bool> UpdateAsync(Guid ID, AddressUpdateVM request);
+        public Task<bool> SetDefaultAddressAsync(Guid ID, string IDUser);
     }
 }

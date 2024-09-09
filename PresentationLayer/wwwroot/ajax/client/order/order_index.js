@@ -17,13 +17,11 @@ function getUserIdFromJwt(jwt) {
         return tokenPayload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
     }
     catch (error) {
-        console.error('Error parsing JWT:', error);
         return null;
     }
 }
 const jwt = getJwtFromCookie();
 const userId = getUserIdFromJwt(jwt);
-console.log(userId);
 function OrderList(orders) {
     const orderListBody = document.getElementById('orders');
     orderListBody.innerHTML = '';
@@ -41,10 +39,10 @@ function OrderList(orders) {
             <td>${order.totalAmount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</td>
             <td><span class="badge bg-success">${translateOrderStatus(order.orderStatus)}</span></td>
             <td>
-                <button class="btn btn-danger btn-sm trash"onclick="updateOrderStatus('4','${order.id}')"  type="button" data-id="${order.id}" id="cancelOrderButton" ${isCancelled ? "disabled" : ""}>
+                <button class="btn btn-danger btn-sm trash" onclick="updateOrderStatus('4', '${order.id}', '${order.hexCode}')" type="button" data-id="${order.id}" id="cancelOrderButton" ${isCancelled ? "disabled" : ""}>
                     <i class="fa fa-ban"></i>
                 </button>
-                 <button class="btn btn-primary btn-sm edit" type="button" title="Sửa" onclick="navigateToUpdatePageEdit('${order.id}')">
+                <button class="btn btn-primary btn-sm edit" type="button" title="Sửa" onclick="navigateToUpdatePageEdit('${order.id}')">
                     <i class="fas fa-edit"></i>
                 </button>
                 <button class="btn btn-warning btn-sm edit" onclick="navigateToUpdatePage('${order.id}')" type="button" title="Sửa">
@@ -55,8 +53,7 @@ function OrderList(orders) {
         orderListBody.appendChild(row);
     });
 }
-function updateOrderStatus(status, idorder) {
-    console.log('status', status)
+function updateOrderStatus(status, idorder, hexCode) {
     const statusMap = {
         0: '',
         1: 'Xác nhận đơn hàng',
@@ -66,7 +63,6 @@ function updateOrderStatus(status, idorder) {
     };
 
     const inputField = status === '2' || status === '4' ? 'text' : null;
-    console.log('Input Field:', inputField);
 
     let inputPlaceholder = 'Nhập ghi chú (tùy chọn)';
     if (status === '2') {
@@ -74,6 +70,14 @@ function updateOrderStatus(status, idorder) {
     } else if (status === '4') {
         inputPlaceholder = 'Nhập lý do hủy đơn';
     }
+
+    let additionalInputField = null;
+    let additionalInputPlaceholder = '';
+    if (status === '4' && userId === null) {
+        additionalInputField = 'text';
+        additionalInputPlaceholder = 'Nhập số điện thoại đặt hàng';
+    }
+
     const vietnameseStatus = statusMap[status];
     Swal.fire({
         title: 'Xác nhận',
@@ -85,72 +89,138 @@ function updateOrderStatus(status, idorder) {
         cancelButtonColor: '#d33',
         confirmButtonText: 'Có',
         cancelButtonText: 'Hủy',
-        preConfirm: (billOfLadingCode) => {
-            // Kiểm tra giá trị khi status = 2 hoặc 4
-            if ((status === 2 || status === 4) && !inputValue) {
-                Swal.showValidationMessage(status === 2 ? 'Mã vận đơn là bắt buộc!' : 'Lý do hủy đơn là bắt buộc!');
+        inputAttributes: {
+            autocapitalize: 'off'
+        },
+        preConfirm: (inputValue) => {
+            if ((status === '2' || status === '4') && !inputValue) {
+                Swal.showValidationMessage(status === '2' ? 'Mã vận đơn là bắt buộc!' : 'Lý do hủy đơn là bắt buộc!');
                 return false;
             }
-            return billOfLadingCode || '';
+            return inputValue || '';
         }
     }).then((result) => {
         if (result.isConfirmed) {
             const billOfLadingCode = result.value ? String(result.value) : '';
-            Swal.fire({
-                title: 'Đang xử lý',
-                text: 'Vui lòng chờ trong khi cập nhật đơn hàng...',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
+            let additionalPhoneNumber = '';
 
-            const apiUrl = `https://localhost:7241/api/Order/UpdateOrderStatus/${idorder}`;
-            var xhr = new XMLHttpRequest();
-            xhr.open('PUT', apiUrl, true);
-            xhr.setRequestHeader('Content-Type', 'application/json');
+            if (status === '4' && userId === null) {
+                Swal.fire({
+                    title: 'Nhập số điện thoại đặt hàng',
+                    input: 'text',
+                    inputPlaceholder: 'Nhập số điện thoại đặt hàng',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Xác nhận',
+                    cancelButtonText: 'Hủy',
+                    preConfirm: (phoneNumber) => {
+                        if (!phoneNumber) {
+                            Swal.showValidationMessage('Số điện thoại đặt hàng là bắt buộc!');
+                            return false;
+                        }
+                        return phoneNumber;
+                    }
+                }).then((phoneResult) => {
+                    if (phoneResult.isConfirmed) {
+                        additionalPhoneNumber = phoneResult.value || '';
+                        fetchOrderByHexCode(additionalPhoneNumber, billOfLadingCode, status, idorder, hexCode);
+                    }
+                });
+            } else {
+                fetchOrderByHexCode('', billOfLadingCode, status, idorder, hexCode);
+            }
+        }
+    });
 
-            xhr.onload = function () {
-                Swal.close();
-                if (xhr.status >= 200 && xhr.status < 300) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Thành công!',
-                        text: `Trạng thái đơn hàng đã được cập nhật thành "${vietnameseStatus}".`,
-                        confirmButtonText: 'OK'
-                    }).then(() => {
-                        window.location.reload();
-                    });
-                } else {
+    function fetchOrderByHexCode(phoneNumber, billOfLadingCode, status, idorder, hexCode) {
+        const apiUrl = `https://localhost:7241/api/Order/GetByHexCode/${hexCode}`;
+
+        fetch(apiUrl)
+            .then(response => response.json())
+            .then(data => {
+                const orderPhoneNumber = data.customerPhone;
+                if (phoneNumber && phoneNumber !== orderPhoneNumber) {
                     Swal.fire({
                         icon: 'error',
                         title: 'Lỗi!',
-                        text: `Có lỗi xảy ra khi cập nhật trạng thái đơn hàng: ${xhr.responseText}`,
+                        text: 'Số điện thoại không khớp!',
                         confirmButtonText: 'OK'
                     });
-                    console.error('Error:', xhr.responseText);
+                    return;
                 }
-            };
 
-            xhr.onerror = function () {
-                Swal.close();
+                sendUpdateRequest(status, idorder, billOfLadingCode, phoneNumber);
+            })
+            .catch(error => {
                 Swal.fire({
                     icon: 'error',
                     title: 'Lỗi!',
-                    text: 'Có lỗi xảy ra khi gửi yêu cầu.',
+                    text: 'Có lỗi xảy ra khi lấy thông tin đơn hàng.',
                     confirmButtonText: 'OK'
                 });
-                console.error('Network Error:', xhr.responseText);
-            };
+                console.error('Fetch Error:', error);
+            });
+    }
 
-            xhr.send(JSON.stringify({
-                status: status,
-                idUser: userId,
-                billOfLadingCode: billOfLadingCode,
-                request: "UpdateOrderStatus"
-            }));
-        }
-    });
+    function sendUpdateRequest(status, idorder, billOfLadingCode, phoneNumber) {
+        Swal.fire({
+            title: 'Đang xử lý',
+            text: 'Vui lòng chờ trong khi cập nhật đơn hàng...',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        const apiUrl = `https://localhost:7241/api/Order/UpdateOrderStatus/${idorder}`;
+        var xhr = new XMLHttpRequest();
+        xhr.open('PUT', apiUrl, true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+
+        xhr.onload = function () {
+            Swal.close();
+            if (xhr.status >= 200 && xhr.status < 300) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Thành công!',
+                    text: `Trạng thái đơn hàng đã được cập nhật thành "${statusMap[status]}".`,
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    window.location.reload();
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi!',
+                    text: `${xhr.responseText}`,
+                    confirmButtonText: 'OK'
+                });
+                console.error('Error:', xhr.responseText);
+            }
+        };
+
+        xhr.onerror = function () {
+            Swal.close();
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi!',
+                text: 'Có lỗi xảy ra khi gửi yêu cầu.',
+                confirmButtonText: 'OK'
+            });
+            console.error('Network Error:', xhr.responseText);
+        };
+
+        const requestData = {
+            status: status,
+            idUser: userId || 'Khách vãng lai',
+            billOfLadingCode: billOfLadingCode,
+            request: "UpdateOrderStatus"
+        };
+        console.log('requestData', requestData)
+        xhr.send(JSON.stringify(requestData));
+
+    }
 }
 function fetchOrderList() {
     const xhr = new XMLHttpRequest();
@@ -162,7 +232,6 @@ function fetchOrderList() {
                 try {
                     const orders = JSON.parse(xhr.responseText);
                     OrderList(orders);
-                    console.log(orders)
                 } catch (error) {
                     console.error('Error parsing JSON:', error.message);
                 }

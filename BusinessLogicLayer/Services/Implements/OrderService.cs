@@ -554,6 +554,236 @@ namespace BusinessLogicLayer.Services.Implements
                 }
             }
         }
+        public async Task<List<OrderVM>> GetByCustomerIDAsync(string IDUser)
+        {
+            var orders = await _dbcontext.Order
+                                         .Where(o => o.IDUser == IDUser && o.Status != 0)
+                                         .ToListAsync();
+            var sortedOrders = orders
+               .OrderByDescending(b => b.CreateDate)
+               .ToList();
+            return _mapper.Map<List<OrderVM>>(sortedOrders);
+        }
+        public async Task<bool> IncreaseStockAsync(Guid IDOptions, int quantity)
+        {
+            if (IDOptions != Guid.Empty && IDOptions != null)
+            {
+                var variantItem = await _dbcontext.Options.FindAsync(IDOptions);
+                if (variantItem != null)
+                {
+                    variantItem.StockQuantity += quantity;
+                    await _dbcontext.SaveChangesAsync();
+                    return true;
+                }
+            }
+            return false;
+        }
+        public async Task<bool> MarkAsCancelledAsync(Guid IDOrder, string IDUserUpdate)
+        {
+            var order = await _dbcontext.Order
+                .Include(o => o.OrderDetails)
+                .FirstOrDefaultAsync(o => o.ID == IDOrder);
+            var user = await _dbcontext.Users.FirstOrDefaultAsync(u => u.Id == IDUserUpdate);
+            var username = user != null ? user.UserName : "Unknown User";
+
+            if (order == null)
+            {
+                return false;
+            }
+
+            if (order.OrderStatus == OrderStatus.Shipping ||
+                order.OrderStatus == OrderStatus.Cancelled ||
+                order.PaymentStatus == PaymentStatus.Success)
+            {
+                return false;
+            }
+
+            if (order.OrderStatus == OrderStatus.Cancelled)
+            {
+                return true;
+            }
+
+            var changeDetails = new StringBuilder();
+            var editingHistory = new StringBuilder();
+            var oldStatusDescription = order.OrderStatus.GetDescription();
+            var newStatusDescription = OrderStatus.Cancelled.GetDescription();
+
+            if (order.ModifiedBy != null)
+            {
+                changeDetails.AppendLine($"Trạng thái: Từ {oldStatusDescription} sang {newStatusDescription},<br> Người sửa: <a data-user-id='{IDUserUpdate}'>{username}</a>");
+                editingHistory.AppendLine("Thay đổi trạng thái đơn hàng");
+                order.OrderStatus = OrderStatus.Cancelled;
+            }
+
+            if (order.OrderStatus != OrderStatus.Pending)
+            {
+                foreach (var orderItem in order.OrderDetails)
+                {
+                    await IncreaseStockAsync(orderItem.IDOptions, orderItem.Quantity);
+                }
+            }
+
+            order.ModifiedBy = IDUserUpdate;
+            order.ModifiedDate = DateTime.Now;
+            _dbcontext.Order.Update(order);
+
+            if (!string.IsNullOrEmpty(editingHistory.ToString()))
+            {
+                var orderHistory = new OrderHistory
+                {
+                    ID = Guid.NewGuid(),
+                    IDUser = IDUserUpdate,
+                    IDOrder = IDOrder,
+                    ChangeDate = DateTime.Now,
+                    EditingHistory = editingHistory.ToString(),
+                    ChangeType = "4",
+                    ChangeDetails = changeDetails.ToString(),
+                    CreateBy = IDUserUpdate,
+                    Status = 1,
+                    CreateDate = DateTime.Now
+                };
+
+                _dbcontext.OrderHistory.Add(orderHistory);
+            }
+
+            await _dbcontext.SaveChangesAsync();
+            return true;
+        }
+        public async Task<bool> MarkAsTrackingCheckAsync(Guid IDOrder, string IDUserUpdate)
+        {
+            var order = await _dbcontext.Order
+                .Include(o => o.OrderDetails)
+                .FirstOrDefaultAsync(o => o.ID == IDOrder);
+            var user = await _dbcontext.Users.FirstOrDefaultAsync(u => u.Id == IDUserUpdate);
+            var username = user != null ? user.UserName : "Unknown User";
+
+            if (order == null)
+            {
+                return false;
+            }
+
+            var changeDetails = new StringBuilder();
+            var editingHistory = new StringBuilder();
+
+            if (order.TrackingCheck != true || order.ModifiedBy != null)
+            {
+                if (order.TrackingCheck != true)
+                {
+                    string userLink = $"<a data-user-id='{IDUserUpdate}'>Người sửa: {username}</a>";
+                    editingHistory.AppendLine("Thay đổi trạng thái đơn hàng");
+                    changeDetails.AppendLine($"Trạng thái: Chưa xác nhận => Xác nhận đơn hàng <br>" + userLink);
+                    order.TrackingCheck = true;
+                }
+            }
+
+            order.ModifiedBy = IDUserUpdate;
+            order.ModifiedDate = DateTime.Now;
+
+            _dbcontext.Order.Update(order);
+
+            if (!string.IsNullOrEmpty(editingHistory.ToString()))
+            {
+                var orderHistory = new OrderHistory
+                {
+                    ID = Guid.NewGuid(),
+                    IDUser = IDUserUpdate,
+                    IDOrder = IDOrder,
+                    ChangeDate = DateTime.Now,
+                    EditingHistory = editingHistory.ToString(),
+                    ChangeType = "OrderCancellation",
+                    ChangeDetails = changeDetails.ToString(),
+                    CreateBy = IDUserUpdate,
+                    CreateDate = DateTime.Now,
+                    Status = 1
+
+                };
+
+                _dbcontext.OrderHistory.Add(orderHistory);
+            }
+
+            await _dbcontext.SaveChangesAsync();
+            return true;
+        }
+        private bool IsValidStatusTransition(OrderStatus currentStatus, OrderStatus newStatus)
+        {
+            var validTransitions = new Dictionary<OrderStatus, List<OrderStatus>>
+                {
+                    { OrderStatus.Pending, new List<OrderStatus> { OrderStatus.Processed, OrderStatus.Cancelled } },
+                    { OrderStatus.Processed, new List<OrderStatus> { OrderStatus.Shipping, OrderStatus.Cancelled } },
+                    { OrderStatus.Shipping, new List<OrderStatus> { OrderStatus.Delivered } },
+                    { OrderStatus.Delivered, new List<OrderStatus>() },
+                    { OrderStatus.Cancelled, new List<OrderStatus>() }
+                };
+
+            return validTransitions.ContainsKey(currentStatus) && validTransitions[currentStatus].Contains(newStatus);
+        }
+        public async Task<List<OrderVM>> GetByStatusAsync(OrderStatus OrderStatus)
+        {
+            var orders = await _dbcontext.Order
+                            .Where(o => o.OrderStatus == OrderStatus)
+                            .OrderByDescending(b => b.CreateDate)
+                            .Select(o => new OrderVM
+                            {
+                                ID = o.ID,
+                                HexCode = o.HexCode,
+                                IDUser = o.IDUser,
+                                VoucherCode = o.VoucherCode,
+                                CreateDate = o.CreateDate,
+                                PaymentMethod = o.PaymentMethods,
+                                PaymentStatus = o.PaymentStatus,
+                                TotalAmount = o.TotalAmount,
+                                OrderStatus = o.OrderStatus,
+                                CustomerName = o.CustomerName,
+                                CustomerPhone = o.CustomerPhone,
+                                CustomerEmail = o.CustomerEmail,
+                                ShippingAddress = o.ShippingAddress,
+                                ShippingAddressLine2 = o.ShippingAddressLine2,
+                                Cotsts = o.Cotsts,
+                                TrackingCheck = o.TrackingCheck,
+                            })
+                            .ToListAsync();
+
+            if (orders == null || !orders.Any())
+            {
+                return new List<OrderVM>();
+            }
+
+            return orders;
+        }
+        public async Task<List<OrderVM>> GetByOrderTypeAsync(OrderType OrderType)
+        {
+            var orders = await _dbcontext.Order
+                            .Where(o => o.OrderType == OrderType)
+                            .OrderByDescending(b => b.CreateDate)
+                            .Select(o => new OrderVM
+                            {
+                                ID = o.ID,
+                                HexCode = o.HexCode,
+                                IDUser = o.IDUser,
+                                VoucherCode = o.VoucherCode,
+                                CreateDate = o.CreateDate,
+                                PaymentMethod = o.PaymentMethods,
+                                PaymentStatus = o.PaymentStatus,
+                                TotalAmount = o.TotalAmount,
+                                OrderStatus = o.OrderStatus,
+                                CustomerName = o.CustomerName,
+                                CustomerPhone = o.CustomerPhone,
+                                CustomerEmail = o.CustomerEmail,
+                                ShippingAddress = o.ShippingAddress,
+                                ShippingAddressLine2 = o.ShippingAddressLine2,
+                                Cotsts = o.Cotsts,
+                                OrderType = o.OrderType,
+                                TrackingCheck = o.TrackingCheck,
+                            })
+                            .ToListAsync();
+
+            if (orders == null || !orders.Any())
+            {
+                return new List<OrderVM>();
+            }
+
+            return orders;
+        }
         public async Task<bool> UpdateAsync(Guid ID, OrderUpdateVM request, string IDUserUpdate)
         {
             using var transaction = await _dbcontext.Database.BeginTransactionAsync();
@@ -621,7 +851,7 @@ namespace BusinessLogicLayer.Services.Implements
                     editingHistory.AppendLine("Thay đổi địa chỉ giao hàng");
                     order.ShippingAddress = request.ShippingAddress;
                 }
-                
+
                 if (order.ShippingAddressLine2 != request.ShippingAddressLine2)
                 {
                     changeDetails.AppendLine($"Địa chỉ giao hàng cụ thể: {order.ShippingAddressLine2} => {request.ShippingAddressLine2}");
@@ -635,7 +865,7 @@ namespace BusinessLogicLayer.Services.Implements
                     editingHistory.AppendLine("Thay đổi giá vận chuyển");
                     order.Cotsts = request.Cotsts;
                 }
-                
+
                 if (order.Notes != request.Notes)
                 {
                     changeDetails.AppendLine($"Ghi chú: {order.Notes} => {request.Notes}");
@@ -811,184 +1041,50 @@ namespace BusinessLogicLayer.Services.Implements
                 return false;
             }
         }
-        public async Task<List<OrderVM>> GetByCustomerIDAsync(string IDUser)
-        {
-            var orders = await _dbcontext.Order
-                                         .Where(o => o.IDUser == IDUser && o.Status != 0)
-                                         .ToListAsync();
-            var sortedOrders = orders
-               .OrderByDescending(b => b.CreateDate)
-               .ToList();
-            return _mapper.Map<List<OrderVM>>(sortedOrders);
-        }
-        public async Task<bool> IncreaseStockAsync(Guid IDOptions, int quantity)
-        {
-            if (IDOptions != Guid.Empty && IDOptions != null)
-            {
-                var variantItem = await _dbcontext.Options.FindAsync(IDOptions);
-                if (variantItem != null)
-                {
-                    variantItem.StockQuantity += quantity;
-                    await _dbcontext.SaveChangesAsync();
-                    return true;
-                }
-            }
-            return false;
-        }
-        public async Task<bool> MarkAsCancelledAsync(Guid IDOrder, string IDUserUpdate)
+
+        public async Task<OrderResult> UpdateOrderStatusAsync(Guid IDOrder, int status, string IDUserUpdate, string BillOfLadingCode)
         {
             var order = await _dbcontext.Order
-                .Include(o => o.OrderDetails)
-                .FirstOrDefaultAsync(o => o.ID == IDOrder);
-            var user = await _dbcontext.Users.FirstOrDefaultAsync(u => u.Id == IDUserUpdate);
-            var username = user != null ? user.UserName : "Unknown User";
+                              .Include(o => o.OrderDetails)
+                              .FirstOrDefaultAsync(o => o.ID == IDOrder);
 
             if (order == null)
             {
-                return false;
-            }
-
-            if (order.OrderStatus == OrderStatus.Shipping ||
-                order.OrderStatus == OrderStatus.Cancelled ||
-                order.PaymentStatus == PaymentStatus.Success)
-            {
-                return false;
-            }
-
-            if (order.OrderStatus == OrderStatus.Cancelled)
-            {
-                return true;
-            }
-
-            var changeDetails = new StringBuilder();
-            var editingHistory = new StringBuilder();
-            var oldStatusDescription = order.OrderStatus.GetDescription();
-            var newStatusDescription = OrderStatus.Cancelled.GetDescription();
-
-            if (order.ModifiedBy != null)
-            {
-                changeDetails.AppendLine($"Trạng thái: Từ {oldStatusDescription} sang {newStatusDescription},<br> Người sửa: <a data-user-id='{IDUserUpdate}'>{username}</a>");
-                editingHistory.AppendLine("Thay đổi trạng thái đơn hàng");
-                order.OrderStatus = OrderStatus.Cancelled;
-            }
-
-            if (order.OrderStatus != OrderStatus.Pending)
-            {
-                foreach (var orderItem in order.OrderDetails)
+                return new OrderResult
                 {
-                    await IncreaseStockAsync(orderItem.IDOptions, orderItem.Quantity);
-                }
-            }
-
-            order.ModifiedBy = IDUserUpdate;
-            order.ModifiedDate = DateTime.Now;
-            _dbcontext.Order.Update(order);
-
-            if (!string.IsNullOrEmpty(editingHistory.ToString()))
-            {
-                var orderHistory = new OrderHistory
-                {
-                    ID = Guid.NewGuid(),
-                    IDUser = IDUserUpdate,
-                    IDOrder = IDOrder,
-                    ChangeDate = DateTime.Now,
-                    EditingHistory = editingHistory.ToString(),
-                    ChangeType = "4",
-                    ChangeDetails = changeDetails.ToString(),
-                    CreateBy = IDUserUpdate,
-                    Status = 1,
-                    CreateDate = DateTime.Now
+                    Success = false,
+                    ErrorMessage = "Không tìm thấy đơn hàng với ID được cung cấp."
                 };
-
-                _dbcontext.OrderHistory.Add(orderHistory);
-            }
-
-            await _dbcontext.SaveChangesAsync();
-            return true;
-        }
-        public async Task<bool> MarkAsTrackingCheckAsync(Guid IDOrder, string IDUserUpdate)
-        {
-            var order = await _dbcontext.Order
-                .Include(o => o.OrderDetails)
-                .FirstOrDefaultAsync(o => o.ID == IDOrder);
-            var user = await _dbcontext.Users.FirstOrDefaultAsync(u => u.Id == IDUserUpdate);
-            var username = user != null ? user.UserName : "Unknown User";
-
-            if (order == null)
-            {
-                return false;
-            }
-
-            var changeDetails = new StringBuilder();
-            var editingHistory = new StringBuilder();
-
-            if (order.TrackingCheck != true || order.ModifiedBy != null)
-            {
-                if (order.TrackingCheck != true)
-                {
-                    string userLink = $"<a data-user-id='{IDUserUpdate}'>Người sửa: {username}</a>";
-                    editingHistory.AppendLine("Thay đổi trạng thái đơn hàng");
-                    changeDetails.AppendLine($"Trạng thái: Chưa xác nhận => Xác nhận đơn hàng <br>" + userLink);
-                    order.TrackingCheck = true;
-                }
-            }
-
-            order.ModifiedBy = IDUserUpdate;
-            order.ModifiedDate = DateTime.Now;
-
-            _dbcontext.Order.Update(order);
-
-            if (!string.IsNullOrEmpty(editingHistory.ToString()))
-            {
-                var orderHistory = new OrderHistory
-                {
-                    ID = Guid.NewGuid(),
-                    IDUser = IDUserUpdate,
-                    IDOrder = IDOrder,
-                    ChangeDate = DateTime.Now,
-                    EditingHistory = editingHistory.ToString(),
-                    ChangeType = "OrderCancellation",
-                    ChangeDetails = changeDetails.ToString(),
-                    CreateBy = IDUserUpdate,
-                    CreateDate = DateTime.Now,
-                    Status = 1
-
-                };
-
-                _dbcontext.OrderHistory.Add(orderHistory);
-            }
-
-            await _dbcontext.SaveChangesAsync();
-            return true;
-        }
-        public async Task<bool> UpdateOrderStatusAsync(Guid IDOrder, int status, string IDUserUpdate, string BillOfLadingCode)
-        {
-            var order = await _dbcontext.Order
-                           .Include(o => o.OrderDetails)
-                           .FirstOrDefaultAsync(o => o.ID == IDOrder);
-
-            if (order == null)
-            {
-                return false;
             }
 
             var user = await _dbcontext.Users.FirstOrDefaultAsync(u => u.Id == IDUserUpdate);
-            var username = user != null ? user.UserName : "Unknown User";
+            var username = user != null ? user.UserName : "Người dùng không xác định";
 
             var newStatus = (OrderStatus)status;
             if (order.PaymentStatus == PaymentStatus.Success && newStatus == OrderStatus.Cancelled)
             {
-                Console.WriteLine($"Không thể hủy đơn hàng đã thanh toán. IDOrder: {IDOrder}");
-                return false;
+                return new OrderResult
+                {
+                    Success = false,
+                    ErrorMessage = "Đơn hàng đã được thanh toán và không thể hủy."
+                };
             }
             if (order.OrderStatus == newStatus)
             {
-                return true;
+                return new OrderResult
+                {
+                    Success = false,
+                    ErrorMessage = "Trạng thái đơn hàng hiện tại đã là trạng thái bạn muốn cập nhật."
+                };
             }
 
             if (!IsValidStatusTransition(order.OrderStatus, newStatus))
             {
-                return false;
+                return new OrderResult
+                {
+                    Success = false,
+                    ErrorMessage = "Chuyển đổi trạng thái không hợp lệ. Vui lòng kiểm tra lại quy trình chuyển đổi trạng thái."
+                };
             }
 
             var oldStatusDescription = order.OrderStatus.GetDescription();
@@ -997,10 +1093,12 @@ namespace BusinessLogicLayer.Services.Implements
             var changeDetails = $"Trạng thái: Từ {oldStatusDescription} sang {newStatusDescription}";
             var editingHistory = "Thay đổi trạng thái đơn hàng";
             var changeType = (int)newStatus;
+
             if (order.ModifiedBy != null)
             {
                 changeDetails = $"Trạng thái: Từ {oldStatusDescription} sang {newStatusDescription},<br> Người sửa: <a data-user-id='{IDUserUpdate}'>{username}</a>";
             }
+
             if (order.OrderStatus == OrderStatus.Processed)
             {
                 bool stockUpdated = true;
@@ -1016,11 +1114,16 @@ namespace BusinessLogicLayer.Services.Implements
 
                 if (!stockUpdated)
                 {
-                    Console.WriteLine($"Không đủ tồn kho cho một hoặc nhiều mặt hàng của đơn hàng IDOrder: {IDOrder}");
-                    return false;
+                    return new OrderResult
+                    {
+                        Success = false,
+                        ErrorMessage = $"Không đủ tồn kho cho một hoặc nhiều mặt hàng của đơn hàng với ID: {IDOrder}."
+                    };
                 }
+
                 changeDetails = $"Trạng thái: Từ {oldStatusDescription} sang {newStatusDescription},<br> Người sửa: <a data-user-id='{IDUserUpdate}'>{username}</a>";
             }
+
             if (newStatus == OrderStatus.Cancelled)
             {
                 foreach (var orderItem in order.OrderDetails)
@@ -1055,87 +1158,13 @@ namespace BusinessLogicLayer.Services.Implements
 
             _dbcontext.OrderHistory.Add(orderHistory);
             await _dbcontext.SaveChangesAsync();
-            return true;
-        }
-        private bool IsValidStatusTransition(OrderStatus currentStatus, OrderStatus newStatus)
-        {
-            var validTransitions = new Dictionary<OrderStatus, List<OrderStatus>>
-                {
-                    { OrderStatus.Pending, new List<OrderStatus> { OrderStatus.Processed, OrderStatus.Cancelled } },
-                    { OrderStatus.Processed, new List<OrderStatus> { OrderStatus.Shipping, OrderStatus.Cancelled } },
-                    { OrderStatus.Shipping, new List<OrderStatus> { OrderStatus.Delivered } },
-                    { OrderStatus.Delivered, new List<OrderStatus>() }, 
-                    { OrderStatus.Cancelled, new List<OrderStatus>() }  
-                };
 
-            return validTransitions.ContainsKey(currentStatus) && validTransitions[currentStatus].Contains(newStatus);
-        }
-        public async Task<List<OrderVM>> GetByStatusAsync(OrderStatus OrderStatus)
-        {
-            var orders = await _dbcontext.Order
-                            .Where(o => o.OrderStatus == OrderStatus)
-                            .OrderByDescending(b => b.CreateDate)
-                            .Select(o => new OrderVM
-                            {
-                                ID = o.ID,
-                                HexCode = o.HexCode,
-                                IDUser = o.IDUser,
-                                VoucherCode = o.VoucherCode,
-                                CreateDate = o.CreateDate,
-                                PaymentMethod = o.PaymentMethods,
-                                PaymentStatus = o.PaymentStatus,
-                                TotalAmount = o.TotalAmount,
-                                OrderStatus = o.OrderStatus,
-                                CustomerName = o.CustomerName,
-                                CustomerPhone = o.CustomerPhone,
-                                CustomerEmail = o.CustomerEmail,
-                                ShippingAddress = o.ShippingAddress,
-                                ShippingAddressLine2 = o.ShippingAddressLine2,
-                                Cotsts = o.Cotsts,
-                                TrackingCheck = o.TrackingCheck,
-                            })
-                            .ToListAsync();
-
-            if (orders == null || !orders.Any())
+            return new OrderResult
             {
-                return new List<OrderVM>();
-            }
+                Success = true,
+                ErrorMessage = "Cập nhật trạng thái đơn hàng thành công."
+            };
 
-            return orders;
-        }
-        public async Task<List<OrderVM>> GetByOrderTypeAsync(OrderType OrderType)
-        {
-            var orders = await _dbcontext.Order
-                            .Where(o => o.OrderType == OrderType)
-                            .OrderByDescending(b => b.CreateDate)
-                            .Select(o => new OrderVM
-                            {
-                                ID = o.ID,
-                                HexCode = o.HexCode,
-                                IDUser = o.IDUser,
-                                VoucherCode = o.VoucherCode,
-                                CreateDate = o.CreateDate,
-                                PaymentMethod = o.PaymentMethods,
-                                PaymentStatus = o.PaymentStatus,
-                                TotalAmount = o.TotalAmount,
-                                OrderStatus = o.OrderStatus,
-                                CustomerName = o.CustomerName,
-                                CustomerPhone = o.CustomerPhone,
-                                CustomerEmail = o.CustomerEmail,
-                                ShippingAddress = o.ShippingAddress,
-                                ShippingAddressLine2 = o.ShippingAddressLine2,
-                                Cotsts = o.Cotsts,
-                                OrderType = o.OrderType,
-                                TrackingCheck = o.TrackingCheck,
-                            })
-                            .ToListAsync();
-
-            if (orders == null || !orders.Any())
-            {
-                return new List<OrderVM>();
-            }
-
-            return orders;
         }
     }
 }

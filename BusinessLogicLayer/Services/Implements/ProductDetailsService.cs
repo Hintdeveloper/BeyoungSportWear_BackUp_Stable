@@ -9,14 +9,7 @@ using CloudinaryDotNet;
 using DataAccessLayer.Application;
 using DataAccessLayer.Entity;
 using Microsoft.EntityFrameworkCore;
-using ZXing;
-using ZXing.Common;
-using ZXing.Rendering;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
 using static DataAccessLayer.Entity.Base.EnumBase;
-using ZXing.CoreCompat.Rendering;
 namespace BusinessLogicLayer.Services.Implements
 {
     public class ProductDetailsService : IProductDetailsService
@@ -28,10 +21,9 @@ namespace BusinessLogicLayer.Services.Implements
         private readonly IManufacturerService _IManufacturerService;
         private readonly IBrandService _IBrandService;
         private readonly IMaterialService _IMaterialService;
-        private readonly IBarcodeGeneratorService _IBarcodeGeneratorService;
         public ProductDetailsService(ApplicationDBContext ApplicationDBContext, IMapper mapper,
             Cloudinary Cloudinary, IManufacturerService iManufacturerService,
-            IMaterialService IMaterialService, IBrandService IBrandService, IBarcodeGeneratorService iBarcodeGeneratorService)
+            IMaterialService IMaterialService, IBrandService IBrandService)
         {
             _cloudinary = Cloudinary;
             _dbcontext = ApplicationDBContext;
@@ -39,7 +31,6 @@ namespace BusinessLogicLayer.Services.Implements
             _IManufacturerService = iManufacturerService;
             _IMaterialService = IMaterialService;
             _IBrandService = IBrandService;
-            _IBarcodeGeneratorService = iBarcodeGeneratorService;
         }
         public async Task<Guid> EnsureCategory(string CategoryName, string CreateBy)
         {

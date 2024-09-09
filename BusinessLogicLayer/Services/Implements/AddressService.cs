@@ -20,12 +20,7 @@ namespace BusinessLogicLayer.Services.Implements
         public async Task<bool> CreateAsync(AddressCreateVM request)
         {
             if (request != null)
-            {
-                //bool isDuplicate = await _dbcontext.Address.AnyAsync(a => a.PhoneNumber == request.PhoneNumber && a.Gmail == request.Gmail);
-                //if (isDuplicate)
-                //{
-                //    throw new Exception("Địa chỉ đã tồn tại với cùng số điện thoại và Gmail.");
-                //}
+            {              
                 if (request.IsDefault)
                 {
                     var existingAddresses = await _dbcontext.Address
@@ -62,7 +57,6 @@ namespace BusinessLogicLayer.Services.Implements
             }
             return false;
         }
-
         public async Task<List<AddressVM>> GetAddressByIDUserAsync(string IDUser)
         {
             var addresses = await _dbcontext.Address
@@ -71,7 +65,6 @@ namespace BusinessLogicLayer.Services.Implements
                 .ToListAsync();
             return _mapper.Map<List<AddressVM>>(addresses);
         }
-
         public async Task<List<AddressVM>> GetAllActiveAsync()
         {
             var addresses = await _dbcontext.Address
@@ -80,19 +73,16 @@ namespace BusinessLogicLayer.Services.Implements
                 .ToListAsync();
             return _mapper.Map<List<AddressVM>>(addresses);
         }
-
         public async Task<List<AddressVM>> GetAllAsync()
         {
             var addresses = await _dbcontext.Address.ToListAsync();
             return _mapper.Map<List<AddressVM>>(addresses);
         }
-
         public async Task<AddressVM> GetByIDAsync(Guid ID)
         {
             var address = await _dbcontext.Address.FindAsync(ID);
             return _mapper.Map<AddressVM>(address);
         }
-
         public async Task<bool> RemoveAsync(Guid ID, string IDUserDelete)
         {
             var address = await _dbcontext.Address.FindAsync(ID);
@@ -122,7 +112,35 @@ namespace BusinessLogicLayer.Services.Implements
             }
             return false;
         }
+        public async Task<bool> SetDefaultAddressAsync(Guid ID, string IDUser)
+        {
+            var addresses = await _dbcontext.Address
+                .Where(a => a.IDUser == IDUser)
+                .ToListAsync();
 
+            if (addresses == null || !addresses.Any())
+                return false;
+
+            foreach (var address in addresses)
+            {
+                address.IsDefault = false;
+            }
+
+            var defaultAddress = addresses.FirstOrDefault(a => a.ID == ID);
+            if (defaultAddress != null)
+            {
+                defaultAddress.IsDefault = true;
+            }
+            else
+            {
+                return false;
+            }
+
+            _dbcontext.Address.UpdateRange(addresses);
+            await _dbcontext.SaveChangesAsync();
+
+            return true;
+        }
         public async Task<bool> UpdateAsync(Guid ID, AddressUpdateVM request)
         {
             var address = await _dbcontext.Address.FindAsync(ID);

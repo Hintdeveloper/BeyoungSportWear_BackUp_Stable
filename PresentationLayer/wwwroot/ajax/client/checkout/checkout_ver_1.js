@@ -627,7 +627,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         if (event.target.tagName === 'LI') {
                             const selectedAddress = event.target;
                             selectAddressBtn.dataset.selectedAddressId = selectedAddress.dataset.id;
-                            selectAddressBtn.textContent = `Chọn Địa Chỉ: ${selectedAddress.dataset.firstAndLastName}`;
+                            selectAddressBtn.textContent = `Chọn Địa Chỉ: ${selectedAddress.dataset.specificAddress}`;
                         }
                     });
                 } catch (error) {
@@ -649,7 +649,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('phone').value = address.phoneNumber;
         document.getElementById('gmail').value = address.gmail;
         document.getElementById('street').value = address.specificAddress;
-        const fullAddress = `${address.city}, ${address.districtCounty}, ${address.commune}, ${address.specificAddress}`;
+        const fullAddress =  `${address.commune}, ${address.districtCounty}, ${address.city}`;
 
         document.getElementById('shippingAddress').value = fullAddress;
         const provinceID = await fetchProvinces(address.city);
@@ -659,9 +659,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 const wardCode = await fetchWards(districtID, address.commune);
                 if (wardCode) {
                     await getShippingFee(provinceID, districtID, wardCode);
-                    console.log('provinceID', provinceID);
-                    console.log('districtID', districtID);
-                    console.log('wardCode', wardCode);
                 }
             }
         }
@@ -678,7 +675,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 document.getElementById('district').value = selectedAddress.dataset.districtCounty;
                 document.getElementById('ward').value = selectedAddress.dataset.commune;
                 document.getElementById('street').value = selectedAddress.dataset.specificAddress;
-                document.getElementById('shippingAddress').value = selectedAddress.dataset.specificAddress;
+                const fullAddress = `${selectedAddress.dataset.commune}, ${selectedAddress.dataset.districtCounty}, ${selectedAddress.dataset.city}`;
+                document.getElementById('shippingAddress').value = fullAddress;
 
                 modal.style.display = 'none';
             }
@@ -695,8 +693,16 @@ function getFormData() {
     const city = document.getElementById('city').value;
     const district = document.getElementById('district').value;
     const ward = document.getElementById('ward').value;
+    const shippingAddress = document.getElementById('shippingAddress').value;
     const existingHexCodes = [];
-    const shippingAddress = `${ward}, ${district}, ${city}`;
+    if ((shippingAddress.match(/,/g) || []).length < 2) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Lỗi',
+            text: 'Địa chỉ không hợp lệ. Vui lòng điền đầy đủ thành phố, quận/huyện và xã/phường.'
+        });
+        return null;
+    }
     function generateHexCode(existingHexCodes) {
         let hexString;
         let randomPart;
@@ -802,6 +808,7 @@ function setCookie(name, value, days) {
 }
 function sendOrderData() {
     const orderData = getFormData();
+    console.log('orderData', orderData)
     if (!orderData) {
         return;
     }

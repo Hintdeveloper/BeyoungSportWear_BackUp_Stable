@@ -104,15 +104,23 @@ function loadUserAddresses(userId) {
                         <br>
                         <span id="address">${address.specificAddress}, ${address.commune}, ${address.districtCounty}, ${address.city}</span>
                     </div>
-                    <div class="address-actions">
-                        <button class="btn-update btn btn-warning btn-sm trash" onclick="openEditModal('${address.id}')" type="button"> 
+                    <div class="address-actions" style="display: flex; align-items: center; gap: 5px;">
+                        <button class="btn-update btn btn-warning btn-sm trash" onclick="openEditModal('${address.id}')" type="button" style="margin: 0;">
                             <i class="fas fa-pencil-alt"></i>
                         </button>
-                        <button class="btn btn-danger btn-sm trash" onclick="deleteAddress('${address.id}')" type="button">
+                        <button class="btn btn-danger btn-sm trash" onclick="deleteAddress('${address.id}')" type="button" style="margin: 0;">
                             <i class="fa fa-ban"></i>
                         </button>
+                        <div class="container" style="display: flex; align-items: center;">
+                            <label class="switch" style="margin: 0;">
+                                <input type="checkbox" id="toggleSwitch-${address.id}" ${address.isDefault ? 'checked' : ''} onclick="handleToggleChange('${address.id}')">
+                                <span class="slider round"></span>
+                            </label>
+                            <span id="status-${address.id}" style="margin-left: 5px;">${address.isDefault ? 'Bật' : 'Tắt'}</span>
+                        </div>
                     </div>
                 `;
+
                 addressList.appendChild(addressItem);
             });
         } else if (xhr.readyState === 4) {
@@ -122,6 +130,55 @@ function loadUserAddresses(userId) {
     };
     xhr.send();
 }
+
+function handleToggleChange(selectedAddressId) {
+    const allToggleSwitches = document.querySelectorAll('.switch input[type="checkbox"]');
+    const allStatusSpans = document.querySelectorAll('.address-actions #status');
+
+    allToggleSwitches.forEach(function (toggleSwitch) {
+        if (toggleSwitch.id !== `toggleSwitch-${selectedAddressId}`) {
+            toggleSwitch.checked = false;
+        }
+    });
+
+    allStatusSpans.forEach(function (statusSpan) {
+        if (statusSpan.id !== `status-${selectedAddressId}`) {
+            statusSpan.textContent = 'Tắt';
+        }
+    });
+
+    const selectedToggleSwitch = document.getElementById(`toggleSwitch-${selectedAddressId}`);
+    const selectedStatusSpan = document.getElementById(`status-${selectedAddressId}`);
+
+    if (selectedToggleSwitch.checked) {
+        selectedStatusSpan.textContent = 'Bật';
+
+        const apiUrl = `https://localhost:7241/api/Address/set-default/${selectedAddressId}?userId=${userId}`;
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('PUT', apiUrl, true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                var response = JSON.parse(xhr.responseText);
+                Swal.fire({
+                    title: 'Thành công!',
+                    text: response.message,
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    loadUserAddresses(userId);
+                });
+            } else if (xhr.readyState === 4) {
+                console.error('Error updating default address:', xhr.responseText);
+            }
+        };
+        xhr.send();
+    } else {
+        selectedStatusSpan.textContent = 'Tắt';
+    }
+}
+
 document.getElementById('logoutButton').addEventListener('click', function (event) {
     event.preventDefault();
 
@@ -311,7 +368,7 @@ function openCreateModal() {
     document.getElementById('city').value = '';
     document.getElementById('district').value = '';
     document.getElementById('ward').value = '';
-    document.getElementById('IsDefault').checked = false;
+    // document.getElementById('IsDefault').checked = false;
 
     $('#editAddressModal').modal('show');
 
@@ -384,7 +441,7 @@ function saveAddress() {
     const commune = document.getElementById('ward').value;
     const specificAddress = document.getElementById('specificAddress').value;
 
-    const isDefault = document.getElementById('IsDefault').checked;
+    //const isDefault = document.getElementById('IsDefault').checked;
 
     if (firstAndLastName === '' || phoneNumber === '' || gmail === '' || city === '' || districtCounty === '' || commune === '' || specificAddress === '') {
         Swal.fire(
@@ -403,7 +460,7 @@ function saveAddress() {
         city: city,
         districtCounty: districtCounty,
         commune: commune,
-        isDefault: isDefault,
+        //isDefault: isDefault,
         specificAddress: specificAddress
     };
     console.log(addressData)

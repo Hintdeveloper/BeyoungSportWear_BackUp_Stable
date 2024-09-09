@@ -30,25 +30,25 @@
         margin-bottom: 20px;
     }
 
-        .order-info p {
-            margin: 0;
-            padding: 5px 0;
-        }
+    .order-info p {
+        margin: 0;
+        padding: 5px 0;
+    }
 
-        .order-info strong {
-            font-weight: bold;
-        }
+    .order-info strong {
+        font-weight: bold;
+    }
 
     .order-details, .order-history {
         margin-top: 20px;
     }
 
-        .order-details h2, .order-history h2 {
-            font-size: 1.25rem;
-            border-bottom: 2px solid #0275d8;
-            padding-bottom: 10px;
-            margin-bottom: 10px;
-        }
+    .order-details h2, .order-history h2 {
+        font-size: 1.25rem;
+        border-bottom: 2px solid #0275d8;
+        padding-bottom: 10px;
+        margin-bottom: 10px;
+    }
 
     .table {
         width: 100%;
@@ -56,15 +56,15 @@
         margin-bottom: 20px;
     }
 
-        .table th, .table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
+    .table th, .table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
 
-        .table th {
-            background-color: #f4f4f4;
-        }
+    .table th {
+        background-color: #f4f4f4;
+    }
 
     .order-history table {
         width: 100%;
@@ -94,21 +94,16 @@
             display: block;
         }
 
-            .order-info .col-md-6 {
-                width: 100%;
-                float: none;
-                margin-bottom: 20px;
-            }
+        .order-info .col-md-6 {
+            width: 100%;
+            float: none;
+            margin-bottom: 20px;
+        }
     }
-
 </style>
 <div role="document">
     <div class="modal-content">
-        <div class="modal-header">
-            <h5 class="modal-title" id="OrderModalLabel">Chi tiết đơn hàng</h5>
-        </div>
         <div class="container">
-            <div class="row order-info">
                 <div class="row">
                     <div class="col-md-6">
                         <p><strong>Ngày tạo đơn:</strong> <span id="modalcreate"></span></p>
@@ -130,10 +125,8 @@
                         <p><strong>Kiểu đơn hàng:</strong> <span id="modalordertype"></span></p>
                     </div>
                 </div>
-            </div>
             <div class="order-details">
                 <h2>Chi tiết đơn hàng</h2>
-
                 <table class="table">
                     <thead>
                         <tr>
@@ -147,33 +140,6 @@
                     </thead>
                     <tbody id="orderBody"></tbody>
                 </table>
-            </div>         
-        </div>
-    </div>
-</div>
-<div class="modal fade" id="editUserModal">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title">Thông Tin Người Chỉnh Sửa</h4>
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="row">
-                    <div class="col-md-4">
-                        <img id="userImage" src="" alt="User Image" class="img-fluid">
-                    </div>
-                    <div class="col-md-8">
-                        <p><strong>UserName:</strong> <span id="userName"></span></p>
-                        <p><strong>Họ và Tên:</strong> <span id="firstAndLastName"></span></p>
-                        <p><strong>Số điện thoại:</strong> <span id="userPhoneNumber"></span></p>
-                        <p><strong>Gmail:</strong> <span id="userEmail"></span></p>
-                        <p><strong>Chức vụ:</strong> <span id="roleName"></span></p>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
             </div>
         </div>
     </div>

@@ -117,5 +117,22 @@ namespace ExternalInterfaceLayer.Controllers
 
             return Ok(addresses);
         }
+        [HttpPut("set-default/{id}")]
+        public async Task<IActionResult> SetDefaultAddress(Guid id, [FromQuery] string userId)
+        {
+            if (string.IsNullOrEmpty(userId))
+            {
+                return BadRequest(new { message = "ID người dùng không được để trống." });
+            }
+
+            var result = await _addressService.SetDefaultAddressAsync(id, userId);
+
+            if (!result)
+            {
+                return NotFound(new { message = "Không tìm thấy địa chỉ hoặc không thể đặt làm mặc định." });
+            }
+
+            return Ok(new { message = "Địa chỉ đã được đặt làm mặc định thành công." });
+        }
     }
 }
