@@ -95,74 +95,64 @@ namespace BusinessLogicLayer.Services.Implements
         private async Task<Response> SendConfirmationEmailAsync(string email, string name, Uri callbackUri, string userPassword)
         {
             string body = $@"
-                    <html>
-                    <head>
-                        <style>
-                            body {{
-                                font-family: Arial, sans-serif;
-                                line-height: 1.6;
-                                color: #333;
-                                margin: 0;
-                                padding: 0;
-                            }}
-                            .container {{
-                                max-width: 600px;
-                                margin: 0 auto;
-                                padding: 20px;
-                                border: 1px solid #ddd;
-                                border-radius: 10px;
-                                background-color: #f9f9f9;
-                            }}
-                            .header {{
-                                text-align: center;
-                                padding-bottom: 20px;
-                            }}
-                            .header img {{
-                                max-width: 100px;
-                            }}
-                            .content {{
-                                padding: 20px;
-                                background-color: #fff;
-                                border-radius: 10px;
-                            }}
-                            .order-info {{
-                                margin-top: 20px;
-                                padding: 10px;
-                                background-color: #eee;
-                                border-radius: 5px;
-                            }}
-                            .product-item {{
-                                margin-top: 10px;
-                                padding: 10px;
-                                border-bottom: 1px solid #ddd;
-                                display: flex;
-                                align-items: center;
-                            }}
-                            .product-item img {{
-                                max-width: 130px;
-                                margin-right: 10px;
-                            }}
-                            .product-details {{
-                                flex: 1;
-                            }}
-                            .footer {{
-                                text-align: center;
-                                font-size: 12px;
-                                color: #999;
-                                margin-top: 20px;
-                            }}
-                        </style>
-                    </head>
-                    <body>
-                        <div class='container'>
-                            <div class='header'>
-                                <img src='https://res.cloudinary.com/dqcxurnpa/image/upload/v1723407933/BeyoungSportWear/ImageProduct/Options/l1zudx2ihhv6noe0ecga.webp' alt='Company Logo' />
-                                <h2>Chào mừng bạn đến với trang web bán quần áo thể thao Beyoung Sport Wear!</h2>
-                            </div>
-                            <div class='content'>
-                                <p>Chào {name},</p>
-                                <p>Bạn đã đăng ký tài khoản thành công tại kênh bán hàng của chúng tôi. Bạn hãy đăng nhập tại <a href='{callbackUri}'>đây.</a> với mật khẩu là: {userPassword}</p>
-                                ";
+    <html>
+    <head>
+        <style>
+            body {{
+                font-family: Arial, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                margin: 0;
+                padding: 0;
+            }}
+            .container {{
+                max-width: 600px;
+                margin: 0 auto;
+                padding: 20px;
+                border: 1px solid #ddd;
+                border-radius: 10px;
+                background-color: #f9f9f9;
+            }}
+            .header {{
+                text-align: center;
+                padding-bottom: 20px;
+            }}
+            .header img {{
+                max-width: 100px;
+            }}
+            .content {{
+                padding: 20px;
+                background-color: #fff;
+                border-radius: 10px;
+            }}
+            .footer {{
+                text-align: center;
+                font-size: 12px;
+                color: #999;
+                margin-top: 20px;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class='container'>
+            <div class='header'>
+                <img src='https://res.cloudinary.com/dqcxurnpa/image/upload/v1723407933/BeyoungSportWear/ImageProduct/Options/l1zudx2ihhv6noe0ecga.webp' alt='Company Logo' />
+                <h2>Chào mừng bạn đến với Beyoung Sport Wear!</h2>
+            </div>
+            <div class='content'>
+                <p>Chào {name},</p>
+                <p>Chúng tôi vui mừng thông báo rằng bạn đã đăng ký tài khoản thành công trên trang web của chúng tôi.</p>
+                <p>Để đăng nhập vào tài khoản của bạn, vui lòng nhấp vào <a href='{callbackUri}'>đây</a> và sử dụng mật khẩu của bạn là: <strong>{userPassword}</strong></p>
+                <p>Chúng tôi rất mong được phục vụ bạn!</p>
+            </div>
+            <div class='footer'>
+                <p>Beyoung Sport Wear - Địa chỉ liên hệ: [địa chỉ]</p>
+                <p>© {DateTime.Now.Year} Beyoung Sport Wear. All rights reserved.</p>
+            </div>
+        </div>
+    </body>
+    </html>";
+
 
             try
             {
@@ -599,7 +589,7 @@ namespace BusinessLogicLayer.Services.Implements
                     };
                 }
                 int userAge = DateTime.Now.Year - registerUser.DateOfBirth.Year;
-                if (userAge < 18 || userAge > 65 && role=="Staff")
+                if (userAge < 18 || userAge > 65 && role == "Staff")
                 {
                     return new Response
                     {
@@ -729,7 +719,7 @@ namespace BusinessLogicLayer.Services.Implements
                 {
                     var obj = await _dbContext.ApplicationUser.FirstOrDefaultAsync(c => c.Id == ID.ToString());
 
-                    if (obj != null && obj.Status==1)
+                    if (obj != null && obj.Status == 1)
                     {
                         obj.Status = 0;
                         _dbContext.ApplicationUser.Attach(obj);
@@ -739,7 +729,7 @@ namespace BusinessLogicLayer.Services.Implements
                         transaction.Commit();
                         return true;
                     }
-                    else if(obj != null && obj.Status == 0)
+                    else if (obj != null && obj.Status == 0)
                     {
                         obj.Status = 1;
                         _dbContext.ApplicationUser.Attach(obj);
@@ -840,7 +830,7 @@ namespace BusinessLogicLayer.Services.Implements
             foreach (var user in users)
             {
                 var roles = await _userManager.GetRolesAsync(user);
-                var roleName = roles.FirstOrDefault(); 
+                var roleName = roles.FirstOrDefault();
 
                 userDataList.Add(new UserDataVM
                 {
