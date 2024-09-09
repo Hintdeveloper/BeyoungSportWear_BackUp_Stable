@@ -350,7 +350,7 @@ namespace BusinessLogicLayer.Services.Implements
                     var emailConfirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
 
                     var host = _httpContextAccessor.HttpContext.Request.Host;
-                    var callbackUrl = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{host}/Account/ConfirmEmail?userId={newUser.Id}&code={emailConfirmationToken}";
+                    var callbackUrl = $"{_httpContextAccessor.HttpContext.Request.Scheme}://{host}/Login";
 
                     string emailBody = $@"
                     <html>
