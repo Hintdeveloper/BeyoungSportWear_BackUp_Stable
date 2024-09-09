@@ -641,7 +641,7 @@ namespace BusinessLogicLayer.Services.Implements
                 MailMessage mail = new MailMessage
                 {
                     From = new MailAddress(_mailSettings.Mail, _mailSettings.DisplayName),
-                    Subject = "Thư thông báo đăng ký tài khoản thành công",
+                    Subject = "Thư thông báo khách hàng được nhận voucher",
                     Body = body,
                     IsBodyHtml = true
                 };
