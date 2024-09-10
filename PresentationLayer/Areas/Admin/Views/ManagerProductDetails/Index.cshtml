@@ -43,106 +43,35 @@
         max-width: 80%; /* Hình ảnh sẽ không vượt quá phần tử chứa */
         height: auto; /* Đảm bảo tỷ lệ khung hình không bị biến dạng */
     }
-    /* Phần bảng thông tin chi tiết sản phẩm */
-    .product-details-table {
-        margin-top: 20px; /* Khoảng cách giữa phần thông tin và bảng */
-    }
-
-        /* Định dạng phần tiêu đề của bảng */
-        .product-details-table thead th {
-            background-color: #007bff; /* Màu nền */
-            color: #fff; /* Màu chữ */
-            font-weight: bold; /* Đậm */
-        }
-
-        /* Định dạng các ô dữ liệu của bảng */
-        .product-details-table tbody td {
-            vertical-align: middle; /* Căn giữa dọc */
-        }
-
-        /* Định dạng các dòng trong bảng */
-        .product-details-table tbody tr:nth-child(even) {
-            background-color: #f2f2f2; /* Màu nền xen kẽ */
-        }
-
-    .btn-details {
-        color: #007bff; /* Màu chữ */
-        background-color: transparent; /* Màu nền trong suốt */
-        border: none; /* Loại bỏ đường viền */
-        cursor: pointer; /* Con trỏ chuột chỉ */
-    }
-
-        .btn-details:hover {
-            text-decoration: underline;
-        }
-
-
-    .app-title {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-    }
-
-    .app-breadcrumb {
-        list-style-type: none;
-        padding: 0;
-        margin: 0;
-    }
-
-    .breadcrumb-item.active {
-        font-weight: bold;
-    }
-
-    #clock {
-        font-size: 18px;
-        font-weight: bold;
-    }
-
-    .element-search {
-        margin-bottom: 20px;
-    }
-
-        .element-search .form-control {
-            width: 100%;
-        }
-
-    .form-group {
-        margin-bottom: 15px;
-    }
-
-        .form-group label {
-            font-weight: bold;
-        }
-
-        .form-group input[type="text"] {
-            width: 100%;
-        }
-
-    #sampleTable_wrapper {
-        margin-top: 20px;
-    }
 </style>
-<div class="app-title">
-    <ul class="app-breadcrumb breadcrumb side">
-        <li class="breadcrumb-item active"><a href="#"><b>Danh sách sản phẩm</b></a></li>
+<div class="app-title" style="margin-bottom: 20px; padding: 10px; background-color: #f8f9fa;">
+    <ul class="app-breadcrumb breadcrumb side" style="list-style: none; padding: 0; margin: 0;">
+        <li class="breadcrumb-item active" style="display: inline; font-size: 1.2em;"><a href="#" style="text-decoration: none; color: #007bff;"><b>Danh sách sản phẩm</b></a></li>
     </ul>
-    <div id="clock"></div>
+    <div id="clock" style="font-size: 1em; color: #333;"></div>
 </div>
+
 <div class="row">
     <div class="col-md-12">
-        <div class="tile">
+        <div class="tile" style="border: 1px solid #ddd; border-radius: 4px; padding: 15px;">
             <div class="tile-body">
-                <div class="row element-button">
-                   <div class="col-sm-2">
-                        <a class="btn btn-add btn-sm createbtn" asp-area="Admin" asp-controller="ManagerProductDetails" asp-action="Create" title="Thêm">
-                            <i class="fas fa-plus"></i>
-                            Tạo mới sản phẩm
+                <div class="row element-button" style="margin-bottom: 15px;">
+                    <div class="col-sm-3">
+                        <input type="text" id="searchByKeycodeInput" class="form-control" placeholder="Nhập mã sản phẩm" style="margin-bottom: 5px;">
+                        <button class="btn btn-primary btn-sm mt-2" id="searchByKeycodeBtn" style="width: 100%;"><i class="fas fa-search"></i> Tìm kiếm theo mã sản phẩm</button>
+                    </div>
+                    <div class="col-sm-3">
+                        <input type="text" id="searchByNameInput" class="form-control" placeholder="Nhập tên sản phẩm" style="margin-bottom: 5px;">
+                        <button class="btn btn-secondary btn-sm mt-2" id="searchByNameBtn" style="width: 100%;"><i class="fas fa-search"></i> Tìm kiếm theo tên sản phẩm</button>
+                    </div>
+                    <div class="col-sm-6">
+                        <a class="btn btn-add btn-sm createbtn" asp-area="Admin" asp-controller="ManagerProductDetails" asp-action="Create" title="Thêm" style="width: 100%; display: inline-block; text-align: center;">
+                            <i class="fas fa-plus"></i> Tạo mới sản phẩm
                         </a>
-                    </div>                 
+                    </div>
                 </div>
 
-                <table class="table table-hover table-bordered" id="sampleTable">
+                <table class="table table-hover table-bordered" id="sampleTable" style="width: 100%;">
                     <thead>
                         <tr>
                             <th>Mã sản phẩm</th>
@@ -156,7 +85,7 @@
                     </thead>
                     <tbody id="table_productdetails">
                         <tr id="loading-spinner" style="display: none;">
-                            <td colspan="9" style="text-align: center;">
+                            <td colspan="7" style="text-align: center;">
                                 <i class="fas fa-spinner fa-spin"></i> Loading...
                             </td>
                         </tr>

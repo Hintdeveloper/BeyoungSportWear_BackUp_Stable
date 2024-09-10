@@ -24,6 +24,14 @@ function getUserIdFromJwt(jwt) {
 const jwt = getJwtFromCookie();
 const userId = getUserIdFromJwt(jwt);
 
+    function isJwtExpired(jwt) {
+        try {
+            const tokenPayload = JSON.parse(atob(jwt.split('.')[1]));
+            const expirationTime = tokenPayload.exp * 1000;
+            return Date.now() > expirationTime;
+        } catch (error) {
+            console.error('Error parsing JWT expiration:', error);
+            return true;
 function fetchUserData() {
     const xhr = new XMLHttpRequest();
     xhr.open('GET', `https://localhost:7241/api/ApplicationUser/GetInformationUser/${userId}`, true);

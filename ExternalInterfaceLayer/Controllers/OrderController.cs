@@ -59,7 +59,6 @@ namespace ExternalInterfaceLayer.Controllers
                 return BadRequest(new { status = "Error", message = result.ErrorMessage });
             }
         }
-
         private string SavePdfToServer(byte[] pdfBytes, string hexCode)
         {
             var downloadsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
@@ -200,16 +199,10 @@ namespace ExternalInterfaceLayer.Controllers
                 throw;
             }
         }
-
         private iTextSharp.text.Image GetIcon(string name)
         {
-            // Tạo đường dẫn đầy đủ đến hình ảnh trong thư mục wwwroot
             var iconUrl = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", name);
-
-            // Lấy hình ảnh từ đường dẫn tuyệt đối
             var image = iTextSharp.text.Image.GetInstance(new Uri(iconUrl));
-
-            // Điều chỉnh kích thước hình ảnh và căn giữa
             image.ScaleToFit(60f, 60f);
             image.Alignment = Element.ALIGN_CENTER;
 
@@ -229,7 +222,6 @@ namespace ExternalInterfaceLayer.Controllers
 
             doc.Add(footerTable);
         }
-
         private PdfPCell CreateCell(string text, int alignment, bool isHeader = false)
         {
             var font = isHeader ? new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, BaseColor.WHITE) : new Font(BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED), 10, Font.NORMAL, BaseColor.BLACK);
@@ -261,14 +253,6 @@ namespace ExternalInterfaceLayer.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
-        [HttpGet]
-        [Route("GetOrderDetailsByID/{ID_Order}")]
-        public async Task<IActionResult> GetOrderDetailsByID(Guid ID_Order)
-        {
-            var order = await _orderService.GetOrderDetailsVMByIDAsync(ID_Order);
-            if (order == null) return NotFound();
-            return Ok(order);
-        }
         [HttpGet("GetByHexCode/{HexCode}")]
         public async Task<IActionResult> GetByHexCode(string HexCode)
         {
@@ -279,7 +263,6 @@ namespace ExternalInterfaceLayer.Controllers
             }
             return Ok(order);
         }
-
         [HttpGet("GetByStatus/{OrderStatus}")]
         public async Task<IActionResult> GetByStatus(OrderStatus OrderStatus)
         {
@@ -343,22 +326,6 @@ namespace ExternalInterfaceLayer.Controllers
                 Console.WriteLine($"Lỗi khi cập nhật đơn hàng: {ex.Message}");
                 return StatusCode(500, "Lỗi server xảy ra.");
             }
-        }
-
-        [HttpPut("MarkAsCancelled/{ID_Order}/{IDUserUpdate}")]
-        public async Task<IActionResult> MarkAsCancelled(Guid ID_Order, string IDUserUpdate)
-        {
-            var result = await _orderService.MarkAsCancelledAsync(ID_Order, IDUserUpdate);
-            if (!result) return BadRequest();
-            return Ok();
-        }
-
-        [HttpPut("MarkAsTrackingCheckAsync/{ID_Order}/{IDUserUpdate}")]
-        public async Task<IActionResult> MarkAsTrackingCheckAsync(Guid ID_Order, string IDUserUpdate)
-        {
-            var result = await _orderService.MarkAsTrackingCheckAsync(ID_Order, IDUserUpdate);
-            if (!result) return BadRequest();
-            return Ok();
         }
         [HttpPut("UpdateOrderStatus/{orderId}")]
         public async Task<IActionResult> UpdateOrderStatus(Guid orderId, [FromBody] UpdateOrderStatusRequest request)

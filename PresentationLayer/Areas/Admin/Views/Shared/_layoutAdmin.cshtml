@@ -58,11 +58,10 @@
     <div class="app-sidebar__overlay" data-toggle="sidebar"></div>
     <aside class="app-sidebar">
         <div class="app-sidebar__user">
-            <img class="app-sidebar__user-avatar" src="~/images/datnt.jpg" width="50px"
-                 alt="User Image">
+            <img class="app-sidebar__user-avatar" id="image_user" alt="User Image">
             <div>
                 <p class="app-sidebar__user-name">
-                    <b>Tuấn Đạt</b>
+                    <b id="name_user"></b>
                 </p>
                 <p class="app-sidebar__user-designation">Chào mừng bạn trở lại</p>
             </div>
@@ -193,7 +192,9 @@
     <script src="~/js/bootstrap.min.js"></script>
     <script src="~/js/main.js"></script>
     <script src="~/js/plugins/pace.min.js"></script>
-    <script type="text/javascript" src="~/js/plugins/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script src="~/ajax/admin_staff/account/account_index_shared.js"></script>
     <script>
         $(document).ready(function () {
             // Bắt sự kiện click vào dropdown toggle
