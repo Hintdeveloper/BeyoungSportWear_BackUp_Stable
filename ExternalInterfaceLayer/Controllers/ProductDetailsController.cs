@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using DataAccessLayer.Entity;
 using BusinessLogicLayer.Viewmodels.Options;
 using Microsoft.AspNetCore.Authorization;
+using BusinessLogicLayer.Services.Implements;
 
 namespace ExternalInterfaceLayer.Controllers
 {
@@ -32,19 +33,6 @@ namespace ExternalInterfaceLayer.Controllers
                 return BadRequest(new { status = "Error", message = "There was an error uploading the productDetails." });
             }
         }
-        [AllowAnonymous]
-        [HttpGet("GetByProductDetailsId/{IDProductDetails}")]
-        public async Task<IActionResult> GetByProductDetailsId(Guid IDProductDetails)
-        {
-            var options = await _IProductDetailsService.GetOptionProductDetailsByIDAsync(IDProductDetails);
-            if (options == null || !options.Any())
-            {
-                return NotFound("No options found for the given ProductDetails ID.");
-            }
-
-            return Ok(options);
-        }
-
         [AllowAnonymous]
         [HttpGet]
         [Route("GetAll")]
@@ -159,21 +147,6 @@ namespace ExternalInterfaceLayer.Controllers
             }
         }
         [AllowAnonymous]
-        [HttpGet("GetOptionsByProductDetailsId/{IDProductDetails}")]
-        public async Task<ActionResult<List<OptionsVM>>> GetOptionsByProductDetailsIdAsync(Guid IDProductDetails)
-        {
-            try
-            {
-                var options = await _IProductDetailsService.GetOptionProductDetailsByIDAsync(IDProductDetails);
-                return Ok(options);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
-        }
-
-        [AllowAnonymous]
         [HttpGet]
         [Route("GetProductDetailInfo/{IDProductDetails}")]
         public async Task<IActionResult> GetProductDetailInfo(Guid IDProductDetails, [FromQuery] string size, [FromQuery] string color)
@@ -191,7 +164,7 @@ namespace ExternalInterfaceLayer.Controllers
         [AllowAnonymous]
         [HttpGet]
         [Route("products/price-range")]
-        public async Task<IActionResult> GetProductsByPriceRangeAsync(/*Guid IDProductDetails,*/ [FromQuery] decimal minPrice, [FromQuery] decimal maxPrice)
+        public async Task<IActionResult> GetProductsByPriceRangeAsync( [FromQuery] decimal minPrice, [FromQuery] decimal maxPrice)
         {
             if (minPrice > maxPrice)
             {
@@ -202,6 +175,42 @@ namespace ExternalInterfaceLayer.Controllers
             if (products == null || !products.Any())
             {
                 return NotFound("No products found within the given price range for the specified category.");
+            }
+
+            return Ok(products);
+        }
+        [HttpGet("product_getby_keycode/{keycode}")]
+        public async Task<IActionResult> GetProductByKeycode(string keycode)
+        {
+            if (string.IsNullOrWhiteSpace(keycode))
+            {
+                return BadRequest("Keycode không được để trống.");
+            }
+
+            var product = await _IProductDetailsService.GetByKeycodeAsync(keycode);
+
+            if (product == null)
+            {
+                return NotFound($"Không tìm thấy sản phẩm với keycode: {keycode}");
+            }
+
+            return Ok(product);
+        }
+
+        // GET: api/ProductDetails/Name
+        [HttpGet("product_getby_name")]
+        public async Task<IActionResult> GetProductsByName([FromQuery] string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return BadRequest("Tên sản phẩm không được để trống.");
+            }
+
+            var products = await _IProductDetailsService.GetByNameAsync(name);
+
+            if (products == null || !products.Any())
+            {
+                return NotFound($"Không tìm thấy sản phẩm nào có tên: {name}");
             }
 
             return Ok(products);

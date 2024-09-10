@@ -315,8 +315,6 @@ namespace BusinessLogicLayer.Services.Implements
                 }
             }
         }
-
-
         public async Task<List<ProductDetailsVM>> GetAllActiveAsync(int pageIndex, int pageSize)
         {
             var activeVariants = await _dbcontext.ProductDetails
@@ -458,31 +456,6 @@ namespace BusinessLogicLayer.Services.Implements
             }
 
             return productDetails;
-        }
-        public async Task<List<OptionsVM>> GetOptionProductDetailsByIDAsync(Guid IDProductDetails)
-        {
-            var optionsList = await _dbcontext.Options
-                                  .AsNoTracking()
-                                  .Where(opt => opt.IDProductDetails == IDProductDetails && opt.IsActive != false && opt.Status != 0)
-                                  .Select(opt => new OptionsVM
-                                  {
-                                      ID = opt.ID,
-                                      IDProductDetails = opt.IDProductDetails,
-                                      SizesName = opt.Sizes.Name,
-                                      IDSize = opt.Sizes.ID,
-                                      ColorName = opt.Colors.Name,
-                                      IDColor = opt.Colors.ID,
-                                      StockQuantity = opt.StockQuantity,
-                                      CreateBy = opt.CreateBy,
-                                      ImageURL = opt.ImageURL,
-                                      CreateDate = opt.CreateDate,
-                                      RetailPrice = opt.RetailPrice,
-                                      Discount = opt.Discount,
-                                      Status = opt.Status
-                                  })
-                                  .ToListAsync();
-
-            return optionsList;
         }
         public async Task<bool> RemoveAsync(Guid ID, string IDUserDelete)
         {
@@ -867,7 +840,6 @@ namespace BusinessLogicLayer.Services.Implements
 
             return productDetails;
         }
-
         public IQueryable<OptionsVM> SearchOptionsByProductName(string productName)
         {
             var normalizedProductName = productName.Replace(" ", "").ToLower();
@@ -893,6 +865,27 @@ namespace BusinessLogicLayer.Services.Implements
                         });
 
             return query;
+        }
+        private ProductDetailsVM MapToProductDetailsVM(ProductDetails product)
+        {
+            return new ProductDetailsVM
+            {
+                ID = product.ID,
+                ProductName = product.Products != null ? product.Products.Name : string.Empty,
+                SmallestPrice = product.Options != null && product.Options.Any() ? product.Options.Min(opt => opt.RetailPrice) : 0,
+                BiggestPrice = product.Options != null && product.Options.Any() ? product.Options.Max(opt => opt.RetailPrice) : 0,
+                ImagePaths = product.Images != null ? product.Images.Where(m => m.Status == 1).Select(m => m.Path).ToList() : new List<string>(),
+                KeyCode = product.KeyCode,
+                IDCategory = product.IDCategory,
+                IDProduct = product.IDProduct,
+                CreateBy = product.CreateBy,
+                CategoryName = product.Category.Name,
+                Description = product.Description,
+                Style = product.Style,
+                Origin = product.Origin,
+                IsActive = product.IsActive,
+                Status = product.Status,
+            };
         }
 
         public async Task<List<ProductDetailsVM>> GetProductsByPriceRangeAsync(decimal minPrice, decimal maxPrice)
@@ -924,6 +917,36 @@ namespace BusinessLogicLayer.Services.Implements
                 //Barcode = p.BarCode,
                 Status = p.Status,
             }).ToList();
+        }
+
+        public async Task<ProductDetailsVM> GetByKeycodeAsync(string keycode)
+        {
+            var product = await _dbcontext.ProductDetails
+                               .Include(p => p.Products)
+                               .Include(p => p.Options)
+                               .Include(p => p.Images)
+                               .Include(p => p.Category)
+                               .AsNoTracking()
+                               .FirstOrDefaultAsync(p => p.KeyCode == keycode);
+
+            return product != null ? MapToProductDetailsVM(product) : null;
+
+        }
+
+        public async Task<List<ProductDetailsVM>> GetByNameAsync(string name)
+        {
+            var products = await _dbcontext.ProductDetails
+                                   .Include(p => p.Products)
+                                   .Include(p => p.Options)
+                                   .Include(p => p.Images)
+                                   .Include(p => p.Category)
+                                   .AsNoTracking()
+                                   .Where(p => p.Products != null &&
+                                               !string.IsNullOrEmpty(p.Products.Name) &&
+                                               p.Products.Name.ToLower().Contains(name.ToLower()))
+                                   .ToListAsync();
+
+            return products.Select(MapToProductDetailsVM).ToList();
         }
     }
 }

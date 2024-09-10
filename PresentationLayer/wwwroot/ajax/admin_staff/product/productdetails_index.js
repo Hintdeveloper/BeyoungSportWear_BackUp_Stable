@@ -48,6 +48,69 @@ function displayData(data) {
         tableBody.appendChild(row);
     });
 }
+document.getElementById('searchByKeycodeBtn').addEventListener('click', () => {
+    const keycode = document.getElementById('searchByKeycodeInput').value.trim();
+    if (keycode) {
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', `https://localhost:7241/api/ProductDetails/product_getby_keycode/${keycode}`, true);
+        xhr.setRequestHeader('Accept', '*/*');
+
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                const data = JSON.parse(xhr.responseText);
+                displayData([data]);
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: 'Không tìm thấy sản phẩm với mã này!'
+                });
+            }
+        };
+
+        xhr.onerror = function () {
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: 'Đã xảy ra lỗi khi gửi yêu cầu!'
+            });
+        };
+
+        xhr.send();
+    }
+});
+
+document.getElementById('searchByNameBtn').addEventListener('click', () => {
+    const name = document.getElementById('searchByNameInput').value.trim();
+    if (name) {
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', `https://localhost:7241/api/ProductDetails/product_getby_name?name=${encodeURIComponent(name)}`, true);
+        xhr.setRequestHeader('Accept', '*/*');
+
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                const data = JSON.parse(xhr.responseText);
+                displayData(data);
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: 'Không tìm thấy sản phẩm với tên này!'
+                });
+            }
+        };
+
+        xhr.onerror = function () {
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: 'Đã xảy ra lỗi khi gửi yêu cầu!'
+            });
+        };
+
+        xhr.send();
+    }
+});
 function fetchData() {
     var xhr = new XMLHttpRequest();
     xhr.open('GET', 'https://localhost:7241/api/ProductDetails/GetAll', true);

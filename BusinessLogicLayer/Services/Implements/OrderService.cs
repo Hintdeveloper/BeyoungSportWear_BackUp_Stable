@@ -10,6 +10,7 @@ using System.Text;
 using static DataAccessLayer.Entity.Base.EnumBase;
 using static DataAccessLayer.Entity.Voucher;
 using BusinessLogicLayer.Viewmodels.OrderHistory;
+using BusinessLogicLayer.Viewmodels;
 
 namespace BusinessLogicLayer.Services.Implements
 {
@@ -24,7 +25,7 @@ namespace BusinessLogicLayer.Services.Implements
             _mapper = mapper;
             _emailService = emailService;
         }
-        public async Task<OrderResult> CreateAsync(OrderCreateVM request)
+        public async Task<Result> CreateAsync(OrderCreateVM request)
         {
             if (request == null)
             {
@@ -65,7 +66,7 @@ namespace BusinessLogicLayer.Services.Implements
                         if (option.StockQuantity < directItem.Quantity)
                         {
                             await transaction.RollbackAsync();
-                            return new OrderResult
+                            return new Result
                             {
                                 Success = false,
                                 ErrorMessage = $"Số lượng không đủ cho sản phẩm (Số lượng còn lại: {option.StockQuantity})"
@@ -89,7 +90,7 @@ namespace BusinessLogicLayer.Services.Implements
                     else
                     {
                         await transaction.RollbackAsync();
-                        return new OrderResult
+                        return new Result
                         {
                             Success = false,
                             ErrorMessage = "Phân loại không được rỗng"
@@ -101,7 +102,7 @@ namespace BusinessLogicLayer.Services.Implements
                         if (!stockUpdated)
                         {
                             await transaction.RollbackAsync();
-                            return new OrderResult
+                            return new Result
                             {
                                 Success = false,
                                 ErrorMessage = "Số lượng không đủ"
@@ -116,7 +117,7 @@ namespace BusinessLogicLayer.Services.Implements
                     if (voucher == null)
                     {
                         await transaction.RollbackAsync();
-                        return new OrderResult
+                        return new Result
                         {
                             Success = false,
                             ErrorMessage = "Voucher không tồn tại."
@@ -126,7 +127,7 @@ namespace BusinessLogicLayer.Services.Implements
                     if (voucher.IsActive == StatusVoucher.HasntStartedYet)
                     {
                         await transaction.RollbackAsync();
-                        return new OrderResult
+                        return new Result
                         {
                             Success = false,
                             ErrorMessage = "Voucher chưa bắt đầu."
@@ -136,7 +137,7 @@ namespace BusinessLogicLayer.Services.Implements
                     if (voucher.IsActive == StatusVoucher.Finished)
                     {
                         await transaction.RollbackAsync();
-                        return new OrderResult
+                        return new Result
                         {
                             Success = false,
                             ErrorMessage = "Voucher đã hết hạn."
@@ -146,7 +147,7 @@ namespace BusinessLogicLayer.Services.Implements
                     if (voucher.Quantity <= 0)
                     {
                         await transaction.RollbackAsync();
-                        return new OrderResult
+                        return new Result
                         {
                             Success = false,
                             ErrorMessage = "Voucher đã hết số lượng."
@@ -155,10 +156,22 @@ namespace BusinessLogicLayer.Services.Implements
                     if (totalAmount < voucher.MinimumAmount)
                     {
                         await transaction.RollbackAsync();
-                        return new OrderResult
+                        return new Result
                         {
                             Success = false,
                             ErrorMessage = $"Đơn hàng không đủ điều kiện áp dụng voucher. Yêu cầu tổng đơn hàng tối thiểu: {Currency.FormatCurrency(voucher.MinimumAmount.ToString())}"
+                        };
+                    }
+                    var voucherUser = await _dbcontext.VoucherUser
+                        .FirstOrDefaultAsync(vu => vu.IDVoucher == voucher.ID && vu.IDUser == request.IDUser);
+
+                    if (voucherUser != null && voucherUser.Status == 0)
+                    {
+                        await transaction.RollbackAsync();
+                        return new Result
+                        {
+                            Success = false,
+                            ErrorMessage = "Voucher này đã được sử dụng hoặc không khả dụng cho tài khoản này."
                         };
                     }
                     var discountAmount = CalculateDiscountAmount(voucher, totalAmount);
@@ -170,12 +183,12 @@ namespace BusinessLogicLayer.Services.Implements
                         voucher.IsActive = StatusVoucher.Finished;
                     }
                     _dbcontext.Voucher.Update(voucher);
-                    var voucherUser = await _dbcontext.VoucherUser
+                    var voucherUser_1 = await _dbcontext.VoucherUser
                        .FirstOrDefaultAsync(vu => vu.IDVoucher == voucher.ID && vu.IDUser == request.IDUser);
-                    if (voucherUser != null)
+                    if (voucherUser_1 != null)
                     {
-                        voucherUser.Status = 1; // Cập nhật trạng thái
-                        _dbcontext.VoucherUser.Update(voucherUser);
+                        voucherUser_1.Status =0;
+                        _dbcontext.VoucherUser.Update(voucherUser_1);
                     }
                 }
                 totalAmount += request.Cotsts ?? 0;
@@ -346,7 +359,7 @@ namespace BusinessLogicLayer.Services.Implements
                 {
                     Console.WriteLine("Địa chỉ email không hợp lệ, không gửi email.");
                 }
-                return new OrderResult
+                return new Result
                 {
                     Success = true,
                     ErrorMessage = "Thành công"
@@ -359,7 +372,7 @@ namespace BusinessLogicLayer.Services.Implements
                 {
                     await transaction.RollbackAsync();
                 }
-                return new OrderResult
+                return new Result
                 {
                     Success = false,
                     ErrorMessage = ""
@@ -493,34 +506,6 @@ namespace BusinessLogicLayer.Services.Implements
                    .ToList();
             return orderVM;
         }
-        public async Task<List<OrderDetailsVM>> GetOrderDetailsVMByIDAsync(Guid IDOrder)
-        {
-            var orderDetails = await (
-                            from p in _dbcontext.Order
-                            join dp in _dbcontext.OrderDetails on p.ID equals dp.IDOrder
-                            where dp.IDOrder == IDOrder
-                            select new OrderDetailsVM
-                            {
-                                ID = dp.ID,
-                                IDOrder = p.ID,
-                                IDOptions = dp.IDOptions,
-                                ColorName = dp.Options.Colors.Name,
-                                SizeName = dp.Options.Sizes.Name,
-                                ProductName = dp.Options.ProductDetails.Products.Name,
-                                UnitPrice = dp.UnitPrice,
-                                Discount = dp.Discount,
-                                Quantity = dp.Quantity,
-                                Status = dp.Status,
-                                TotalAmount = dp.TotalAmount,
-                            }
-                        ).ToListAsync();
-            if (!orderDetails.Any())
-            {
-                return new List<OrderDetailsVM>();
-            }
-
-            return orderDetails;
-        }
         public async Task<bool> RemoveAsync(Guid ID, string IDUserdelete)
         {
             using (var transaction = _dbcontext.Database.BeginTransaction())
@@ -577,132 +562,6 @@ namespace BusinessLogicLayer.Services.Implements
                 }
             }
             return false;
-        }
-        public async Task<bool> MarkAsCancelledAsync(Guid IDOrder, string IDUserUpdate)
-        {
-            var order = await _dbcontext.Order
-                .Include(o => o.OrderDetails)
-                .FirstOrDefaultAsync(o => o.ID == IDOrder);
-            var user = await _dbcontext.Users.FirstOrDefaultAsync(u => u.Id == IDUserUpdate);
-            var username = user != null ? user.UserName : "Unknown User";
-
-            if (order == null)
-            {
-                return false;
-            }
-
-            if (order.OrderStatus == OrderStatus.Shipping ||
-                order.OrderStatus == OrderStatus.Cancelled ||
-                order.PaymentStatus == PaymentStatus.Success)
-            {
-                return false;
-            }
-
-            if (order.OrderStatus == OrderStatus.Cancelled)
-            {
-                return true;
-            }
-
-            var changeDetails = new StringBuilder();
-            var editingHistory = new StringBuilder();
-            var oldStatusDescription = order.OrderStatus.GetDescription();
-            var newStatusDescription = OrderStatus.Cancelled.GetDescription();
-
-            if (order.ModifiedBy != null)
-            {
-                changeDetails.AppendLine($"Trạng thái: Từ {oldStatusDescription} sang {newStatusDescription},<br> Người sửa: <a data-user-id='{IDUserUpdate}'>{username}</a>");
-                editingHistory.AppendLine("Thay đổi trạng thái đơn hàng");
-                order.OrderStatus = OrderStatus.Cancelled;
-            }
-
-            if (order.OrderStatus != OrderStatus.Pending)
-            {
-                foreach (var orderItem in order.OrderDetails)
-                {
-                    await IncreaseStockAsync(orderItem.IDOptions, orderItem.Quantity);
-                }
-            }
-
-            order.ModifiedBy = IDUserUpdate;
-            order.ModifiedDate = DateTime.Now;
-            _dbcontext.Order.Update(order);
-
-            if (!string.IsNullOrEmpty(editingHistory.ToString()))
-            {
-                var orderHistory = new OrderHistory
-                {
-                    ID = Guid.NewGuid(),
-                    IDUser = IDUserUpdate,
-                    IDOrder = IDOrder,
-                    ChangeDate = DateTime.Now,
-                    EditingHistory = editingHistory.ToString(),
-                    ChangeType = "4",
-                    ChangeDetails = changeDetails.ToString(),
-                    CreateBy = IDUserUpdate,
-                    Status = 1,
-                    CreateDate = DateTime.Now
-                };
-
-                _dbcontext.OrderHistory.Add(orderHistory);
-            }
-
-            await _dbcontext.SaveChangesAsync();
-            return true;
-        }
-        public async Task<bool> MarkAsTrackingCheckAsync(Guid IDOrder, string IDUserUpdate)
-        {
-            var order = await _dbcontext.Order
-                .Include(o => o.OrderDetails)
-                .FirstOrDefaultAsync(o => o.ID == IDOrder);
-            var user = await _dbcontext.Users.FirstOrDefaultAsync(u => u.Id == IDUserUpdate);
-            var username = user != null ? user.UserName : "Unknown User";
-
-            if (order == null)
-            {
-                return false;
-            }
-
-            var changeDetails = new StringBuilder();
-            var editingHistory = new StringBuilder();
-
-            if (order.TrackingCheck != true || order.ModifiedBy != null)
-            {
-                if (order.TrackingCheck != true)
-                {
-                    string userLink = $"<a data-user-id='{IDUserUpdate}'>Người sửa: {username}</a>";
-                    editingHistory.AppendLine("Thay đổi trạng thái đơn hàng");
-                    changeDetails.AppendLine($"Trạng thái: Chưa xác nhận => Xác nhận đơn hàng <br>" + userLink);
-                    order.TrackingCheck = true;
-                }
-            }
-
-            order.ModifiedBy = IDUserUpdate;
-            order.ModifiedDate = DateTime.Now;
-
-            _dbcontext.Order.Update(order);
-
-            if (!string.IsNullOrEmpty(editingHistory.ToString()))
-            {
-                var orderHistory = new OrderHistory
-                {
-                    ID = Guid.NewGuid(),
-                    IDUser = IDUserUpdate,
-                    IDOrder = IDOrder,
-                    ChangeDate = DateTime.Now,
-                    EditingHistory = editingHistory.ToString(),
-                    ChangeType = "OrderCancellation",
-                    ChangeDetails = changeDetails.ToString(),
-                    CreateBy = IDUserUpdate,
-                    CreateDate = DateTime.Now,
-                    Status = 1
-
-                };
-
-                _dbcontext.OrderHistory.Add(orderHistory);
-            }
-
-            await _dbcontext.SaveChangesAsync();
-            return true;
         }
         private bool IsValidStatusTransition(OrderStatus currentStatus, OrderStatus newStatus)
         {
@@ -1041,8 +900,7 @@ namespace BusinessLogicLayer.Services.Implements
                 return false;
             }
         }
-
-        public async Task<OrderResult> UpdateOrderStatusAsync(Guid IDOrder, int status, string IDUserUpdate, string BillOfLadingCode)
+        public async Task<Result> UpdateOrderStatusAsync(Guid IDOrder, int status, string IDUserUpdate, string BillOfLadingCode)
         {
             var order = await _dbcontext.Order
                               .Include(o => o.OrderDetails)
@@ -1050,7 +908,7 @@ namespace BusinessLogicLayer.Services.Implements
 
             if (order == null)
             {
-                return new OrderResult
+                return new Result
                 {
                     Success = false,
                     ErrorMessage = "Không tìm thấy đơn hàng với ID được cung cấp."
@@ -1063,7 +921,7 @@ namespace BusinessLogicLayer.Services.Implements
             var newStatus = (OrderStatus)status;
             if (order.PaymentStatus == PaymentStatus.Success && newStatus == OrderStatus.Cancelled)
             {
-                return new OrderResult
+                return new Result
                 {
                     Success = false,
                     ErrorMessage = "Đơn hàng đã được thanh toán và không thể hủy."
@@ -1071,7 +929,7 @@ namespace BusinessLogicLayer.Services.Implements
             }
             if (order.OrderStatus == newStatus)
             {
-                return new OrderResult
+                return new Result
                 {
                     Success = false,
                     ErrorMessage = "Trạng thái đơn hàng hiện tại đã là trạng thái bạn muốn cập nhật."
@@ -1080,7 +938,7 @@ namespace BusinessLogicLayer.Services.Implements
 
             if (!IsValidStatusTransition(order.OrderStatus, newStatus))
             {
-                return new OrderResult
+                return new Result
                 {
                     Success = false,
                     ErrorMessage = "Chuyển đổi trạng thái không hợp lệ. Vui lòng kiểm tra lại quy trình chuyển đổi trạng thái."
@@ -1114,7 +972,7 @@ namespace BusinessLogicLayer.Services.Implements
 
                 if (!stockUpdated)
                 {
-                    return new OrderResult
+                    return new Result
                     {
                         Success = false,
                         ErrorMessage = $"Không đủ tồn kho cho một hoặc nhiều mặt hàng của đơn hàng với ID: {IDOrder}."
@@ -1158,23 +1016,8 @@ namespace BusinessLogicLayer.Services.Implements
 
             _dbcontext.OrderHistory.Add(orderHistory);
             await _dbcontext.SaveChangesAsync();
-<<<<<<< HEAD
-=======
-            return true;
-        }
-        private bool IsValidStatusTransition(OrderStatus currentStatus, OrderStatus newStatus)
-        {
-            var validTransitions = new Dictionary<OrderStatus, List<OrderStatus>>
-                {
-                    { OrderStatus.Pending, new List<OrderStatus> { OrderStatus.Processed, OrderStatus.Cancelled } },
-                    { OrderStatus.Processed, new List<OrderStatus> { OrderStatus.Shipping, OrderStatus.Cancelled } },
-                    { OrderStatus.Shipping, new List<OrderStatus> { OrderStatus.Delivered } },
-                    { OrderStatus.Delivered, new List<OrderStatus>() },
-                    { OrderStatus.Cancelled, new List<OrderStatus>() }
-                };
->>>>>>> 10310e2a9c6129705f687c9016cb2557833d3665
 
-            return new OrderResult
+            return new Result
             {
                 Success = true,
                 ErrorMessage = "Cập nhật trạng thái đơn hàng thành công."
