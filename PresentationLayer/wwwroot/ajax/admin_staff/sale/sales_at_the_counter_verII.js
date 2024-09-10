@@ -1621,7 +1621,7 @@ function fetchProductDetails() {
 function searchProductById(productName) {
     const xhr = new XMLHttpRequest();
     const encodedProductName = encodeURIComponent(productName);
-    const url = 'https://localhost:7241/api/ProductDetails/search_options?productName=' + encodedProductName;
+    const url = 'https://localhost:7241/api/ProductDetails/search-options?productName=' + encodedProductName;
     console.log('url', url);
     xhr.open('GET', url, true);
     xhr.setRequestHeader('Content-Type', 'application/json');
@@ -1979,60 +1979,6 @@ function formatReducedValue(type, value) {
 function formatDate(date) {
     return date.toLocaleTimeString() + ' ' + date.toLocaleDateString();
 }
-//function openModal() {
-//    document.getElementById('barcodeModal').style.display = 'block';
-//}
-//function closeModal() {
-//    document.getElementById('barcodeModal').style.display = 'none';
-//    stopBarcodeScanner();
-//}
-//document.getElementById('btn_barcode_sweep').addEventListener('click', function () {
-//    openModal();
-//    startBarcodeScanner();
-//});
-//function startBarcodeScanner() {
-//    const quaggaConf = {
-//        inputStream: {
-//            name: "Live",
-//            type: "LiveStream",
-//            target: document.querySelector("#camera"),
-//            constraints: {
-//                width: { min: 640 },
-//                height: { min: 480 },
-//                facingMode: "environment"
-//            }
-//        },
-//        decoder: {
-//            readers: ['code_128_reader'],
-//            multiple: false
-//        },
-//        locate: true,
-//        frequency: 50
-//    };
-
-
-//    Quagga.init(quaggaConf, function (err) {
-//        if (err) {
-//            console.error("Quagga initialization error: ", err);
-//            return;
-//        }
-//        console.log("Quagga initialized");
-//        Quagga.start();
-//    });
-
-//    Quagga.onDetected(function (result) {
-//        console.log("Detected barcode: " + result.codeResult.code);
-//        Quagga.stop();
-
-//    });
-//}
-//function stopBarcodeScanner() {
-//    Quagga.stop();
-//}
-//document.querySelector('.close-button').addEventListener('click', function () {
-//    closeModal();
-//});
-
 document.getElementById('openModalBtn').addEventListener('click', function () {
     var modal = new bootstrap.Modal(document.getElementById('modal_user'));
     console.log('click')

@@ -6,7 +6,14 @@
 function displayData(data) {
     const tableBody = document.getElementById('table_productdetails');
     tableBody.innerHTML = '';
-
+    if (data.length === 0) {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td colspan="7" class="text-center">Không có sản phẩm nào để hiển thị</td>
+        `;
+        tableBody.appendChild(row);
+        return;
+    }
     data.forEach(productdetails => {
         const formattedSmallestPrice = productdetails.smallestPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
         const formattedBiggestPrice = productdetails.biggestPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });

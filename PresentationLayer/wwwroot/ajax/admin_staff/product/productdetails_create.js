@@ -55,6 +55,30 @@ document.addEventListener('DOMContentLoaded', function () {
     productNameInput.addEventListener('input', updateKeyCode);
     categoryNameInput.addEventListener('input', updateKeyCode);
 });
+function checkOptionsData() {
+    const rows = document.getElementById('classificationBody').getElementsByTagName('tr');
+    if (rows.length === 0) {
+        return false;  // Không có phân loại nào được thêm
+    }
+
+    for (let i = 0; i < rows.length; i++) {
+        const cells = rows[i].getElementsByTagName('td');
+        if (cells.length === 6) {
+            const color = cells[1].textContent.trim();
+            const size = cells[2].textContent.trim();
+            const giaBan = cells[3].querySelector('input').value;
+            const soLuong = cells[4].querySelector('input').value;
+
+            if (!color || !size || !giaBan || !soLuong) {
+                return false;  // Thiếu thông tin phân loại
+            }
+        } else {
+            return false;  // Hàng không đúng định dạng
+        }
+    }
+
+    return true;  // Đã có phân loại hợp lệ
+}
 document.addEventListener('DOMContentLoaded', function () {
     const productForm = document.getElementById('productForm');
     productForm.addEventListener('submit', function (event) {
@@ -88,12 +112,13 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!isImageValid) {
             return;
         }
-        const optionsData = await createOptionsData();
-        if (optionsData.length === 0) {
+        var optionsValid = checkOptionsData();
+
+        if (!optionsValid) {
             Swal.fire({
                 icon: 'error',
                 title: 'Lỗi',
-                text: 'Vui lòng thêm ít nhất một phân loại sản phẩm!',
+                text: 'Vui lòng thêm ít nhất một phân loại sản phẩm hợp lệ!',
             });
             return;
         }
@@ -106,6 +131,8 @@ document.addEventListener('DOMContentLoaded', function () {
             cancelButtonText: 'Không, hủy!',
             reverseButtons: true
         }).then(async (result) => {
+            const optionsData = await createOptionsData();
+
             if (result.isConfirmed) {
                 try {
                     Swal.fire({
@@ -116,10 +143,6 @@ document.addEventListener('DOMContentLoaded', function () {
                             Swal.showLoading();
                         }
                     });
-
-                  
-
-                    //const barcodeUrl = await getBarcode(keycode);
 
                     await saveProduct({
                         CreateBy: userId,
@@ -134,7 +157,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         Origin: product_origin,
                         Description: product_description,
                         IsActive: true,
-                        //BarCode: barcodeUrl,
                         ImagePaths: [],
                         OptionsCreateVM: optionsData,
                     });
@@ -159,42 +181,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     });
-    async function getBarcode(keyCode) {
-        if (!keyCode) {
-            console.error('KeyCode không hợp lệ.');
-            return '';
-        }
-
-        const url = 'https://localhost:7241/api/Barcode/generate_barcode/' + keyCode;
-
-        return new Promise((resolve, reject) => {
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', url, true);
-            xhr.setRequestHeader('Accept', '*/*');
-
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === 4) {
-                    if (xhr.status === 200) {
-                        try {
-                            var response = JSON.parse(xhr.responseText);
-                            console.log('Barcode URL:', response.barcode);
-                            resolve(response.barcode);
-                        } catch (error) {
-                            reject('Lỗi phân tích dữ liệu JSON: ' + error.message);
-                        }
-                    } else {
-                        reject(xhr.responseText || 'Có lỗi xảy ra: ' + xhr.statusText);
-                    }
-                }
-            };
-
-            xhr.onerror = function () {
-                reject('Lỗi khi gửi yêu cầu');
-            };
-
-            xhr.send();
-        });
-    }
     async function saveProduct(productData) {
         console.log(productData)
         return new Promise((resolve, reject) => {
@@ -434,7 +420,7 @@ function updateTable() {
             const imageUploadId = `image-upload-${color}-${size}`;
             row.innerHTML = `
                 <td class="image-preview-options" id="${imagePreviewId}">
-                    <input type="file" id="${imageUploadId}" class="custom-file-input">
+                    <input type="file" id="${imageUploadId}">
                 </td>
                 <td>${color}</td>
                 <td>${size}</td>
@@ -679,4 +665,35 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 });
+function applyAll() {
+    const priceInput = document.querySelector('#classificationBody input[id="retal_price"]');
+    const quantityInput = document.querySelector('#classificationBody input[id="quantity"]');
 
+    const price = priceInput ? priceInput.value.trim() : '';
+    const quantity = quantityInput ? quantityInput.value.trim() : '';
+
+    if (!price || isNaN(price) || parseFloat(price) <= 0) {
+        toastr.error('Vui lòng nhập giá bán hợp lệ.', 'Lỗi');
+        return;
+    }
+
+    if (!quantity || isNaN(quantity) || parseInt(quantity) < 0) {
+        toastr.error('Vui lòng nhập số lượng hợp lệ.', 'Lỗi');
+        return;
+    }
+
+    const rows = document.querySelectorAll('#classificationBody tr:not(.no-data)');
+    rows.forEach(row => {
+        const priceCell = row.querySelector('td:nth-child(4) input');
+        const quantityCell = row.querySelector('td:nth-child(5) input');
+
+        if (priceCell) {
+            priceCell.value = price;
+        }
+        if (quantityCell) {
+            quantityCell.value = quantity;
+        }
+    });
+
+    toastr.success('Đã áp dụng giá bán và số lượng cho tất cả phân loại.', 'Thành công');
+}
