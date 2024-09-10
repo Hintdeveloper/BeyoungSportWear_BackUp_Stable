@@ -9,6 +9,8 @@ using CloudinaryDotNet.Actions;
 using CloudinaryDotNet;
 using static DataAccessLayer.Entity.Base.EnumBase;
 using Microsoft.AspNetCore.Authorization;
+using System.Drawing;
+using Font = iTextSharp.text.Font;
 
 namespace ExternalInterfaceLayer.Controllers
 {
@@ -80,116 +82,91 @@ namespace ExternalInterfaceLayer.Controllers
             {
                 using (MemoryStream memoryStream = new MemoryStream())
                 {
-                    Document doc = new Document(PageSize.A4.Rotate(), 50, 50, 25, 25);
+                    // Tải font hỗ trợ tiếng Việt (Times New Roman hoặc font khác hỗ trợ Unicode)
+                    string fontPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Fonts), "times.ttf");
+                    BaseFont bf = BaseFont.CreateFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+                    var normalFont = new Font(bf, 12, Font.NORMAL, BaseColor.BLACK);
+                    var boldFont = new Font(bf, 12, Font.BOLD, BaseColor.BLACK);
+                    var titleFont = new Font(bf, 18, Font.BOLD, BaseColor.BLACK);
+
+                    Document doc = new Document(new iTextSharp.text.Rectangle(PageSize.A4.Width / 2, PageSize.A4.Height / 2), 20, 20, 20, 20);
                     PdfWriter.GetInstance(doc, memoryStream);
                     doc.Open();
-                    var orderData = await _orderService.GetByHexCodeAsync(hexcode);
 
+                    var icon = GetIcon("logo.jpg");
+
+                    // Thêm logo và tiêu đề
+                    doc.Add(new iTextSharp.text.Paragraph("HÓA ĐƠN", titleFont));
+                    doc.Add(new iTextSharp.text.Paragraph($"Ngày lập: {DateTime.Now.ToString("dd/MM/yyyy")}", normalFont));
+                    doc.Add(new iTextSharp.text.Paragraph("\n"));
+
+                    // Lấy dữ liệu đơn hàng từ DB
+                    var orderData = await _orderService.GetByHexCodeAsync(hexcode);
                     if (orderData == null)
                     {
                         throw new Exception("Order data is null.");
                     }
 
-                    var titleFont = new Font(Font.FontFamily.HELVETICA, 18, Font.BOLD, BaseColor.BLACK);
-                    var subTitleFont = new Font(Font.FontFamily.HELVETICA, 16, Font.BOLD, BaseColor.GRAY);
-                    var normalFont = new Font(BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED), 12, Font.NORMAL, BaseColor.BLACK);
+                    // Tạo bảng thông tin khách hàng và thanh toán
+                    PdfPTable infoTable = new PdfPTable(2);
+                    infoTable.HorizontalAlignment = Element.ALIGN_LEFT;
+                    infoTable.WidthPercentage = 100;
+                    infoTable.SetWidths(new float[] { 1, 1 });
 
-                    var icon = GetIcon("logo.jpg");
-
-                    doc.Add(icon);
-                    doc.Add(new iTextSharp.text.Paragraph("Sales Invoice", titleFont));
-                    doc.Add(new iTextSharp.text.Paragraph("\n"));
-
-                    doc.Add(new iTextSharp.text.Paragraph($"Order Code: {ViString.RemoveSign4VietnameseString(orderData.HexCode)}", normalFont));
-                    doc.Add(new iTextSharp.text.Paragraph($"Customer: {ViString.RemoveSign4VietnameseString(orderData.CustomerName)}", normalFont));
-                    doc.Add(new iTextSharp.text.Paragraph($"Phone Number: {ViString.RemoveSign4VietnameseString(orderData.CustomerPhone)}", normalFont));
-                    doc.Add(new iTextSharp.text.Paragraph($"Email: {ViString.RemoveSign4VietnameseString(orderData.CustomerEmail)}", normalFont));
-                    doc.Add(new iTextSharp.text.Paragraph($"Payment Status: {ViString.RemoveSign4VietnameseString(orderData.PaymentStatus.ToString())}", normalFont));
-                    doc.Add(new iTextSharp.text.Paragraph($"Shipping Address: {ViString.RemoveSign4VietnameseString(orderData.ShippingAddress)}", normalFont));
-                    doc.Add(new iTextSharp.text.Paragraph($"Delivery Date: {orderData.ShipDate.ToString("dd/MM/yyyy")}", normalFont));
-
-                    var totalAmountText = Currency.FormatCurrency(orderData.TotalAmount.ToString());
-                    var totalAmountInWords = ViString.RemoveSign4VietnameseString(Currency.NumberToText((double)orderData.TotalAmount, true));
-                    doc.Add(new iTextSharp.text.Paragraph($"Total Cost: {totalAmountText} ({totalAmountInWords})", normalFont));
-                    if (!string.IsNullOrEmpty(orderData.Notes))
+                    infoTable.AddCell(new PdfPCell(new Phrase($"Hóa đơn cho:\n{orderData.CustomerName}\n{orderData.ShippingAddress}\n{orderData.ShippingAddressLine2}", normalFont))
                     {
-                        doc.Add(new iTextSharp.text.Paragraph($"Notes: {ViString.RemoveSign4VietnameseString(orderData.Notes)}", normalFont));
-                    }
+                        Border = iTextSharp.text.Rectangle.NO_BORDER
+                    });
+
+                    infoTable.AddCell(new PdfPCell(new Phrase($"Thanh toán cho:\nBeyoung Sport Wear", normalFont))
+                    {
+                        Border = iTextSharp.text.Rectangle.NO_BORDER
+                    });
+
+                    doc.Add(infoTable);
                     doc.Add(new iTextSharp.text.Paragraph("\n"));
 
-                    doc.Add(new iTextSharp.text.Paragraph("Order Details", subTitleFont));
+                    // Tạo bảng chi tiết sản phẩm
+                    PdfPTable productTable = new PdfPTable(5) { WidthPercentage = 100 };
+                    productTable.SetWidths(new float[] { 1, 4, 1, 2, 2 });  // Đặt tỷ lệ cho cột
 
-                    PdfPTable table = new PdfPTable(5) { WidthPercentage = 100 };
-                    table.SetWidths(new float[] { 1, 3, 1, 2, 2 });
+                    // Tiêu đề các cột
+                    productTable.AddCell(CreateCell("STT", Element.ALIGN_CENTER, true, boldFont));
+                    productTable.AddCell(CreateCell("Tên sản phẩm", Element.ALIGN_CENTER, true, boldFont));
+                    productTable.AddCell(CreateCell("SL", Element.ALIGN_CENTER, true, boldFont));
+                    productTable.AddCell(CreateCell("Đơn giá", Element.ALIGN_CENTER, true, boldFont));
+                    productTable.AddCell(CreateCell("Thành tiền", Element.ALIGN_CENTER, true, boldFont));
 
-                    table.AddCell(CreateCell("Image", Element.ALIGN_CENTER, true));
-                    table.AddCell(CreateCell("Product Name", Element.ALIGN_CENTER, true));
-                    table.AddCell(CreateCell("Quantity", Element.ALIGN_CENTER, true));
-                    table.AddCell(CreateCell("Unit Price", Element.ALIGN_CENTER, true));
-                    table.AddCell(CreateCell("Total Price", Element.ALIGN_CENTER, true));
-
+                    // Điền thông tin sản phẩm vào bảng
+                    int index = 1;
                     foreach (var detail in orderData.OrderDetailsVM)
                     {
-                        var image = iTextSharp.text.Image.GetInstance(new Uri(detail.ImageURL));
-                        image.ScaleToFit(40f, 40f);
+                        productTable.AddCell(CreateCell(index.ToString(), Element.ALIGN_CENTER, false, normalFont));
+                        productTable.AddCell(CreateCell(detail.ProductName, Element.ALIGN_LEFT, false, normalFont));
+                        productTable.AddCell(CreateCell(detail.Quantity.ToString(), Element.ALIGN_CENTER, false, normalFont));
+                        productTable.AddCell(CreateCell(Currency.FormatCurrency(detail.UnitPrice.ToString()), Element.ALIGN_RIGHT, false, normalFont));
+                        productTable.AddCell(CreateCell(Currency.FormatCurrency(detail.TotalAmount.ToString()), Element.ALIGN_RIGHT, false, normalFont));
 
-                        PdfPCell imageCell = new PdfPCell(image)
-                        {
-                            HorizontalAlignment = Element.ALIGN_CENTER,
-                            VerticalAlignment = Element.ALIGN_MIDDLE,
-                            Border = Rectangle.BOX,
-                            BorderWidth = 1f, // Độ rộng viền
-                            BorderColor = BaseColor.BLACK, // Màu sắc viền
-                            Padding = 5f // Khoảng cách từ viền đến nội dung
-                        };
-
-
-                        PdfPCell productCell = new PdfPCell(new iTextSharp.text.Paragraph(
-                        $"{ViString.RemoveSign4VietnameseString(detail.ProductName)}\nSize: {detail.SizeName}\nColor: {detail.ColorName}",
-                        new Font(BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED), 10, Font.NORMAL, BaseColor.BLACK)))
-                        {
-                            HorizontalAlignment = Element.ALIGN_LEFT,
-                            VerticalAlignment = Element.ALIGN_TOP,
-                            Border = Rectangle.BOX,
-                            BorderWidth = 1f,
-                            BorderColor = BaseColor.BLACK
-                        };
-
-                        PdfPCell unitpriceCell = new PdfPCell(new iTextSharp.text.Paragraph(
-                        $"{Currency.FormatCurrency(detail.UnitPrice.ToString())}\n {ViString.RemoveSign4VietnameseString(Currency.NumberToText((double)detail.UnitPrice, true))}",
-                        new Font(BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED), 10, Font.NORMAL, BaseColor.BLACK)))
-                        {
-                            HorizontalAlignment = Element.ALIGN_LEFT,
-                            VerticalAlignment = Element.ALIGN_TOP,
-                            Border = Rectangle.BOX,
-                            BorderWidth = 1f,
-                            BorderColor = BaseColor.BLACK
-                        };
-
-                        PdfPCell totalCell = new PdfPCell(new iTextSharp.text.Paragraph(
-                        $"{Currency.FormatCurrency(detail.TotalAmount.ToString())}\n {ViString.RemoveSign4VietnameseString(Currency.NumberToText((double)detail.TotalAmount, true))}",
-                        new Font(BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED), 10, Font.NORMAL, BaseColor.BLACK)))
-                        {
-                            HorizontalAlignment = Element.ALIGN_LEFT,
-                            VerticalAlignment = Element.ALIGN_TOP,
-                            Border = Rectangle.BOX,
-                            BorderWidth = 1f,
-                            BorderColor = BaseColor.BLACK
-                        };
-
-                        table.AddCell(imageCell);
-                        table.AddCell(productCell);
-                        table.AddCell(detail.Quantity.ToString());
-                        table.AddCell(unitpriceCell);
-                        table.AddCell(totalCell);
+                        index++;
                     }
 
-                    doc.Add(table);
+                    doc.Add(productTable);
 
-                    AddFooter(doc);
+                    // Thêm mục tổng cộng
+                    var totalAmount = orderData.OrderDetailsVM.Sum(d => d.TotalAmount); // Tổng số tiền
+                    PdfPTable totalTable = new PdfPTable(1) { WidthPercentage = 100 };
+                    totalTable.SetWidths(new float[] { 1 });
+
+                    totalTable.AddCell(CreateCell($"Tổng cộng: {Currency.FormatCurrency(totalAmount.ToString())}", Element.ALIGN_RIGHT, true, boldFont));
+                    doc.Add(totalTable);
+
+                    // Thêm khoảng cách trước khi footer
+                    doc.Add(new iTextSharp.text.Paragraph("\n"));
+
+                    // Thêm footer với logo
+                    AddFooterWithLogo(doc, icon);
 
                     doc.Close();
-
                     return memoryStream.ToArray();
                 }
             }
@@ -208,29 +185,54 @@ namespace ExternalInterfaceLayer.Controllers
 
             return image;
         }
-        private void AddFooter(Document doc)
+        private void AddFooterWithLogo(Document doc, iTextSharp.text.Image logo)
         {
-            PdfPTable footerTable = new PdfPTable(1) { WidthPercentage = 100 };
-            footerTable.SetWidths(new float[] { 1 });
+            // Tải font hỗ trợ tiếng Việt
+            string fontPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Fonts), "times.ttf");
+            BaseFont bf = BaseFont.CreateFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+            var footerFont = new Font(bf, 10, Font.ITALIC, BaseColor.GRAY);
 
-            PdfPCell footerCell = new PdfPCell(new iTextSharp.text.Phrase("Thank you for your business!", new Font(Font.FontFamily.HELVETICA, 10, Font.ITALIC, BaseColor.GRAY)))
+            // Tạo bảng footer với 2 cột
+            PdfPTable footerTable = new PdfPTable(2) { WidthPercentage = 100 };
+            footerTable.SetWidths(new float[] { 1, 3 }); // Điều chỉnh tỷ lệ cột nếu cần
+
+            // Cấu hình ô chứa logo (bên trái)
+            logo.ScaleToFit(50f, 50f); // Điều chỉnh kích thước logo nếu cần
+            PdfPCell logoCell = new PdfPCell(logo)
             {
-                HorizontalAlignment = Element.ALIGN_CENTER,
-                Border = Rectangle.NO_BORDER
+                Border = iTextSharp.text.Rectangle.NO_BORDER,
+                HorizontalAlignment = Element.ALIGN_LEFT,
+                VerticalAlignment = Element.ALIGN_MIDDLE
             };
-            footerTable.AddCell(footerCell);
 
+            // Cấu hình ô chứa thông tin cửa hàng (bên phải)
+            string storeInfo = "Cửa hàng Beyoung Sport Wear\nĐịa chỉ: Nam Từ Liêm - Hà Nội - Việt Nam\nĐiện thoại: 0.334.539.098\nEmail: contact@beyoungsportwear.com";
+            PdfPCell footerTextCell = new PdfPCell(new Phrase(storeInfo, footerFont))
+            {
+                Border = iTextSharp.text.Rectangle.NO_BORDER,
+                HorizontalAlignment = Element.ALIGN_RIGHT,
+                VerticalAlignment = Element.ALIGN_MIDDLE
+            };
+
+            // Thêm các ô vào bảng theo thứ tự: logo bên trái, thông tin bên phải
+            footerTable.AddCell(logoCell);
+            footerTable.AddCell(footerTextCell);
+
+            // Thêm bảng footer vào tài liệu
             doc.Add(footerTable);
         }
-        private PdfPCell CreateCell(string text, int alignment, bool isHeader = false)
+        private PdfPCell CreateCell(string text, int alignment, bool isHeader, iTextSharp.text.Font font)
         {
-            var font = isHeader ? new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, BaseColor.WHITE) : new Font(BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED), 10, Font.NORMAL, BaseColor.BLACK);
-            var cell = new PdfPCell(new iTextSharp.text.Phrase(text, font))
+            PdfPCell cell = new PdfPCell(new Phrase(text, font));
+            cell.HorizontalAlignment = alignment;
+            cell.VerticalAlignment = Element.ALIGN_MIDDLE;
+            cell.Padding = 5;
+
+            if (isHeader)
             {
-                HorizontalAlignment = alignment,
-                Padding = 5,
-                BackgroundColor = isHeader ? BaseColor.GRAY : BaseColor.WHITE
-            };
+                cell.BackgroundColor = BaseColor.LIGHT_GRAY;
+            }
+
             return cell;
         }
         [HttpGet("printf_order_pdf/{hexCode}")]

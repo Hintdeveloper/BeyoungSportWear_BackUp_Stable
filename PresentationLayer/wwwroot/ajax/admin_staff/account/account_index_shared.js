@@ -505,10 +505,16 @@ function saveAddress() {
 }
 function updateNiceSelect(id) {
     var select = document.getElementById(id);
+    if (!select) return; // Kiểm tra xem select có tồn tại không
+
     var niceSelect = select.nextElementSibling;
+    if (!niceSelect) return; // Kiểm tra xem niceSelect có tồn tại không
+
     var options = select.querySelectorAll('option');
     var list = niceSelect.querySelector('.list');
     var current = niceSelect.querySelector('.current');
+
+    if (!list || !current) return; // Kiểm tra xem list và current có tồn tại không
 
     list.innerHTML = '';
     options.forEach(function (option) {

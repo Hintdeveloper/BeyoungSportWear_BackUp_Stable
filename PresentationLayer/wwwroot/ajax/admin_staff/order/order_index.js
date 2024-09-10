@@ -166,7 +166,7 @@ function translateOrderType(type) {
 function translateOrderStatus(status) {
     switch (status) {
         case 0:
-            return { text: 'Chưa giải quyết', class: 'bg-secondary' };
+            return { text: 'Đặt hàng thành công', class: 'bg-secondary' };
         case 1:
             return { text: 'Đã xác nhận', class: 'bg-warning' };
         case 2:
