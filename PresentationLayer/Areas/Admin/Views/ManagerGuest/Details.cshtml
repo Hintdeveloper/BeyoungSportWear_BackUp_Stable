@@ -4,6 +4,7 @@
     ViewData["Title"] = "Details";
     Layout = "~/Areas/Admin/Views/Shared/_layoutAdmin.cshtml";
 }
+
 <style>
     .table-borderless th, .table-borderless td {
         padding: 0.25rem; /* Giảm khoảng cách giữa các ô */
@@ -17,6 +18,67 @@
     .table th {
         width: 30%; /* Điều chỉnh tỷ lệ cột cho nhãn */
     }
+
+    /* Inline CSS for Switch */
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+    }
+
+        /* Hide default HTML checkbox */
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+    /* The slider */
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 34px;
+    }
+
+        /* The slider before (circle) */
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            border-radius: 50%;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+        }
+
+    /* When the checkbox is checked, move the slider (circle) to the right */
+    input:checked + .slider {
+        background-color: #007bff;
+    }
+
+        /* When the checkbox is checked, move the slider (circle) to the right */
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+    /* Rounded sliders */
+    .slider.round {
+        border-radius: 34px;
+    }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
+
 </style>
 <div class="container">
     <div class="row">
@@ -122,6 +184,20 @@
                                 <td>
                                     <button class="btn btn-warning" onclick="openEditModal('@address.ID')">Sửa</button>
                                     <button class="btn btn-danger" onclick="deleteAddress('@address.ID')">Xóa</button>
+                                    <div class="container" style="display: flex; align-items: center;">
+                                        <label class="switch" style="margin: 0;">
+                                            <input type="checkbox" id="toggleSwitch-${address.id}" onclick="handleToggleChange('@address.ID')  @(address.IsDefault ? "checked" : "")">
+                                            <span class="slider round"></span>
+                                        </label>
+                                        @if(address.IsDefault)
+                                        {
+                                            <span id="status-${address.id}" style="margin-left: 5px;">Bật</span>
+                                        }
+                                        else{
+                                            <span id="status-${address.id}" style="margin-left: 5px;">Tắt</span>
+                                        }
+                                    </div>
+
                                 </td>
                             </tr>
                         }
@@ -371,6 +447,54 @@
                         xhr.send();
                     }
                 });
+            }
+
+            function handleToggleChange(selectedAddressId) {
+                const allToggleSwitches = document.querySelectorAll('.switch input[type="checkbox"]');
+                const allStatusSpans = document.querySelectorAll('.address-actions #status');
+
+                allToggleSwitches.forEach(function (toggleSwitch) {
+                    if (toggleSwitch.id !== `toggleSwitch-${selectedAddressId}`) {
+                        toggleSwitch.checked = false;
+                    }
+                });
+
+                allStatusSpans.forEach(function (statusSpan) {
+                    if (statusSpan.id !== `status-${selectedAddressId}`) {
+                        statusSpan.textContent = 'Tắt';
+                    }
+                });
+
+                const selectedToggleSwitch = document.getElementById(`toggleSwitch-${selectedAddressId}`);
+                const selectedStatusSpan = document.getElementById(`status-${selectedAddressId}`);
+
+                if (selectedToggleSwitch.checked) {
+                    selectedStatusSpan.textContent = 'Bật';
+
+                    const apiUrl = `https://localhost:7241/api/Address/set-default/${selectedAddressId}?userId=${userId}`;
+
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('PUT', apiUrl, true);
+                    xhr.setRequestHeader('Content-Type', 'application/json');
+                    xhr.onreadystatechange = function () {
+                        if (xhr.readyState === 4 && xhr.status === 200) {
+                            var response = JSON.parse(xhr.responseText);
+                            Swal.fire({
+                                title: 'Thành công!',
+                                text: response.message,
+                                icon: 'success',
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+                                loadUserAddresses(userId);
+                            });
+                        } else if (xhr.readyState === 4) {
+                            console.error('Error updating default address:', xhr.responseText);
+                        }
+                    };
+                    xhr.send();
+                } else {
+                    selectedStatusSpan.textContent = 'Tắt';
+                }
             }
 
             function submitAddressForm(addressId) {
