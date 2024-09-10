@@ -166,11 +166,11 @@ function translateOrderType(type) {
 function translateOrderStatus(status) {
     switch (status) {
         case 0:
-            return { text: 'Chưa giải quyết', class: 'bg-secondary' };
+            return { text: 'Đặt hàng thành công', class: 'bg-secondary' };
         case 1:
-            return { text: 'Đang xử lý', class: 'bg-warning' };
+            return { text: 'Đã xác nhận', class: 'bg-warning' };
         case 2:
-            return { text: 'Đã vận chuyển', class: 'bg-primary' };
+            return { text: 'Đang vận chuyển', class: 'bg-primary' };
         case 3:
             return { text: 'Đã hoàn thành', class: 'bg-success' };
         case 4:
