@@ -96,7 +96,7 @@
         event.preventDefault(); // Ngăn chặn hành vi mặc định của thẻ a
 
         Swal.fire({
-            title: 'Bạn có chắc chắn muốn đổi trạng thái thương hiệu này?',
+            title: 'Bạn có chắc chắn muốn đổi trạng thái danh mục hàng này?',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
@@ -135,7 +135,7 @@
                         Swal.fire({
                             icon: 'success',
                             title: 'Thành công!',
-                            text: 'Trạng thái thương hiệu thay đổi thành công.'
+                            text: 'Trạng thái danh mục hàng thay đổi thành công.'
                         }).then(() => {
                             window.location.href = '@Url.Action("Index")';
                         });
