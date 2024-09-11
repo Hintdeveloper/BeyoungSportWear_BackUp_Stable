@@ -131,7 +131,6 @@ namespace ExternalInterfaceLayer.Controllers
 
             return Ok(result);
         }
-
         [AllowAnonymous]
         [HttpGet("GetProductDetails_IDNameAsync/ids")]
         public async Task<IActionResult> GetProductDetails_IDNameAsync()
@@ -196,8 +195,6 @@ namespace ExternalInterfaceLayer.Controllers
 
             return Ok(product);
         }
-
-        // GET: api/ProductDetails/Name
         [HttpGet("product_getby_name")]
         public async Task<IActionResult> GetProductsByName([FromQuery] string name)
         {
@@ -214,6 +211,25 @@ namespace ExternalInterfaceLayer.Controllers
             }
 
             return Ok(products);
+        }
+        [HttpGet("search-options")]
+        public IActionResult SearchOptionsByProductName([FromQuery] string productName)
+        {
+            if (string.IsNullOrWhiteSpace(productName))
+            {
+                return BadRequest("Tên sản phẩm không được để trống.");
+            }
+
+            var query = _IProductDetailsService.SearchOptionsByProductName(productName);
+
+            var result = query.ToList();
+
+            if (!result.Any())
+            {
+                return NotFound("Không tìm thấy tùy chọn nào cho sản phẩm này.");
+            }
+
+            return Ok(result);
         }
     }
 }

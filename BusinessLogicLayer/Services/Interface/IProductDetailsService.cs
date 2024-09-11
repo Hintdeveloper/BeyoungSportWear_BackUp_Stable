@@ -20,5 +20,6 @@ namespace BusinessLogicLayer.Services.Interface
         public Task<List<ProductDetailsVM>> GetProductsByPriceRangeAsync(decimal minPrice, decimal maxPrice);
         public Task<ProductDetailsVM> GetByKeycodeAsync(string keycode);
         public Task<List<ProductDetailsVM>> GetByNameAsync(string name);
+        public IQueryable<OptionsVM> SearchOptionsByProductName(string productName);
     }
 }

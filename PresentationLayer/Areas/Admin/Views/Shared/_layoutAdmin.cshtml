@@ -29,8 +29,8 @@
 
             .dropdown-menu a {
                 display: block;
-                color: #333; /* Màu sắc của các liên kết */
-                padding: 5px 10px;
+                color: white; /* Màu sắc của các liên kết */
+                padding: 5px 24px;
                 text-decoration: none;
             }
 
@@ -80,7 +80,7 @@
                     <span class="app-menu__label">Bảng điều khiển</span>
                 </a>
             </li>
-          
+
             <li>
                 <a class="app-menu__item " asp-area="Admin" asp-controller="ManagerStaff" asp-action="Index">
                     <i class='app-menu__icon bx bx-id-card'></i>
@@ -95,7 +95,7 @@
             </li>
             <li>
                 <a class="app-menu__item" asp-area="Admin" asp-controller="ManagerProductDetails" asp-action="Index">
-                    <i class='app-menu__icon bx bx-purchase-tag-alt'></i>
+                    <i class='app-menu__icon bx bx-cube'></i>
                     <span class="app-menu__label">Quản lý sản phẩm</span>
                 </a>
             </li>
@@ -104,41 +104,41 @@
                     <i class='app-menu__icon bx bx-purchase-tag-alt'></i>
                     <span class="app-menu__label">Quản lý phân loại</span>
                 </a>
-                <ul class="dropdown-menu">
+                <ul class="dropdown-menu" style="background-color:#04213d;">
                     <li>
                         <a class="app-menu__item" asp-area="Admin" asp-controller="Brands" asp-action="Index">
-                            <i class='app-menu__icon bx bx-purchase-tag-alt'></i>
-                            <span class="app-menu__label">Quản lý thương hiệu</span>
+                            <i class='app-menu__icon bx bx-copyright'></i>
+                            <span class="app-menu__label">Thương hiệu</span>
                         </a>
                     </li>
                     <li>
                         <a class="app-menu__item" asp-area="Admin" asp-controller="Color" asp-action="Index">
-                            <i class='app-menu__icon bx bx-purchase-tag-alt'></i>
-                            <span class="app-menu__label">Quản lý màu sắc</span>
+                            <i class='app-menu__icon bx bx-color-fill'></i>
+                            <span class="app-menu__label">Màu sắc</span>
                         </a>
                     </li>
                     <li>
                         <a class="app-menu__item" asp-area="Admin" asp-controller="Materials" asp-action="Index">
-                            <i class='app-menu__icon bx bx-purchase-tag-alt'></i>
-                            <span class="app-menu__label">Quản lý chất liệu</span>
+                            <i class='app-menu__icon bx bx-brush'></i>
+                            <span class="app-menu__label">Chất liệu</span>
                         </a>
                     </li>
                     <li>
                         <a class="app-menu__item" asp-area="Admin" asp-controller="Category" asp-action="Index">
-                            <i class='app-menu__icon bx bx-purchase-tag-alt'></i>
-                            <span class="app-menu__label">Quản lý danh mục hàng</span>
+                            <i class='app-menu__icon bx bx-list-ul'></i>
+                            <span class="app-menu__label">Danh mục hàng</span>
                         </a>
                     </li>
                     <li>
                         <a class="app-menu__item" asp-area="Admin" asp-controller="Manufacturers" asp-action="Index">
-                            <i class='app-menu__icon bx bx-purchase-tag-alt'></i>
-                            <span class="app-menu__label">Quản lý nhà sản xuất</span>
+                            <i class='app-menu__icon bx bx-wrench'></i>
+                            <span class="app-menu__label">Nhà sản xuất</span>
                         </a>
                     </li>
                     <li>
                         <a class="app-menu__item" asp-area="Admin" asp-controller="Size" asp-action="Index">
-                            <i class='app-menu__icon bx bx-purchase-tag-alt'></i>
-                            <span class="app-menu__label">Quản lý kích thước</span>
+                            <i class='app-menu__icon bx bx-expand-alt'></i>
+                            <span class="app-menu__label">Kích thước</span>
                         </a>
                     </li>
                 </ul>
@@ -172,11 +172,14 @@
     </main>
     @RenderSection("Scripts", required: false)
     <div class="text-center" style="font-size: 13px">
-      <p><b>Copyright
-          <script type="text/javascript">
-            document.write(new Date().getFullYear());
-          </script> Phần mềm quản lý bán hàng | Dev By TDat
-        </b></p>
+        <p>
+            <b>
+                Copyright
+                <script type="text/javascript">
+                    document.write(new Date().getFullYear());
+                </script> Phần mềm quản lý bán hàng | Dev By TDat
+            </b>
+        </p>
     </div>
     <!-- JavaScript (thư viện và plugin) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -193,8 +196,87 @@
     <script src="~/js/main.js"></script>
     <script src="~/js/plugins/pace.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script type="text/javascript" src="~/ajax/admin_staff/account/account_index_shared.js"></script>
+    <script>
+        (function () {
+            function getJwtFromCookie() {
+                return getCookieValue('jwt');
+            }
 
-    <script src="~/ajax/admin_staff/account/account_index_shared.js"></script>
+            function getCookieValue(cookieName) {
+                const cookies = document.cookie.split(';');
+                for (let cookie of cookies) {
+                    const [name, value] = cookie.split('=').map(c => c.trim());
+                    if (name === cookieName) {
+                        return decodeURIComponent(value);
+                    }
+                }
+                return null;
+            }
+
+            function getUserIdFromJwt(jwt) {
+                try {
+                    const tokenPayload = JSON.parse(atob(jwt.split('.')[1]));
+                    return tokenPayload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
+                }
+                catch (error) {
+                    console.error('Error parsing JWT:', error);
+                    return null;
+                }
+            }
+
+            function isJwtExpired(jwt) {
+                try {
+                    const tokenPayload = JSON.parse(atob(jwt.split('.')[1]));
+                    const expirationTime = tokenPayload.exp * 1000;
+                    return Date.now() > expirationTime;
+                } catch (error) {
+                    console.error('Error parsing JWT expiration:', error);
+                    return true;
+                }
+            }
+
+            const jwt = getJwtFromCookie();
+
+            if (!jwt || isJwtExpired(jwt)) {
+                window.location.href = '/login';
+                return;
+            }
+
+            const userId = getUserIdFromJwt(jwt);
+
+            async function fetchUserInfo() {
+                const apiUrl = `https://localhost:7241/api/ApplicationUser/GetInformationUser/${userId}`;
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${jwt}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+
+                    const userData = await response.json();
+
+                    document.getElementById('name_user').innerText = userData.firstAndLastName;
+                    document.getElementById('image_user').src = userData.images;
+
+                } catch (error) {
+                    console.error('Fetch error:', error);
+                    if (error.message.includes('401')) {
+                        window.location.href = '/login';
+                    }
+                }
+            }
+
+            fetchUserInfo();
+        })();
+
+    </script>
     <script>
         $(document).ready(function () {
             // Bắt sự kiện click vào dropdown toggle

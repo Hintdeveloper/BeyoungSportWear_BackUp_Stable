@@ -887,7 +887,6 @@ namespace BusinessLogicLayer.Services.Implements
                 Status = product.Status,
             };
         }
-
         public async Task<List<ProductDetailsVM>> GetProductsByPriceRangeAsync(decimal minPrice, decimal maxPrice)
         {
             var products = await _dbcontext.ProductDetails
@@ -918,7 +917,6 @@ namespace BusinessLogicLayer.Services.Implements
                 Status = p.Status,
             }).ToList();
         }
-
         public async Task<ProductDetailsVM> GetByKeycodeAsync(string keycode)
         {
             var product = await _dbcontext.ProductDetails
@@ -932,7 +930,6 @@ namespace BusinessLogicLayer.Services.Implements
             return product != null ? MapToProductDetailsVM(product) : null;
 
         }
-
         public async Task<List<ProductDetailsVM>> GetByNameAsync(string name)
         {
             var products = await _dbcontext.ProductDetails
@@ -948,5 +945,6 @@ namespace BusinessLogicLayer.Services.Implements
 
             return products.Select(MapToProductDetailsVM).ToList();
         }
+
     }
 }

@@ -172,7 +172,7 @@ function translateOrderStatus(status) {
         case 2:
             return { text: 'Đang vận chuyển', class: 'bg-primary' };
         case 3:
-            return { text: 'Đã hoàn thành', class: 'bg-success' };
+            return { text: 'Hoàn thành', class: 'bg-success' };
         case 4:
             return { text: 'Đã hủy', class: 'bg-danger' };
         case 5:
