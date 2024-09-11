@@ -318,7 +318,7 @@ namespace BusinessLogicLayer.Services.Implements
         public async Task<List<ProductDetailsVM>> GetAllActiveAsync(int pageIndex, int pageSize)
         {
             var activeVariants = await _dbcontext.ProductDetails
-             .AsNoTracking()
+             .AsNoTracking().Where(v => v.Options.Any())
              .OrderBy(p => p.Status == 0 ? 1 : 0)
              .ThenByDescending(p => p.CreateDate)
              .Skip(pageIndex * pageSize)

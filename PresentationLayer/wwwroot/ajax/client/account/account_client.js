@@ -23,7 +23,14 @@ function getUserIdFromJwt(jwt) {
 }
 const jwt = getJwtFromCookie();
 const userId = getUserIdFromJwt(jwt);
-
+function checkAuthentication() {
+    if (!jwt || !userId) {
+        window.location.href = '/login'; 
+        return false; 
+    }
+    return true; 
+}
+checkAuthentication();
 function fetchUserData() {
     const xhr = new XMLHttpRequest();
     xhr.open('GET', `https://localhost:7241/api/ApplicationUser/GetInformationUser/${userId}`, true);
@@ -93,7 +100,6 @@ function loadUserAddresses(userId) {
             var addressList = document.getElementById('address-list');
             addressList.innerHTML = '';
 
-            // Lưu danh sách địa chỉ vào biến toàn cục để có thể sử dụng lại sau này
             window.userAddresses = data;
             data.forEach(function (address) {
                 var addressItem = document.createElement('li');
@@ -242,7 +248,7 @@ function updateUser() {
                 icon: 'success',
                 confirmButtonText: 'OK'
             }).then(() => {
-                window.location.href = '/login';
+                window.location.href = '/';
             });
         } else {
             Swal.fire({

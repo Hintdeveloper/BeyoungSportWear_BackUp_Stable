@@ -23,6 +23,15 @@ function getUserIdFromJwt(jwt) {
 }
 const jwt = getJwtFromCookie();
 const userId = getUserIdFromJwt(jwt);
+function checkAuthentication() {
+    if (!jwt || !userId) {
+        window.location.href = '/login';
+        return false;
+    }
+    return true;
+}
+checkAuthentication();
+
 function removeDiacritics(str) {
     return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").normalize("NFC");
 }

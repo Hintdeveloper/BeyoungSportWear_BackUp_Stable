@@ -23,6 +23,15 @@ function getUserIdFromJwt(jwt) {
 }
 const jwt = getJwtFromCookie();
 const userId = getUserIdFromJwt(jwt);
+function checkAuthentication() {
+    if (!jwt || !userId) {
+        window.location.href = '/login';
+        return false;
+    }
+    return true;
+}
+checkAuthentication();
+
 var hexCode;
 var currentUrl = window.location.href;
 var urlParts = currentUrl.split('/');
@@ -324,7 +333,7 @@ function translateOrderStatus(status) {
         case 2:
             return 'Đã vận chuyển';
         case 3:
-            return 'Đã giao hàng';
+            return 'Hoàn thành';
         case 4:
             return 'Đã hủy';
         case 5:

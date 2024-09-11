@@ -1,7 +1,7 @@
 ﻿let allProducts = [];
 let newProducts = [];
 let hotSaleProducts = [];
-
+let filteredProducts = []; 
 document.addEventListener("DOMContentLoaded", function () {
     loadAllProducts();
     loadBestSellingProducts();
@@ -16,8 +16,9 @@ function loadAllProducts() {
             allProducts = JSON.parse(xhr.responseText);
             newProducts = allProducts.filter(product => calculateIsNew(product.createDate));
             hotSaleProducts = allProducts.filter(product => product.isHotSale);
-            renderProducts(allProducts); // Hiển thị tất cả sản phẩm khi trang được tải
-            setupFilterControls(); // Cài đặt các điều khiển lọc
+            filteredProducts = allProducts; 
+            renderProducts(filteredProducts);
+            setupFilterControls();
         }
     };
 
@@ -49,12 +50,13 @@ function setupFilterControls() {
 
             var filterClass = this.getAttribute('data-filter');
             if (filterClass === '*') {
-                renderProducts(allProducts);
+                filteredProducts = allProducts; 
             } else if (filterClass === '.new-arrivals') {
-                renderProducts(newProducts);
+                filteredProducts = newProducts; 
             } else if (filterClass === '.hot-sales') {
-                renderProducts(hotSaleProducts);
+                filteredProducts = hotSaleProducts;
             }
+            renderProducts(filteredProducts, 1); 
         });
     });
 }
@@ -77,29 +79,53 @@ function calculateIsNew(createDate) {
     return diffDays <= 7;
 }
 
-function renderProducts(products) {
+function renderProducts(products, currentPage = 1, pageSize = 8) {
+    console.log('products', products);
     var productContainer = document.querySelector(".product__filter");
     productContainer.innerHTML = '';
-    products.forEach(function (product) {
+
+    if (products.length === 0) {
+        productContainer.innerHTML = '<p>Không có sản phẩm nào để hiển thị.</p>';
+        return;
+    }
+    products.sort(function (a, b) {
+        return (a.totalQuantity <= 0 ? 1 : 0) - (b.totalQuantity <= 0 ? 1 : 0);
+    });
+    const start = (currentPage - 1) * pageSize;
+    const end = start + pageSize;
+    const paginatedProducts = products.slice(start, end);
+
+    if (paginatedProducts.length === 0) {
+        productContainer.innerHTML = '<p>Không có sản phẩm nào để hiển thị cho trang này.</p>';
+        return;
+    }
+
+    paginatedProducts.forEach(function (product) {
+        var isOutOfStock = product.totalQuantity <= 0;
+        var productStyle = isOutOfStock ? 'opacity: 0.5; color: gray; pointer-events: none;' : '';
+        var outOfStockText = isOutOfStock ? '<strong style="color: red;">Hết hàng</strong>' : '';
+
         var priceHtml;
         if (product.smallestPrice === product.biggestPrice) {
             priceHtml = `<span class="stext-105 cl3">${formatCurrency(product.smallestPrice)}</span>`;
         } else {
             priceHtml = `<span class="stext-105 cl3">${formatCurrency(product.smallestPrice)} - ${formatCurrency(product.biggestPrice)}</span>`;
         }
+
         const isNew = calculateIsNew(product.createDate);
         const isHotSale = product.isHotSale || false;
+
         var productItem = `
-            <div class="col-lg-3 col-md-6 col-sm-6 col-md-6 col-sm-6 mix ${isHotSale ? 'hot-sales' : ''}">
-                <div class="product__item">
-                     <div class="product__item__pic set-bg" data-setbg="${product.imagePaths[0]}">
+            <div class="col-lg-3 col-md-6 col-sm-6 col-md-6 col-sm-6 mix ${isHotSale ? 'hot-sales' : ''}" style="${productStyle}">
+                <div class="product__item" style="border: 2px solid black; border-radius: 4px; padding: 10px;">
+                    <div class="product__item__pic set-bg" data-setbg="${product.imagePaths[0]}" style="border-bottom: 2px solid black;">
                         ${isNew ? '<span class="label" style="background-color: red; color: yellow;">New</span>' : ''}
                         ${isHotSale ? '<span class="label" style="background-color: green; color: white;">Hot Sale</span>' : ''}
                     </div>
                     <div class="product__item__text">
                         <h6>${product.productName}</h6>
-                        <a href="#" class="add-cart" onclick="navigateToUpdatePage('${product.id}')">+ Thêm vào giỏ hàng</a>
-                        <h5>${priceHtml}</h5>
+                        <a href="#" class="add-cart" onclick="${isOutOfStock ? 'return false;' : `navigateToUpdatePage('${product.id}')`}">+ Thêm vào giỏ hàng</a>
+                        <h5>${priceHtml}</h5><small>Tổng kho: ${product.totalQuantity} ${outOfStockText}</small>
                     </div>
                 </div>
             </div>
@@ -111,8 +137,53 @@ function renderProducts(products) {
         var bg = element.getAttribute('data-setbg');
         element.style.backgroundImage = 'url(' + bg + ')';
     });
+
+    updatePaginationControls(products, currentPage, Math.ceil(products.length / pageSize));
 }
 
+function updatePaginationControls(products, currentPage, totalPages) {
+    const pagination = document.querySelector('.pagination');
+    if (!pagination) return;
+
+    pagination.innerHTML = '';
+
+    const createPageLink = (page, text) => {
+        const link = document.createElement('a');
+        link.href = '#';
+        link.textContent = text;
+        link.className = page === currentPage ? 'page-number active' : 'page-number';
+        link.setAttribute('data-page', page);
+        return link;
+    };
+
+    const prevLink = createPageLink(currentPage - 1, '«');
+    prevLink.classList.add('prev');
+    if (currentPage === 1) {
+        prevLink.style.visibility = 'hidden';
+    }
+    pagination.appendChild(prevLink);
+
+    for (let i = 1; i <= totalPages; i++) {
+        pagination.appendChild(createPageLink(i, i));
+    }
+
+    const nextLink = createPageLink(currentPage + 1, '»');
+    nextLink.classList.add('next');
+    if (currentPage === totalPages) {
+        nextLink.style.visibility = 'hidden';
+    }
+    pagination.appendChild(nextLink);
+
+    pagination.querySelectorAll('.page-number').forEach(function (pageLink) {
+        pageLink.addEventListener('click', function (e) {
+            e.preventDefault();
+            const page = parseInt(pageLink.getAttribute('data-page'));
+            if (page >= 1 && page <= totalPages) {
+                renderProducts(filteredProducts, page); 
+            }
+        });
+    });
+}
 function navigateToUpdatePage(ID) {
     window.location.href = `/details_product/${ID}`;
 }

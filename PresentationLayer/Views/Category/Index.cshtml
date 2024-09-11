@@ -4,21 +4,15 @@
     ViewData["Title"] = "Shop";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
-<style>
-    img {
-        max-width: 100%;
-        height: auto; /* Tự động điều chỉnh chiều cao theo tỷ lệ */
-    }
-</style>
-<section class="breadcrumb-option">
+<section class="breadcrumb-option" style="padding: 10px 0;">
     <div class="container">
         <div class="row">
             <div class="col-lg-12">
                 <div class="breadcrumb__text">
-                    <h4>Shop</h4>
+                    <h4>Cửa hàng</h4>
                     <div class="breadcrumb__links">
-                        <a asp-controller="Home" asp-action="Index">Home</a>
-                        <span>Shop</span>
+                        <a asp-controller="Home" asp-action="Index">Trang chủ</a>
+                        <span>Danh sách sản phẩm</span>
                     </div>
                 </div>
             </div>
@@ -26,74 +20,86 @@
     </div>
 </section>
 
-<section class="shop spad">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-3">
-                <div class="shop__sidebar">
-                    <div class="shop__sidebar__accordion">
-                        <div class="accordion" id="accordionExample">
-                            <div class="card">
-                                <div class="card-heading">
-                                    <a data-toggle="collapse" data-target="#collapseOne">Categories</a>
-                                </div>
-                                <div id="collapseOne" class="collapse show" data-parent="#accordionExample">
-                                    <div class="card-body">
-                                        <div class="shop__sidebar__categories">
-                                            <ul class="nice-scroll">
-                                                <li>
-                                                    <a asp-controller="Category" asp-action="Index">All Products</a>
-                                                </li>
-                                                @foreach (var category in Model.Categories)
-                                                {
-                                                    <li>
-                                                        <a asp-controller="Category" asp-action="Index" asp-route-categoryId="@category.ID">
-                                                            @category.Name
-                                                        </a>
-                                                    </li>
-                                                }
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
+<section class="shop spad" style="padding: 20px 0;">
+    <div class="row">
+        <div class="col-lg-3">
+            <div class="shop__sidebar">
+                <div class="shop__sidebar__accordion">
+                    <div class="accordion" id="accordionExample">
+                        <div class="card" style="border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); margin-bottom: 20px; overflow: hidden;">
+                            <div class="card-heading" style="background-color: #f8f9fa; padding: 10px 10px 10px 20px; border-bottom: 1px solid #ddd;">
+                                <a data-toggle="collapse" data-target="#collapseOne" style="color: #333; text-decoration: none; font-weight: bold;">Danh mục</a>
                             </div>
-                            <div class="shop__sidebar__search">
-                                <form asp-controller="Category" asp-action="Index" method="get" class="row">
-                                    <input type="hidden" name="categoryId" value="@Model.SelectedCategoryID" />
-                                    <div class="col-auto">
-                                        <label for="minPrice">Giá tối thiểu</label>
-                                        <input type="number" class="form-control" id="minPrice" name="minPrice" step="0.01" value="Model.MinPrice">
+                            <div id="collapseOne" class="collapse show" data-parent="#accordionExample" style="padding: 10px; padding-left: 20px;">
+                                <div class="card-body">
+                                    <div class="shop__sidebar__categories">
+                                        <ul class="nice-scroll" style="list-style-type: none; padding: 0; margin: 0; padding-left: 20px;">
+                                            <li style="margin-bottom: 10px;">
+                                                <a asp-controller="Category" asp-action="Index" style="color: #007bff; text-decoration: none;">Toàn bộ sản phẩm</a>
+                                            </li>
+                                            @foreach (var category in Model.Categories)
+                                            {
+                                                <li style="margin-bottom: 10px;">
+                                                    <a asp-controller="Category" asp-action="Index" asp-route-categoryId="@category.ID" style="color: #007bff; text-decoration: none;">
+                                                        @category.Name
+                                                    </a>
+                                                </li>
+                                            }
+                                        </ul>
                                     </div>
-                                    <div class="col-auto">
-                                        <label for="maxPrice">Giá tối đa</label>
-                                        <input type="number" class="form-control" id="maxPrice" name="maxPrice" step="0.01" value="@Model.MaxPrice">
-                                    </div>
-                                    <div class="col-auto">
-                                        <input type="submit" class="btn btn-primary" value="Tìm kiếm"></input>
-                                    </div>
-                                </form>
+                                </div>
                             </div>
                         </div>
+
+                        <div class="shop__sidebar__search" style="padding: 15px; border: 1px solid #ddd; border-radius: 8px; background-color: #f8f9fa; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
+                            <form asp-controller="Category" asp-action="Index" method="get" style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                                <input type="hidden" name="categoryId" value="@Model.SelectedCategoryID" />
+                                <div class="col-auto" style="flex: 1; min-width: 150px;">
+                                    <label for="minPrice" style="display: block; margin-bottom: 5px;">Giá tối thiểu</label>
+                                    <input type="number" class="form-control" id="minPrice" name="minPrice" step="0.01" value="@Model.MinPrice" style="width: 100%; padding: 8px;">
+                                </div>
+                                <div class="col-auto" style="flex: 1; min-width: 150px;">
+                                    <label for="maxPrice" style="display: block; margin-bottom: 5px;">Giá tối đa</label>
+                                    <input type="number" class="form-control" id="maxPrice" name="maxPrice" step="0.01" value="@Model.MaxPrice" style="width: 100%; padding: 8px;">
+                                </div>
+                                <div class="col-auto" style="flex: 1; min-width: 150px;">
+                                    <input type="submit" class="btn btn-primary" value="Tìm kiếm" style="padding: 10px 20px;">
+                                </div>
+                            </form>
+                        </div>
+
                     </div>
                 </div>
             </div>
-            <div class="col-lg-9">
-                <div class="row">
-                    @foreach (var product in Model.Products)
-                    {
-                        <div class="col-lg-4 col-md-6 col-sm-6">
-                            <div class="product__item">
-                                <img src="@product.ImagePaths.FirstOrDefault()" alt="Product Image" class="img-responsive">
+        </div>
+        <div class="col-lg-9">
+            <div class="row">
+                @foreach (var product in Model.Products)
+                {
+                    <div class="col-lg-3 col-md-4 col-sm-6 mb-3" style="padding: 10px;">
+                        <div style="border: 1px solid #ddd; padding: 15px; border-radius: 8px; height: 100%; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); background-color: #fff;">
+                            <div style="height: 200px; overflow: hidden; text-align: center;">
+                                <img src="@product.ImagePaths.FirstOrDefault()" alt="Product Image" style="width: 100%; height: auto; object-fit: cover;">
                             </div>
-                            <a asp-controller="Main" asp-action="Product" asp-route-id="@product.ID" style="visibility: visible; color: crimson">Xem chi tiết</a>
-
-                            <div class="product__item__text">
-                                <h6>@product.ProductName</h6>
-                                <h5>@Currency.FormatCurrency(product.SmallestPrice.ToString()) đ</h5>
+                            <a asp-controller="Main" asp-action="Product" asp-route-id="@product.ID" style="color: crimson; margin: 10px 0; text-decoration: none; display: flex; align-items: center; justify-content: center;">
+                                <i class="fa fa-info-circle" style="margin-right: 5px;"></i> Xem chi tiết
+                            </a>
+                            <div style="text-align: center;">
+                                <h6 style="color: #555;">@product.ProductName</h6>
+                                <h5 style="color: #333;">
+                                    @if (product.SmallestPrice == product.BiggestPrice)
+                                    {
+                                        @($"{Currency.FormatCurrency(product.SmallestPrice.ToString())} đ")
+                                    }
+                                    else
+                                    {
+                                        @($"{Currency.FormatCurrency(product.SmallestPrice.ToString())} đ - {Currency.FormatCurrency(product.BiggestPrice.ToString())} đ")
+                                    }
+                                </h5>
                             </div>
                         </div>
-                    }
-                </div>
+                    </div>
+                }
             </div>
         </div>
     </div>

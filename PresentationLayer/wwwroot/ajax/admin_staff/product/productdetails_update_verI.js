@@ -1,4 +1,6 @@
-﻿function getJwtFromCookie() {
+﻿
+let previousImageURLs = {}
+function getJwtFromCookie() {
     return getCookieValue('jwt');
 }
 function getCookieValue(cookieName) {
@@ -23,6 +25,23 @@ function getUserIdFromJwt(jwt) {
 }
 const jwt = getJwtFromCookie();
 const userId = getUserIdFromJwt(jwt);
+function checkAuthentication() {
+    if (!jwt || !userId) {
+        window.location.href = '/login';
+        return false;
+    }
+    return true;
+}
+checkAuthentication();
+function checkAuthentication() {
+    if (!jwt || !userId) {
+        window.location.href = '/login';
+        return false;
+    }
+    return true;
+}
+checkAuthentication();
+
 document.addEventListener('DOMContentLoaded', function () {
     var currentUrl = window.location.href;
     var urlParts = currentUrl.split('/');
@@ -208,8 +227,8 @@ function updateTable() {
 
                 <td>${color}</td>
                 <td>${size}</td>
-                <td><input type="text" value="${match ? match.retailPrice : ''}" placeholder="Nhập giá bán"></td>
-                <td><input type="text" value="${match ? match.stockQuantity : ''}" placeholder="0"></td>
+                <td><input type="text" id="retal_price" value="${match ? match.retailPrice : ''}" placeholder="Nhập giá bán"></td>
+                <td><input type="text"  id="quantity" value="${match ? match.stockQuantity : ''}" placeholder="0"></td>
              <td>
                 ${match ? `
                     <button type="button" class="toggle-button btn ${match.isActive ? 'btn-danger' : 'btn-success'}" data-option-id="${match.id}" data-isactive="${match.isActive}" onclick="toggleStatus('${match.id}', ${match.isActive})">
@@ -227,7 +246,18 @@ function updateTable() {
             document.getElementById(`${imagePreviewId}_button`).addEventListener('click', function () {
                 document.getElementById(`${imagePreviewId}_fileInput`).click();
             });
-
+            const fileInput = document.getElementById(imagePreviewId);
+            fileInput.addEventListener('change', function (event) {
+                handleImageUpload(event, imagePreviewId);
+            });
+            const retal_priceInput = document.getElementById('retal_price');
+            retal_priceInput.addEventListener('blur', function () {
+                validatePrice(retal_priceInput);
+            });
+            const soLuongInput = document.getElementById('quantity');
+            soLuongInput.addEventListener('blur', function () {
+                validateQuantity(soLuongInput);
+            });
             document.getElementById(`${imagePreviewId}_fileInput`).addEventListener('change', function (event) {
                 const input = event.target;
                 const imgElement = document.getElementById(`${imagePreviewId}_img`);
@@ -247,6 +277,28 @@ function updateTable() {
             });
         });
     });
+}
+function handleImageUpload(event, imagePreviewId) {
+    const input = event.target;
+    const imgElement = document.getElementById(`${imagePreviewId}_img`);
+    const file = input.files[0];
+
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const newImageURL = e.target.result;
+
+            if (imgElement.src !== newImageURL) {
+                imgElement.src = newImageURL;
+                imgElement.style.display = 'block';
+                document.getElementById(`${imagePreviewId}_button`).style.display = 'none';
+
+                // Assuming you need to keep track of the image URLs
+                previousImageURLs[imagePreviewId] = newImageURL;
+            }
+        };
+        reader.readAsDataURL(file);
+    }
 }
 function removeRow(button) {
     const row = button.parentElement.parentElement;
@@ -342,7 +394,6 @@ document.body.addEventListener('click', function (event) {
 function toggleStatus(id, currentStatus) {
     const newStatus = !currentStatus;
 
-    // Xác nhận hành động bằng SweetAlert2
     Swal.fire({
         title: 'Xác nhận thay đổi trạng thái',
         text: `Bạn muốn ${newStatus ? 'kích hoạt' : 'vô hiệu hóa'} tùy chọn này?`,
@@ -365,11 +416,9 @@ function toggleStatus(id, currentStatus) {
 
             xhr.onload = function () {
                 if (xhr.status === 200) {
-                    // Tìm nút với thuộc tính data-option-id
                     const button = document.querySelector(`button[data-option-id='${id}']`);
 
-                    if (button) { // Kiểm tra xem button có tồn tại không
-                        // Cập nhật trạng thái của nút
+                    if (button) {
                         if (newStatus) {
                             button.classList.remove('btn-success');
                             button.classList.add('btn-danger');
@@ -380,7 +429,6 @@ function toggleStatus(id, currentStatus) {
                             button.textContent = 'Hoạt động';
                         }
 
-                        // Cập nhật thuộc tính data-isactive của nút
                         button.setAttribute('data-isactive', newStatus);
                     } else {
                         console.error(`Nút với id '${id}' không tìm thấy.`);
@@ -492,7 +540,7 @@ function updateProductImages(images) {
         }).then((result) => {
             if (result.isConfirmed) {
                 const xhr = new XMLHttpRequest();
-                xhr.open("DELETE", `https://localhost:7241/api/images/${imageID}/${userId}`, true);
+                xhr.open("DELETE", `https://localhost:7241/api/images/${imageID}`, true);
                 xhr.setRequestHeader('accept', '*/*');
                 xhr.onreadystatechange = function () {
                     if (xhr.readyState === 4) {
@@ -720,8 +768,7 @@ async function uploadImageSingle(imageSrc) {
         };
         xhr.send(formData);
     });
-}
-async function gatherOptionsData(ID) {
+} async function gatherOptionsData(ID) {
     var options = [];
 
     var newTableBody = document.getElementById('classificationBody');
@@ -834,3 +881,34 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 });
+function validateQuantity(input) {
+    const value = input.value.trim();
+    const isValid = /^[0-9]*$/.test(value);
+
+    if (!isValid || parseInt(value) < 0) {
+        input.style.borderColor = 'red';
+        Swal.fire({
+            icon: 'error',
+            title: 'Lỗi!',
+            text: 'Số lượng không được nhập chữ hoặc số âm.',
+        });
+        input.value = '';
+    }
+    else {
+        input.style.borderColor = '';
+    }
+}
+function validatePrice(input) {
+    const value = input.value.trim();
+    if (!/^\d+(\.\d{1,2})?$/.test(value) || parseFloat(value) < 0) {
+        input.style.borderColor = 'red';
+        Swal.fire({
+            icon: 'error',
+            title: 'Lỗi',
+            text: 'Giá bán không hợp lệ. Vui lòng nhập giá hợp lệ (số dương, không chứa ký tự đặc biệt).'
+        });
+        input.value = '';
+    } else {
+        input.style.borderColor = '';
+    }
+}

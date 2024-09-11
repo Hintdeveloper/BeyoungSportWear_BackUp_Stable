@@ -1,4 +1,37 @@
-﻿function getCookie(name) {
+﻿function getJwtFromCookie() {
+    return getCookieValue('jwt');
+}
+function getCookieValue(cookieName) {
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+        const [name, value] = cookie.split('=').map(c => c.trim());
+        if (name === cookieName) {
+            return decodeURIComponent(value);
+        }
+    }
+    return null;
+}
+function getUserIdFromJwt(jwt) {
+    try {
+        const tokenPayload = JSON.parse(atob(jwt.split('.')[1]));
+        return tokenPayload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
+    }
+    catch (error) {
+        console.error('Error parsing JWT:', error);
+        return null;
+    }
+}
+const jwt = getJwtFromCookie();
+const userId = getUserIdFromJwt(jwt);
+function checkAuthentication() {
+    if (!jwt || !userId) {
+        window.location.href = '/login';
+        return false;
+    }
+    return true;
+}
+checkAuthentication();
+function getCookie(name) {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
     if (parts.length === 2) return parts.pop().split(';').shift();

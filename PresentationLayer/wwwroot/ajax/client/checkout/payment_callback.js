@@ -1,6 +1,7 @@
 ﻿function getJwtFromCookie() {
     return getCookieValue('jwt');
 }
+
 function getCookieValue(cookieName) {
     const cookies = document.cookie.split(';');
     for (let cookie of cookies) {
@@ -11,89 +12,114 @@ function getCookieValue(cookieName) {
     }
     return null;
 }
+
 function getUserIdFromJwt(jwt) {
     try {
         const tokenPayload = JSON.parse(atob(jwt.split('.')[1]));
         return tokenPayload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
-    }
-    catch (error) {
+    } catch (error) {
         console.error('Error parsing JWT:', error);
         return null;
     }
 }
+
 const jwt = getJwtFromCookie();
 const userId = getUserIdFromJwt(jwt);
 console.log('userId', userId);
+
 function createOrderAfterPayment() {
+    showSwalLoading(); 
     const orderData = JSON.parse(getCookie('orderData'));
     if (!orderData) {
-        console.error('Không tìm thấy dữ liệu đơn hàng.');
+        console.error('Không tìm thấy dữ liệu đơn hàng.'); Swal.close();
         return;
     }
-    orderData.paymentStatus = 1;
-    orderData.orderStatus = 1;
+    if (!Array.isArray(orderData.orderDetailsCreateVM)) {
+        console.error('Dữ liệu chi tiết đơn hàng không hợp lệ.'); Swal.close();
+        return;
+    }
+    console.log(orderData.orderDetailsCreateVM);
 
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'https://localhost:7241/api/Order/create?printInvoice=false', true);
-    xhr.setRequestHeader('Content-Type', 'application/json');
+    // Xóa giỏ hàng trước khi tạo đơn hàng
+    const cartApiUrl = `https://localhost:7241/api/Cart/cart/user/${userId}`;
+    const cartXhr = new XMLHttpRequest();
+    cartXhr.open('GET', cartApiUrl, true);
+    cartXhr.onreadystatechange = function () {
+        if (cartXhr.readyState === XMLHttpRequest.DONE) {
+            if (cartXhr.status === 200) {
+                const cartData = JSON.parse(cartXhr.responseText);
+                const cartId = cartData[0]?.id;
+                if (cartId) {
+                    const deleteRequests = orderData.orderDetailsCreateVM.map(detail => {
 
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState === XMLHttpRequest.DONE) {
-            if (xhr.status === 200) {
-                const response = JSON.parse(xhr.responseText);
-                console.log('Success:', response);
-                Swal.fire({
-                    title: 'Thành công!',
-                    text: 'Đơn hàng của bạn đã được gửi thành công.',
-                    icon: 'success',
-                    confirmButtonText: 'OK',
-                    timer: 5000,
-                    timerProgressBar: true,
-                    showConfirmButton: true,
-                    willClose: () => {
-                        if (orderData && orderData.orderDetails) {
-                            const cartApiUrl = `https://localhost:7241/api/Cart/cart/user/${userId}`;
-                            const cartXhr = new XMLHttpRequest();
-                            cartXhr.open('GET', cartApiUrl, true);
-                            cartXhr.onreadystatechange = function () {
-                                if (cartXhr.readyState === XMLHttpRequest.DONE) {
-                                    if (cartXhr.status === 200) {
-                                        const cartData = JSON.parse(cartXhr.responseText);
-                                        const cartId = cartData[0]?.id;
-                                        if (cartId) {
-                                            orderData.orderDetails.forEach(detail => {
-                                                deleteCartOption(cartId, detail.idOptions);
-                                            });
-                                        } else {
-                                            console.error('Không thể tìm thấy giỏ hàng.');
-                                        }
+                        return new Promise((resolve, reject) => {
+                            deleteCartOption(cartId, detail.idOptions, resolve, reject);
+                        });
+                    });
+
+                    Promise.all(deleteRequests)
+                        .then(() => {
+                            orderData.paymentStatus = 1;
+                            orderData.orderStatus = 1;
+
+                            const xhr = new XMLHttpRequest();
+                            xhr.open('POST', 'https://localhost:7241/api/Order/create?printInvoice=false', true);
+                            xhr.setRequestHeader('Content-Type', 'application/json');
+
+                            xhr.onreadystatechange = function () {
+                                if (xhr.readyState === XMLHttpRequest.DONE) {
+                                    Swal.close();
+                                    if (xhr.status === 200) {
+                                        const response = JSON.parse(xhr.responseText);
+                                        console.log('Success:', response);
+                                        Swal.fire({
+                                            title: 'Thành công!',
+                                            text: 'Đơn hàng của bạn đã được gửi thành công.',
+                                            icon: 'success',
+                                            confirmButtonText: 'OK',
+                                            timer: 5000,
+                                            timerProgressBar: true,
+                                            showConfirmButton: true,
+                                            willClose: () => {
+                                                window.location.href = '/';
+                                            }
+                                        });
+                                        document.cookie = 'orderData=; path=/; max-age=0';
                                     } else {
-                                        console.error('Error fetching cart data:', cartXhr.responseText);
+                                        console.error('Error:', xhr.responseText);
+                                        Swal.fire({
+                                            title: 'Lỗi!',
+                                            text: 'Đã xảy ra lỗi khi gửi đơn hàng. Vui lòng thử lại.',
+                                            icon: 'error',
+                                            confirmButtonText: 'OK'
+                                        });
                                     }
                                 }
                             };
-                            cartXhr.send();
-                        }
-                        window.location.href = '/';
-                    }
-                });
-                document.cookie = 'orderData=; path=/; max-age=0';
+
+                            xhr.send(JSON.stringify(orderData));
+                        })
+                        .catch((error) => {
+                            console.error('Error deleting cart options:', error); Swal.close();
+                            Swal.fire({
+                                title: 'Lỗi!',
+                                text: 'Đã xảy ra lỗi khi xóa các mục giỏ hàng. Vui lòng thử lại.',
+                                icon: 'error',
+                                confirmButtonText: 'OK'
+                            });
+                        });
+                } else {
+                    console.error('Không thể tìm thấy giỏ hàng.'); Swal.close();
+                }
             } else {
-                console.error('Error:', xhr.responseText);
-                Swal.fire({
-                    title: 'Lỗi!',
-                    text: 'Đã xảy ra lỗi khi gửi đơn hàng. Vui lòng thử lại.',
-                    icon: 'error',
-                    confirmButtonText: 'OK'
-                });
+                console.error('Error fetching cart data:', cartXhr.responseText); Swal.close();
             }
         }
     };
-
-    xhr.send(JSON.stringify(orderData));
+    cartXhr.send();
 }
 
-function deleteCartOption(cartId, idOptions) {
+function deleteCartOption(cartId, idOptions, resolve, reject) {
     const xhr = new XMLHttpRequest();
     const url = `https://localhost:7241/api/CartOptions/Delete/${cartId}/${idOptions}`;
     xhr.open('DELETE', url, true);
@@ -102,8 +128,10 @@ function deleteCartOption(cartId, idOptions) {
         if (xhr.readyState === XMLHttpRequest.DONE) {
             if (xhr.status === 200) {
                 console.log(`Deleted cart option ${idOptions} from cart ${cartId}`);
+                resolve();
             } else {
                 console.error('Error deleting cart option:', xhr.responseText);
+                reject(xhr.responseText);
             }
         }
     };
@@ -145,4 +173,15 @@ function getParameterByName(name) {
     if (!results) return null;
     if (!results[2]) return '';
     return decodeURIComponent(results[2].replace(/\+/g, " "));
+}
+function showSwalLoading() {
+    Swal.fire({
+        title: 'Đang xử lý',
+        text: 'Vui lòng chờ...',
+        allowOutsideClick: false,  
+        showConfirmButton: false,  
+        didOpen: () => {
+            Swal.showLoading(); 
+        }
+    });
 }

@@ -19,12 +19,12 @@ function getUserIdFromJwt(jwt) {
         return tokenPayload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
     }
     catch (error) {
-        console.error('Error parsing JWT:', error);
         return null;
     }
 }
 const jwt = getJwtFromCookie();
 const userId = getUserIdFromJwt(jwt);
+
 document.addEventListener('DOMContentLoaded', function () {
     const url = window.location.href;
     const queryString = url.split('?')[1];
