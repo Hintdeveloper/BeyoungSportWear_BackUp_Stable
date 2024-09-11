@@ -360,33 +360,40 @@ namespace BusinessLogicLayer.Services.Implements
 
             if (request.ApplyToAllUsers)
             {
-                // Lấy danh sách tất cả khách hàng
-                var allUsers = await _dbcontext.Users.ToListAsync();
 
-                var allUserIds = allUsers.Select(u => u.Id).ToHashSet();
-                var currentUserIds = voucher.VoucherUser.Select(vu => vu.IDUser).ToHashSet();
-
-                // Thêm tất cả khách hàng chưa liên kết vào voucher
-                foreach (var userId in allUserIds.Except(currentUserIds))
-                {
-                    var voucherUser = new VoucherUser
-                    {
-                        IDUser = userId,
-                        IDVoucher = voucher.ID,
-                        Status = 1, // Đặt trạng thái thành 1
-                        CreateBy = request.CreateBy
-                    };
-                    await _dbcontext.VoucherUser.AddAsync(voucherUser);
-                }
-
-                // Xóa các khách hàng đã được gỡ liên kết
                 foreach (var voucherUser in voucher.VoucherUser.ToList())
                 {
-                    if (!allUserIds.Contains(voucherUser.IDUser))
-                    {
-                        _dbcontext.VoucherUser.Remove(voucherUser);
-                    }
+                    _dbcontext.VoucherUser.Remove(voucherUser);
                 }
+                voucher.Status = 0;
+                
+                // Lấy danh sách tất cả khách hàng
+                //var allUsers = await _dbcontext.Users.ToListAsync();
+
+                //var allUserIds = allUsers.Select(u => u.Id).ToHashSet();
+                //var currentUserIds = voucher.VoucherUser.Select(vu => vu.IDUser).ToHashSet();
+
+                //// Thêm tất cả khách hàng chưa liên kết vào voucher
+                //foreach (var userId in allUserIds.Except(currentUserIds))
+                //{
+                //    var voucherUser = new VoucherUser
+                //    {
+                //        IDUser = userId,
+                //        IDVoucher = voucher.ID,
+                //        Status = 1, // Đặt trạng thái thành 1
+                //        CreateBy = request.CreateBy
+                //    };
+                //    await _dbcontext.VoucherUser.AddAsync(voucherUser);
+                //}
+
+                // Xóa các khách hàng đã được gỡ liên kết
+                //foreach (var voucherUser in voucher.VoucherUser.ToList())
+                //{
+                //    if (!allUserIds.Contains(voucherUser.IDUser))
+                //    {
+                //        _dbcontext.VoucherUser.Remove(voucherUser);
+                //    }
+                //}
             }
             else
             {
