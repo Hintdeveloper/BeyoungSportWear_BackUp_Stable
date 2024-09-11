@@ -256,8 +256,35 @@ function viewDetails(productID) {
     xhr.send();
 }
 function navigateToUpdatePage(productId) {
-    
-    window.location.href = `/managerupdate_productdetails_ver1/${productId}`;
+    const url = `/managerupdate_productdetails_ver1/${productId}`;
+
+    fetch(url, {
+        method: 'GET'
+    })
+        .then(response => {
+            if (response.status === 403) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Không có quyền!',
+                    text: 'Bạn không có quyền thực hiện hành động này.'
+                });
+                throw new Error('Forbidden');
+            } else if (response.ok) {
+                window.location.href = url; // Chuyển hướng nếu yêu cầu thành công
+            } else {
+                return response.text().then(text => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi!',
+                        text: text || 'Có lỗi xảy ra khi gửi yêu cầu.'
+                    });
+                    throw new Error(text);
+                });
+            }
+        })
+        .catch(error => {
+            console.error("Fetch error:", error.message);
+        });
 }
 function confirmDelete(productID, isActive) {
     Swal.fire({
@@ -317,14 +344,14 @@ function toggleProductStatus(productID, isActive) {
                     button.innerHTML = `<i class="${iconClass}"></i>`;
                 }
             }
-            //else if (xhr.status === 403 || xhr.status === 401) {
-            //    Swal.fire({
-            //        icon: 'error',
-            //        title: 'Không có quyền!',
-            //        text: 'Bạn không có quyền thực hiện hành động này.'
-            //    });
-            //    throw new Error('Forbidden');
-            //}
+            else if (xhr.status === 403 || xhr.status === 401) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Không có quyền!',
+                    text: 'Bạn không có quyền thực hiện hành động này.'
+                });
+                throw new Error('Forbidden');
+            }
             else {
                 Swal.fire({
                     icon: 'error',
