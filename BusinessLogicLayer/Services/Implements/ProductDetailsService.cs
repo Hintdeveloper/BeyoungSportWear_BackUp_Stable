@@ -875,6 +875,7 @@ namespace BusinessLogicLayer.Services.Implements
                 SmallestPrice = product.Options != null && product.Options.Any() ? product.Options.Min(opt => opt.RetailPrice) : 0,
                 BiggestPrice = product.Options != null && product.Options.Any() ? product.Options.Max(opt => opt.RetailPrice) : 0,
                 ImagePaths = product.Images != null ? product.Images.Where(m => m.Status == 1).Select(m => m.Path).ToList() : new List<string>(),
+                TotalQuantity = product.Options.Sum(opt => opt.StockQuantity),
                 KeyCode = product.KeyCode,
                 IDCategory = product.IDCategory,
                 IDProduct = product.IDProduct,

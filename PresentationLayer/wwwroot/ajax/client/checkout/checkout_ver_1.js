@@ -812,7 +812,10 @@ function sendOrderData() {
     if (!orderData) {
         return;
     }
-
+    if (orderData.paymentMethods === 0) {
+        processOrder(orderData); 
+        return;
+    }
     const hasLargeQuantity = orderData.orderDetailsCreateVM.some(detail => detail.quantity > 100);
 
     if (hasLargeQuantity) {
