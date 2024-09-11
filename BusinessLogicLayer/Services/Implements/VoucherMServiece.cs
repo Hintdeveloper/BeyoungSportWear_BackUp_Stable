@@ -57,12 +57,13 @@ namespace BusinessLogicLayer.Services.Implements
                     MaximumAmount = request.MaximumAmount,
                     ReducedValue = request.ReducedValue,
                     IsActive = StatusVoucher.HasntStartedYet,
-                    Status = 1,
+                    Status = request.ApplyToAllUsers ? 0 : 1,
                     CreateBy = request.CreateBy,
                 };
                 _dbcontext.Voucher.Add(newVoucher);
                 if (!request.ApplyToAllUsers)
                 {
+                    
                     foreach (var userId in request.SelectedUser)
                     {
                         var voucherUser = new VoucherUser
@@ -204,6 +205,7 @@ namespace BusinessLogicLayer.Services.Implements
                 Id = u.Id,
                 Name = u.FirstAndLastName,
                 SDT = u.PhoneNumber,
+                Email = u.Email
             }).ToList();
 
             return clientList;
@@ -489,27 +491,79 @@ namespace BusinessLogicLayer.Services.Implements
 
         public async Task<List<VoucherViewModel>> GetVouchersByUserIdWithStatusAsync(string idUser)
         {
-            var voucherList = await _dbcontext.VoucherUser
-                                         .Where(vu => vu.IDUser == idUser
-                                                   && (vu.Voucher.IsActive == StatusVoucher.IsBeginning))
-                                         .Select(vu => new VoucherViewModel
-                                         {
-                                             ID = vu.IDVoucher,
-                                             IDUser = Guid.Parse(vu.IDUser),
-                                             MinimumAmount = vu.Voucher.MinimumAmount,
-                                             Code = vu.Voucher.Code,
-                                             Name = vu.Voucher.Name,
-                                             StartDate = vu.Voucher.StartDate,
-                                             EndDate = vu.Voucher.EndDate,
-                                             Quantity = vu.Voucher.Quantity,
-                                             ReducedValue = vu.Voucher.ReducedValue,
-                                             IsActive = vu.Voucher.IsActive,
-                                             status = vu.Status,
-                                         })
-                                         .ToListAsync();
+            List<VoucherViewModel> voucherList;
+
+            if (idUser == "1")
+            {
+                // Trường hợp không có IDUser, trả về các voucher có status = 0 và IsActive = IsBeginning
+                voucherList = await _dbcontext.Voucher
+                                              .Where(vu => vu.Status == 0
+                                                        && vu.IsActive == StatusVoucher.IsBeginning)
+                                              .Select(vu => new VoucherViewModel
+                                              {
+                                                  ID = vu.ID,
+                                                 
+                                                  MinimumAmount = vu.MinimumAmount,
+                                                  Code = vu.Code,
+                                                  Name = vu.Name,
+                                                  StartDate = vu.StartDate,
+                                                  EndDate = vu.EndDate,
+                                                  Quantity = vu.Quantity,
+                                                  ReducedValue = vu.ReducedValue,
+                                                  IsActive = vu.IsActive,
+                                                  
+                                              })
+                                              .ToListAsync();
+            }
+            else
+            {
+                var connectedVouchers = await _dbcontext.VoucherUser
+                                                .Where(vu => vu.IDUser == idUser
+                                                          && vu.Status == 1
+                                                          && vu.Voucher.Status == 1
+                                                          && vu.Voucher.IsActive == StatusVoucher.IsBeginning)
+                                                .Select(vu => new VoucherViewModel
+                                                {
+                                                    ID = vu.IDVoucher,
+                                                    IDUser = Guid.Parse(vu.IDUser),
+                                                    MinimumAmount = vu.Voucher.MinimumAmount,
+                                                    Code = vu.Voucher.Code,
+                                                    Name = vu.Voucher.Name,
+                                                    StartDate = vu.Voucher.StartDate,
+                                                    EndDate = vu.Voucher.EndDate,
+                                                    Quantity = vu.Voucher.Quantity,
+                                                    ReducedValue = vu.Voucher.ReducedValue,
+                                                    IsActive = vu.Voucher.IsActive,
+                                                    status = vu.Status,
+                                                })
+                                                .ToListAsync();
+
+                
+                var unconnectedVouchers = await _dbcontext.Voucher
+                                                          .Where(v => v.Status == 0
+                                                                    && v.IsActive == StatusVoucher.IsBeginning
+                                                                    && !_dbcontext.VoucherUser.Any(vu => vu.IDUser == idUser && vu.IDVoucher == v.ID))
+                                                          .Select(v => new VoucherViewModel
+                                                          {
+                                                              ID = v.ID,
+                                                              MinimumAmount = v.MinimumAmount,
+                                                              Code = v.Code,
+                                                              Name = v.Name,
+                                                              StartDate = v.StartDate,
+                                                              EndDate = v.EndDate,
+                                                              Quantity = v.Quantity,
+                                                              ReducedValue = v.ReducedValue,
+                                                              IsActive = v.IsActive,
+                                                          })
+                                                          .ToListAsync();
+
+                voucherList = connectedVouchers.Concat(unconnectedVouchers).ToList();
+            }
 
             return voucherList;
         }
+
+
         public async Task<List<GetAllVoucherVM>> FilterVouchersByDateRangeAsync(DateTime startDate, DateTime endDate)
         {         
             var vouchers = await _dbcontext.Voucher

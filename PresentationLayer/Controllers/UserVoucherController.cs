@@ -21,8 +21,7 @@ namespace PresentationLayer.Controllers
 
             if (userId == null)
             {
-                TempData["ErrorMessage"] = $"Error: không thể lấy thông tin người dùng";
-                return View();
+                userId = "1";
             }
 
             var client = _httpClientFactory.CreateClient();

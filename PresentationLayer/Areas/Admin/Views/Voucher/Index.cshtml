@@ -89,6 +89,9 @@
                 Loại giảm giá
             </th>
             <th>
+                Kiểu voucher
+            </th>
+            <th>
                 Gỉam tối thiểu
             </th>
             <th>
@@ -97,6 +100,7 @@
             <th>
                 Giá trị giảm
             </th>
+            
             <th>
                 Trạng thái hoạt động
             </th>
@@ -141,6 +145,16 @@
                     else
                     {
                         <text>Không xác định</text>
+                    }
+                </td>
+                <td class="status">
+                    @if (item.Status == 0)
+                    {
+                        <p>Công khai</p>
+                    }
+                    else if (item.Status == 1)
+                    {
+                        <p>Không công khai</p>
                     }
                 </td>
                 <td>
@@ -248,7 +262,7 @@
                     const $row = $(`#voucherTable tbody tr[data-id="${item.id}"]`);
 
                     if ($row.length) {
-                        $row.find('td:nth-child(11)').text(statusText); // Cập nhật nội dung cột trạng thái
+                        $row.find('td:nth-child(12)').text(statusText); // Cập nhật nội dung cột trạng thái
 
                         const $toggle = $row.find('input[type="checkbox"]');
                         const $toggleIcon = $row.find('.fas');

@@ -63,6 +63,21 @@
                 <td>@Html.DisplayFor(model => model.ReducedValue)</td>
             </tr>
             <tr>
+                <th scope="row">Kiểu voucher</th>
+                <td>
+                    @if (Model.Status == 0)
+                    {
+                        <text>Chưa bắt đầu</text>
+                    }
+                    else
+                    {
+                        <text>Không công khai</text>
+                    }
+                </td>
+
+            </tr>
+
+            <tr>
                 <th scope="row">Trạng thái</th>
                 <td>
                     @if (Model.IsActive == StatusVoucher.HasntStartedYet)
