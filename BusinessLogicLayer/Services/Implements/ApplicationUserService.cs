@@ -19,6 +19,7 @@ using CloudinaryDotNet.Actions;
 using CloudinaryDotNet;
 using BusinessLogicLayer.Viewmodels.Address;
 using Org.BouncyCastle.Utilities.Net;
+using Microsoft.AspNetCore.Hosting;
 namespace BusinessLogicLayer.Services.Implements
 {
     public class ApplicationUserService : IApplicationUserService
@@ -625,6 +626,24 @@ namespace BusinessLogicLayer.Services.Implements
                     var uploadResult = await _cloudinary.UploadAsync(uploadParams);
 
                     newUser.Images = uploadResult.SecureUri.AbsoluteUri;
+                }
+                else
+                {
+                    // Lấy đường dẫn tới ảnh mặc định trong project khác
+                    var defaultImagePath = Path.Combine("..", "ExternalInterfaceLayer", "wwwroot", "nonameAva.png");
+
+                    using (var fileStream = new FileStream(defaultImagePath, FileMode.Open))
+                    {
+                        var uploadParams = new ImageUploadParams()
+                        {
+                            File = new FileDescription("nonameAva.png", fileStream),
+                            Folder = "BeyoungSportWear",
+                            Overwrite = true
+                        };
+
+                        var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+                        newUser.Images = uploadResult.SecureUri.AbsoluteUri;
+                    }
                 }
 
                 var result = await _userManager.CreateAsync(newUser, registerUser.Password);

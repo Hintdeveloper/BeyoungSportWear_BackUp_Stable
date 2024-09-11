@@ -6,6 +6,8 @@ namespace BusinessLogicLayer.Viewmodels.ApplicationUser
 {
     public class RegisterUser
     {
+        public DateTime JoinDate { get; set; }
+
         [RegularExpression(@"^(\p{L}+\s){1,3}\p{L}+$", ErrorMessage = "Yêu cầu đầy đủ họ tên và nhập đúng định dạng, ví dụ: Nguyễn Văn A")]
         [Required(ErrorMessage = "Họ và tên không được bỏ trống")]
         public string FirstAndLastName { get; set; } = null!;
