@@ -96,8 +96,47 @@
         </tbody>
     </table>
     <div>
-        <a asp-action="Edit" asp-route-id="@Model?.ID" class="btn btn-warning">Sửa</a> |
+        <a asp-action="Edit" asp-route-id="@Model?.ID" class="btn btn-warning editbtn">Sửa</a> |
         <a asp-action="Index" class="btn btn-link">Trở về</a>
     </div>
 
 </div>
+<script>
+    function handleSimpleAction(event) {
+        event.preventDefault(); // Ngăn chặn hành vi mặc định của thẻ a
+
+        const url = this.href;
+
+        fetch(url, {
+            method: 'GET'
+        })
+            .then(response => {
+                if (response.status === 403) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Không có quyền!',
+                        text: 'Bạn không có quyền thực hiện hành động này.'
+                    });
+                    throw new Error('Forbidden');
+                } else if (response.ok) {
+                    window.location.href = url; // Chuyển hướng nếu yêu cầu thành công
+                } else {
+                    return response.text().then(text => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Lỗi!',
+                            text: text || 'Có lỗi xảy ra khi gửi yêu cầu.'
+                        });
+                        throw new Error(text);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error("Fetch error:", error.message);
+            });
+    }
+    document.querySelectorAll(".editbtn").forEach(function (button) {
+        button.addEventListener("click", handleSimpleAction);
+    });
+
+</script>
