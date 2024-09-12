@@ -13,7 +13,7 @@ using System.Text.RegularExpressions;
 
 namespace PresentationLayer.Areas.Admin.Controllers
 {
-    [Authorize(Roles = "Admin,Staff")]
+    [Authorize(Roles = "Admin")]
     [Area("admin")]
     public class ManagerGuestController : Controller
     {

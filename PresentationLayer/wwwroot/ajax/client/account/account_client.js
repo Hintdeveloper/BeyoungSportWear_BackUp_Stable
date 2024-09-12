@@ -203,7 +203,7 @@ document.getElementById('logoutButton').addEventListener('click', function (even
                 document.cookie = c.trim().split('=')[0] + '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;';
             });
 
-            window.location.href = '/login';
+            window.location.href = '/main';
         }
     });
 });

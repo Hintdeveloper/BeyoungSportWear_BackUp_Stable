@@ -89,7 +89,7 @@
                 <div class="form-group">
                     <label>
                         <input asp-for="ApplyToAllUsers" type="checkbox" id="applyToAllUsers" />
-                        Áp dụng cho tất cả khách hàng
+                        Công khai
                     </label>
                 </div>
                 <div id="userSelection" style="display: @(Model.ApplyToAllUsers ? "none" : "block")">
@@ -101,6 +101,7 @@
                                     <th></th>
                                     <th>Tên khách hàng</th>
                                     <th>Số điện thoại</th>
+                                    <th>Email</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -113,6 +114,7 @@
                                         </td>
                                         <td>@user.Name</td>
                                         <td>@user.SDT</td>
+                                        <td>@user.Email</td>
                                     </tr>
                                 }
                             </tbody>

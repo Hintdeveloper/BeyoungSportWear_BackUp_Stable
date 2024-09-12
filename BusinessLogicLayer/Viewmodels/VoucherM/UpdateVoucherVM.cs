@@ -23,7 +23,7 @@ namespace BusinessLogicLayer.Viewmodels.VoucherM
         [Required(ErrorMessage = "Ngày bắt đầu không được để trống")]
         [DataType(DataType.DateTime)] // Sử dụng DateTime để bao gồm giờ và phút
         [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd HH:mm}", ApplyFormatInEditMode = true)]
-        [CustomDateGreaterThanToday(ErrorMessage = "Ngày bắt đầu phải lớn hơn hoặc bằng ngày hiện tại")]
+        //[CustomDateGreaterThanToday(ErrorMessage = "Ngày bắt đầu phải lớn hơn hoặc bằng ngày hiện tại")]
         public DateTime StartDate { get; set; }
 
         [Required(ErrorMessage = "Ngày kết thúc không được để trống")]
