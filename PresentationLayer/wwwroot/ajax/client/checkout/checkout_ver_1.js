@@ -978,7 +978,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 function fetchVouchers(userId) {
     var xhr = new XMLHttpRequest();
-    xhr.open('GET', `https://localhost:7241/api/Voucher/GetVoucherByIDUser/${userId}`, true);
+    xhr.open('GET', `https://localhost:7241/api/VoucherM/GetVouchersByUserId?idUser=${userId}`, true);
     xhr.setRequestHeader('accept', '*/*');
 
     xhr.onload = function () {
@@ -1033,82 +1033,91 @@ function fetchVouchers(userId) {
     xhr.send();
 }
 function applyVoucher(voucherId) {
-    var xhrVoucherUser = new XMLHttpRequest();
-    xhrVoucherUser.open('GET', `https://localhost:7241/api/VoucherUser/${voucherId}/${userId}`, true);
-    xhrVoucherUser.setRequestHeader('accept', '*/*');
+    if (userId !== null) {
+        var xhrVoucherUser = new XMLHttpRequest();
+        xhrVoucherUser.open('GET', `https://localhost:7241/api/VoucherUser/${voucherId}/${userId}`, true);
+        xhrVoucherUser.setRequestHeader('accept', '*/*');
 
-    xhrVoucherUser.onload = function () {
-        if (xhrVoucherUser.status >= 200 && xhrVoucherUser.status < 300) {
-            var voucherUser = JSON.parse(xhrVoucherUser.responseText);
+        xhrVoucherUser.onload = function () {
+            if (xhrVoucherUser.status >= 200 && xhrVoucherUser.status < 300) {
+                var voucherUser = JSON.parse(xhrVoucherUser.responseText);
 
-            if (voucherUser.status === 0) {
+                if (voucherUser.status === 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Không thể áp dụng',
+                        text: `Voucher này đã được sử dụng hoặc không khả dụng cho tài khoản này.`,
+                    });
+                    return;
+                }
+
+                checkVoucherDetails(voucherId);
+            } else {
+                console.error('Failed to fetch voucher user details:', xhrVoucherUser.statusText);
+            }
+        };
+
+        xhrVoucherUser.onerror = function () {
+            console.error('Request error...');
+        };
+
+        xhrVoucherUser.send();
+    } else {
+        checkVoucherDetails(voucherId);
+    }
+}
+
+function checkVoucherDetails(voucherId) {
+    var xhrVoucher = new XMLHttpRequest();
+    xhrVoucher.open('GET', `https://localhost:7241/api/Voucher/GetByID/${voucherId}`, true);
+    xhrVoucher.setRequestHeader('accept', '*/*');
+
+    xhrVoucher.onload = function () {
+        if (xhrVoucher.status >= 200 && xhrVoucher.status < 300) {
+            var voucher = JSON.parse(xhrVoucher.responseText);
+
+            var totalAmount = parseFloat(document.getElementById('provisional_fee').textContent.replace(/[^0-9]/g, '')) || 0;
+
+            if (voucher.isActive === 0 || voucher.isActive === 2 || voucher.quantity <= 0 || voucher.minimumAmount > totalAmount) {
                 Swal.fire({
                     icon: 'warning',
                     title: 'Không thể áp dụng',
-                    text: `Voucher này đã được sử dụng hoặc không khả dụng cho tài khoản này.`,
+                    text: `Voucher ${voucher.code} không khả dụng.`,
                 });
                 return;
             }
 
-            var xhrVoucher = new XMLHttpRequest();
-            xhrVoucher.open('GET', `https://localhost:7241/api/Voucher/GetByID/${voucherId}`, true);
-            xhrVoucher.setRequestHeader('accept', '*/*');
+            const reducedValue = calculateDiscount(voucher, totalAmount);
 
-            xhrVoucher.onload = function () {
-                if (xhrVoucher.status >= 200 && xhrVoucher.status < 300) {
-                    var voucher = JSON.parse(xhrVoucher.responseText);
+            const selectedBtn = document.querySelector(`#voucher_${voucherId} .useVoucherBtn`);
+            selectedBtn.classList.remove('btn-primary');
+            selectedBtn.classList.add('btn-success');
+            selectedBtn.textContent = 'Đã chọn';
 
-                    var totalAmount = parseFloat(document.getElementById('provisional_fee').textContent.replace(/[^0-9]/g, '')) || 0;
+            selectedVoucherId = voucherId;
+            document.getElementById('selectedVoucherCode').textContent = voucher.code;
 
-                    if (voucher.isActive === 0 || voucher.isActive === 2 || voucher.quantity <= 0 || voucher.minimumAmount > totalAmount) {
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Không thể áp dụng',
-                            text: `Voucher ${voucher.code} không khả dụng.`,
-                        });
-                        return;
-                    }
+            const couponInput = document.getElementById('coupound');
+            if (couponInput) {
+                couponInput.textContent = reducedValue.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+            } else {
+                console.error('Element with ID coupound not found.');
+            }
 
-                    const reducedValue = calculateDiscount(voucher, totalAmount);
-                    const selectedBtn = document.querySelector(`#voucher_${voucherId} .useVoucherBtn`);
-                    selectedBtn.classList.remove('btn-primary');
-                    selectedBtn.classList.add('btn-success');
-                    selectedBtn.textContent = 'Đã chọn';
-
-                    selectedVoucherId = voucherId;
-                    document.getElementById('selectedVoucherCode').textContent = voucher.code;
-
-                    const couponInput = document.getElementById('coupound');
-                    if (couponInput) {
-                        couponInput.textContent = reducedValue.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
-                    } else {
-                        console.error('Element with ID coupound not found.');
-                    }
-                    updateTotalOrder();
-                    console.log('Mã voucher được chọn:', voucher.code);
-                    voucherCode = voucher.code;
-
-                } else {
-                    console.error('Failed to fetch voucher details:', xhrVoucher.statusText);
-                }
-            };
-
-            xhrVoucher.onerror = function () {
-                console.error('Request error...');
-            };
-
-            xhrVoucher.send();
+            updateTotalOrder();
+            console.log('Mã voucher được chọn:', voucher.code);
+            voucherCode = voucher.code;
 
         } else {
-            console.error('Failed to fetch voucher user details:', xhrVoucherUser.statusText);
+            console.error('Failed to fetch voucher details:', xhrVoucher.statusText);
         }
     };
 
-    xhrVoucherUser.onerror = function () {
+    xhrVoucher.onerror = function () {
         console.error('Request error...');
     };
 
-    xhrVoucherUser.send();
+    xhrVoucher.send();
 }
 function translateOrderType(type) {
     switch (type) {

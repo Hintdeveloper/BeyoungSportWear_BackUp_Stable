@@ -27,7 +27,15 @@ function OrderList(orders) {
     orderListBody.innerHTML = '';
 
     const orderArray = Array.isArray(orders) ? orders : [orders];
-
+    if (orderArray.length === 0) { 
+        const emptyRow = document.createElement('tr');
+        emptyRow.innerHTML = `
+            <td colspan="6" style="text-align: center; font-style: italic; color: gray;">
+                Không có đơn hàng nào
+            </td>`;
+        orderListBody.appendChild(emptyRow);
+        return;
+    }
     orderArray.forEach(order => {
         const row = document.createElement('tr');
         const isCancelled = order.orderStatus === 2 || order.orderStatus === 3 || order.orderStatus === 4;
@@ -45,9 +53,9 @@ function OrderList(orders) {
                 <button class="btn btn-primary btn-sm edit" type="button" title="Sửa" onclick="navigateToUpdatePageEdit('${order.id}')">
                     <i class="fas fa-edit"></i>
                 </button>
-                <button class="btn btn-warning btn-sm edit" onclick="navigateToUpdatePage('${order.id}')" type="button" title="Sửa">
-                    <i class="fa fa-eye"></i>
-                </button>
+                    <button class="btn btn-warning btn-sm edit" onclick="viewDetails('${order.id}')" type="button" title="Sửa">
+                        <i class="fa fa-eye"></i>
+                    </button>
             </td>
         `;
         orderListBody.appendChild(row);
@@ -320,9 +328,6 @@ function formatDateTime(dateTimeString) {
 
     return date.toLocaleString('vi-VN', options) + ` ${period}`;
 }
-function navigateToUpdatePage(IDOrder) {
-    window.location.href = `/order_details_user/${IDOrder}`;
-}
 function navigateToUpdatePageEdit(IDOrder) {
     window.location.href = `/order_update_user/${IDOrder}`;
 }
@@ -384,4 +389,144 @@ function searchOrder() {
 
     xhr.send();
 }
+
+function maskPhoneNumber(phoneNumber) {
+    if (phoneNumber && phoneNumber.length > 4) {
+        return phoneNumber.slice(0, 2) + '*****' + phoneNumber.slice(-3);
+    }
+    return phoneNumber;
+}
+function maskEmail(email) {
+    if (email) {
+        const [localPart, domain] = email.split('@');
+        const maskedLocalPart = localPart.slice(0, 2) + '********' + localPart.slice(-1);
+        return maskedLocalPart + '@' + domain.replace(/(?<=.{0}).+(?=.{2})/, '*****');
+    }
+    return email;
+}
+async function viewDetails(ID) {
+    try {
+        const response = await fetch(`https://localhost:7241/api/Order/GetByIDAsync/${ID}`);
+        if (!response.ok) {
+            throw new Error('Error fetching order details');
+        }
+        const data = await response.json();
+        console.log(data)
+        document.getElementById('modalcreate').innerText = formatDateTime(data.createDate);
+        document.getElementById('modalvoucher').innerText = data.voucherCode || "Không có";
+        document.getElementById('modalhexcode').innerText = data.hexCode;
+        document.getElementById('modalcusname').innerText = data.customerName;
+        if (!jwt) {
+            document.getElementById('modalcusphone').innerText = maskPhoneNumber(data.customerPhone);
+            document.getElementById('modalemail').innerText = maskEmail(data.customerEmail);
+        } else {
+            document.getElementById('modalcusphone').innerText = data.customerPhone;
+            document.getElementById('modalemail').innerText = data.customerEmail;
+        }
+        document.getElementById('modalshipaddess').innerText = data.shippingAddress;
+        document.getElementById('modalshipaddress2').innerText = data.shippingAddressLine2 || "Không có";
+        document.getElementById('modalcosts').innerText = data.cotsts.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+        document.getElementById('modaltotal').innerText = data.totalAmount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+        document.getElementById('modalpaymentmethod').innerText = translatePaymentMethod(data.paymentMethod);
+        document.getElementById('modalpaymentstatus').innerText = translatePaymentStatus(data.paymentStatus);
+        document.getElementById('modalshippingmethod').innerText = translateShippingMethod(data.shippingMethod);
+        document.getElementById('modalorderstatus').innerText = translateOrderStatus(data.orderStatus);
+        document.getElementById('modalordertype').innerText = translateOrderType(data.orderType);
+
+        const orderBody = document.getElementById('orderBody');
+        if (orderBody) {
+            orderBody.innerHTML = '';
+            if (data.orderDetailsVM && data.orderDetailsVM.length > 0) {
+                data.orderDetailsVM.forEach(detail => {
+                    const row = `
+                        <tr>
+                            <td>${detail.productName || 'N/A'}</td>
+                            <td>${detail.sizeName || 'N/A'}</td>
+                            <td>${detail.colorName || 'N/A'}</td>
+                            <td>${detail.quantity}</td>
+                            <td>${detail.unitPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</td>
+                            <td>${detail.totalAmount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</td>
+                        </tr>
+                    `;
+                    orderBody.insertAdjacentHTML('beforeend', row);
+                });
+            } else {
+                orderBody.innerHTML = '<tr><td colspan="6">Không có chi tiết đơn hàng</td></tr>';
+            }
+        } else {
+            console.error('Không tìm thấy phần tử có id "orderBody" trong DOM.');
+        }
+
+        $('#orderModal').modal('show');
+    } catch (error) {
+        console.error('Error fetching order details:', error.message);
+    } finally {
+        //hideLoader();
+    }
+}
+function formatLink(text) {
+    var tempDiv = document.createElement('div');
+    tempDiv.innerHTML = text;
+    var links = tempDiv.querySelectorAll('a');
+    links.forEach(link => {
+        link.style.fontWeight = 'bold';
+        link.addEventListener('click', function (event) {
+            event.preventDefault();
+            var userID = link.getAttribute('href');
+            getUserInfoByID(userID);
+        });
+    });
+    return tempDiv.innerHTML;
+}
+function getUserInfoByID(userID) {
+    var apiUrl = `https://localhost:7241/api/ApplicationUser/GetInformationUser/${userID}`;
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', apiUrl, true);
+
+    xhr.onload = function () {
+        if (xhr.readyState === xhr.DONE) {
+            if (xhr.status === 200) {
+                var user = JSON.parse(xhr.responseText);
+
+                document.getElementById('userName').textContent = user.username;
+                document.getElementById('firstAndLastName').textContent = user.firstAndLastName;
+                document.getElementById('userEmail').textContent = user.email;
+                document.getElementById('userPhoneNumber').textContent = user.phoneNumber;
+                document.getElementById('roleName').textContent = user.roleName;
+                document.getElementById('userImage').src = user.images || 'default-image-url.jpg';
+
+                $('#editUserModal').modal('show');
+            } else {
+                console.error('Request failed. Status:', xhr.status);
+            }
+        }
+    };
+
+    xhr.onerror = function () {
+        console.error('Request failed. Network error.');
+    };
+
+    xhr.send();
+}
+
+
+function handleUserLinkClick(event) {
+    event.preventDefault();
+    var userID = this.getAttribute('data-user-id');
+    getUserInfoByID(userID);
+}
+
+function addClickEventToUserLinks() {
+    document.querySelectorAll('a[data-user-id]').forEach(link => {
+        link.style.fontWeight = 'bold';
+        link.removeEventListener('click', handleUserLinkClick);
+        link.addEventListener('click', handleUserLinkClick);
+    });
+}
+
+const observer = new MutationObserver(addClickEventToUserLinks);
+observer.observe(document.body, { childList: true, subtree: true });
+
+addClickEventToUserLinks();
 

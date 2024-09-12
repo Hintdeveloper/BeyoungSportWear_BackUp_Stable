@@ -45,6 +45,7 @@ builder.Services.AddTransient<IMaterialService, MaterialService>();
 builder.Services.AddTransient<IColorService, ColorService>();
 builder.Services.AddTransient<IApplicationUserService, ApplicationUserService>();
 builder.Services.AddTransient<IVoucherMServiece, VoucherMServiece>();
+builder.Services.AddTransient<IVoucherService, VoucherService>();
 builder.Services.AddTransient<IVoucherUserService, VoucherUserService>();
 builder.Services.AddTransient<ApplicationDBContext>();
 

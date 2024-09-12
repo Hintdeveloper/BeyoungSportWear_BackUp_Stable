@@ -133,7 +133,6 @@ namespace BusinessLogicLayer.Services.Implements
 
             return vouchers;
         }
-
         public async Task<List<GetAllVoucherVM>> GetAllAsync()
         {
             var vouchers = await _dbcontext.Voucher
@@ -162,7 +161,6 @@ namespace BusinessLogicLayer.Services.Implements
 
             return vouchers;
         }
-
         public async Task<GetAllVoucherVM> GetByIDAsync(Guid ID)
         {
             var obj = await _dbcontext.Voucher.FindAsync(ID);
@@ -190,7 +188,6 @@ namespace BusinessLogicLayer.Services.Implements
 
             return voucherVM;
         }
-
         public async Task<List<UserVM>> GetClientsAsync()
         {
             var role = await _roleManager.FindByNameAsync("Client");
@@ -210,7 +207,6 @@ namespace BusinessLogicLayer.Services.Implements
 
             return clientList;
         }
-
         public async Task<bool> RemoveAsync(Guid ID, string IDUserdelete)
         {         
                 try
@@ -237,7 +233,6 @@ namespace BusinessLogicLayer.Services.Implements
                     return false;
                 }     
         }
-
         public async Task<IEnumerable<GetAllVoucherVM>> SearchVouchersAsync(string input)
         {
             var vouchers = await _dbcontext.Voucher
@@ -271,7 +266,6 @@ namespace BusinessLogicLayer.Services.Implements
 
             return filteredVouchers;
         }
-
         public async Task<bool> UpdateAsync(Guid ID, UpdateVoucherVM request)
         {
             var voucher = await _dbcontext.Voucher.FindAsync(ID);
@@ -293,7 +287,6 @@ namespace BusinessLogicLayer.Services.Implements
             await _dbcontext.SaveChangesAsync();
             return true;
         }
-
         public async Task UpdateVoucherStatusesAsync()
             {
             var today = DateTime.Now; 
@@ -333,7 +326,6 @@ namespace BusinessLogicLayer.Services.Implements
             
             await _dbcontext.SaveChangesAsync();
         }
-
         public async Task<bool> UpdateVoucherUser(Guid id, UpdateVC request)
         {
             var voucher = await _dbcontext.Voucher
@@ -510,6 +502,7 @@ namespace BusinessLogicLayer.Services.Implements
                                               {
                                                   ID = vu.ID,
                                                   MinimumAmount = vu.MinimumAmount,
+                                                  MaximumAmount = vu.MaximumAmount,
                                                   Code = vu.Code,
                                                   Name = vu.Name,
                                                   StartDate = vu.StartDate,
@@ -517,7 +510,7 @@ namespace BusinessLogicLayer.Services.Implements
                                                   Quantity = vu.Quantity,
                                                   ReducedValue = vu.ReducedValue,
                                                   IsActive = vu.IsActive,
-                                                  status = 0,
+                                                  Status = 0,
                                               })
                                               .ToListAsync();
             }
@@ -531,8 +524,10 @@ namespace BusinessLogicLayer.Services.Implements
                                                 .Select(vu => new VoucherViewModel
                                                 {
                                                     ID = vu.IDVoucher,
-                                                    IDUser = Guid.Parse(vu.IDUser),
+                                                    IDUser = vu.IDUser,
                                                     MinimumAmount = vu.Voucher.MinimumAmount,
+                                                    MaximumAmount = vu.Voucher.MaximumAmount,
+
                                                     Code = vu.Voucher.Code,
                                                     Name = vu.Voucher.Name,
                                                     StartDate = vu.Voucher.StartDate,
@@ -540,7 +535,7 @@ namespace BusinessLogicLayer.Services.Implements
                                                     Quantity = vu.Voucher.Quantity,
                                                     ReducedValue = vu.Voucher.ReducedValue,
                                                     IsActive = vu.Voucher.IsActive,
-                                                    status = vu.Status,
+                                                    Status = vu.Status,
                                                 })
                                                 .ToListAsync();
 
@@ -553,6 +548,8 @@ namespace BusinessLogicLayer.Services.Implements
                                                           {
                                                               ID = v.ID,
                                                               MinimumAmount = v.MinimumAmount,
+                                                              MaximumAmount = v.MaximumAmount,
+
                                                               Code = v.Code,
                                                               Name = v.Name,
                                                               StartDate = v.StartDate,
@@ -560,7 +557,7 @@ namespace BusinessLogicLayer.Services.Implements
                                                               Quantity = v.Quantity,
                                                               ReducedValue = v.ReducedValue,
                                                               IsActive = v.IsActive,
-                                                              status = 0,
+                                                              Status = 0,
                                                           })
                                                           .ToListAsync();
 

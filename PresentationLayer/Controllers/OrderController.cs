@@ -14,11 +14,7 @@ namespace PresentationLayer.Controllers
         {
             return View();
         }
-        [HttpGet("order_details_user/{IDOrder}")]
-        public async Task<IActionResult> OrderDetails(Guid IDOrder)
-        {
-            return View();
-        }
+
         [HttpGet("order_update_user/{ID}")]
         public async Task<IActionResult> OrderUpdate(Guid ID)
         {

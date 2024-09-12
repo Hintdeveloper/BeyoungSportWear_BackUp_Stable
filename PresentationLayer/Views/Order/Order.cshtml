@@ -1,0 +1,82 @@
+﻿@{
+    ViewData["Title"] = "OrderUser";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container">
+    <div id="order-list" class="col-md-12">
+        <h2 style="text-align: center; margin-bottom: 20px;">Danh sách đơn hàng</h2>
+        <div style="margin-bottom: 20px; text-align: right;">
+            <input type="text" id="searchHexCode" placeholder="Nhập mã HexCode" style="padding: 5px; border-radius: 4px; border: 1px solid #ccc;">
+            <button onclick="searchOrder()" style="padding: 5px 10px; border-radius: 4px; background-color: #007bff; color: white; border: none;">Tìm kiếm</button>
+        </div>
+
+        <table class="table table-striped" style="width: 100%; border-collapse: collapse;">
+            <thead style="background-color: #f4f4f4; font-weight: bold;">
+                <tr>
+                    <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">Mã đơn hàng</th>
+                    <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">Thời gian mua hàng</th>
+                    <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">Thanh toán</th>
+                    <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">Tổng tiền</th>
+                    <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">Trạng thái đơn hàng</th>
+                    <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">Tính năng</th>
+                </tr>
+            </thead>
+            <tbody id="orders"></tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="orderModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document" style="max-width: 80%; margin: 50px auto;">
+        <div class="modal-content" style="border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);">
+            <div class="container" style="padding: 20px;">
+                <!-- Tiêu đề đơn hàng -->
+                <h2 style="text-align: center; font-size: 1.5rem; margin-bottom: 20px;">Chi tiết Đơn Hàng</h2>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Ngày tạo đơn:</strong> <span id="modalcreate"></span></p>
+                        <p><strong>Voucher (nếu có):</strong> <span id="modalvoucher"></span></p>
+                        <p><strong>Hex Code:</strong> <span id="modalhexcode"></span></p>
+                        <p><strong>Họ và tên:</strong> <span id="modalcusname"></span></p>
+                        <p><strong>Số điện thoại:</strong> <span id="modalcusphone"></span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Email:</strong> <span id="modalemail"></span></p>
+                        <p><strong>Địa chỉ nhận hàng:</strong> <span id="modalshipaddess"></span></p>
+                        <p><strong>Địa chỉ cụ thể:</strong> <span id="modalshipaddress2"></span></p>
+                        <p><strong>Phí giao hàng (nếu có):</strong> <span id="modalcosts"></span></p>
+                        <p><strong>Tổng giá:</strong> <span id="modaltotal"></span></p>
+                        <p><strong>Hình thức thanh toán:</strong> <span id="modalpaymentmethod"></span></p>
+                        <p><strong>Trạng thái thanh toán:</strong> <span id="modalpaymentstatus"></span></p>
+                        <p><strong>Hình thức vận chuyển:</strong> <span id="modalshippingmethod"></span></p>
+                        <p><strong>Trạng thái đơn hàng:</strong> <span id="modalorderstatus"></span></p>
+                        <p><strong>Kiểu đơn hàng:</strong> <span id="modalordertype"></span></p>
+                    </div>
+                </div>
+
+                <div class="order-details" style="margin-top: 20px;">
+                    <h2 style="font-size: 1.25rem; border-bottom: 2px solid #0275d8; padding-bottom: 10px; margin-bottom: 10px;">
+                        Chi tiết sản phẩm
+                    </h2>
+                    <table class="table" style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                        <thead>
+                            <tr>
+                                <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ddd; background-color: #f4f4f4;">Tên sản phẩm</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ddd; background-color: #f4f4f4;">Kích thước</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ddd; background-color: #f4f4f4;">Màu sắc</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ddd; background-color: #f4f4f4;">Số lượng</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ddd; background-color: #f4f4f4;">Giá bán lẻ</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ddd; background-color: #f4f4f4;">Tổng giá</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orderBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" src="~/ajax/client/order/order_index.js"></script>
