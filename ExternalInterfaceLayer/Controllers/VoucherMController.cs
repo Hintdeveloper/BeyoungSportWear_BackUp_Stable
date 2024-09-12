@@ -28,18 +28,18 @@ namespace ExternalInterfaceLayer.Controllers
 
             return Ok(new { status = "Success", message = "Successfully." });
         }
-        [HttpPut("EditVoucher/{ID}")]
-        public async Task<IActionResult> UpdateVoucher(Guid ID, [FromBody] UpdateVoucherVM voucherUpdateVM)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+        //[HttpPut("EditVoucher/{ID}")]
+        //public async Task<IActionResult> UpdateVoucher(Guid ID, [FromBody] UpdateVoucherVM voucherUpdateVM)
+        //{
+        //    if (!ModelState.IsValid)
+        //        return BadRequest(ModelState);
 
-            var updated = await _voucherService.UpdateAsync(ID, voucherUpdateVM);
-            if (!updated)
-                return BadRequest("Could not update voucher");
+        //    var updated = await _voucherService.UpdateAsync(ID, voucherUpdateVM);
+        //    if (!updated)
+        //        return BadRequest("Could not update voucher");
 
-            return Ok(new { status = "Success", message = "Successfully." });
-        }
+        //    return Ok(new { status = "Success", message = "Successfully." });
+        //}
 
         [HttpDelete("Delete/{ID}/{IDUserDelete}")]
         public async Task<IActionResult> DeleteVoucher(Guid ID, string IDUserdelete)
