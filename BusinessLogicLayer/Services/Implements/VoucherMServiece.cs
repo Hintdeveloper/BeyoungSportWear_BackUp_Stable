@@ -70,7 +70,7 @@ namespace BusinessLogicLayer.Services.Implements
                         {
                             IDUser = userId,
                             IDVoucher = newVoucher.ID,
-                            Status = 1,
+                            Status = 0,
                             CreateBy = request.CreateBy
                         };
                         await _dbcontext.VoucherUser.AddAsync(voucherUser);
