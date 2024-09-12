@@ -209,6 +209,7 @@ namespace PresentationLayer.Areas.Admin.Controllers
 
             if (string.IsNullOrEmpty(input))
             {
+                TempData["SuccessMessage"] = "Bạn chưa nhập giá trị tìm kiếm . Tìm kiếm không thành công";
                 // Nếu input là null hoặc trống, lấy danh sách tất cả voucher
                 var url = "https://localhost:7241/api/VoucherM/getall"; 
                 var response = await client.GetAsync(url);
@@ -384,38 +385,81 @@ namespace PresentationLayer.Areas.Admin.Controllers
         [HttpGet("search-by-date")]
         public async Task<IActionResult> SearchByDate(DateTime startDate, DateTime endDate)
         {
-            // Tạo HttpClient từ HttpClientFactory
-            var client = _httpClientFactory.CreateClient();
-
-            // Gọi API để lấy danh sách voucher theo ngày
-            var response = await client.GetAsync($"https://localhost:7241/api/VoucherM/filter-by-date?startDate={startDate:yyyy-MM-dd}&endDate={endDate:yyyy-MM-dd}");
-
-            if (!response.IsSuccessStatusCode)
+            if (startDate == DateTime.MinValue || endDate == DateTime.MinValue)
             {
-                ViewBag.ErrorMessage = "Lỗi khi lấy dữ liệu từ API.";
-                return View("Index", new List<GetAllVoucherVM>()); // Trả về view Index rỗng
+                var client = _httpClientFactory.CreateClient();
+
+                TempData["SuccessMessage"] = "Bạn nhập thiếu ngày bắt đầu hoặc ngày kết thúc . Lọc không thành công";
+                var url = "https://localhost:7241/api/VoucherM/getall";
+                var response = await client.GetAsync(url);
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonResponse = await response.Content.ReadAsStringAsync();
+                    var vouchers = JsonConvert.DeserializeObject<List<GetAllVoucherVM>>(jsonResponse);
+                    return View("Index", vouchers);
+                }
+                else
+                {
+                    // Xử lý lỗi nếu cần
+                    return View("Index"); // Hoặc một trang lỗi phù hợp
+                }
             }
+            else
+            {
+                // Tạo HttpClient từ HttpClientFactory
+                var client = _httpClientFactory.CreateClient();
 
-            var vouchers = await response.Content.ReadFromJsonAsync<List<GetAllVoucherVM>>();
+                // Gọi API để lấy danh sách voucher theo ngày
+                var response = await client.GetAsync($"https://localhost:7241/api/VoucherM/filter-by-date?startDate={startDate:yyyy-MM-dd}&endDate={endDate:yyyy-MM-dd}");
 
-            return View("Index", vouchers); // Sử dụng lại view Index với dữ liệu từ API
+                if (!response.IsSuccessStatusCode)
+                {
+                    ViewBag.ErrorMessage = "Lỗi khi lấy dữ liệu từ API.";
+                    return View("Index", new List<GetAllVoucherVM>()); // Trả về view Index rỗng
+                }
+
+                var vouchers = await response.Content.ReadFromJsonAsync<List<GetAllVoucherVM>>();
+
+                return View("Index", vouchers); // Sử dụng lại view Index với dữ liệu từ API
+            }
         }
 
         [HttpGet("search-by-status")]
         public async Task<IActionResult> SearchByStatus(int isActive)
         {
-            var client = _httpClientFactory.CreateClient();
-            var response = await client.GetAsync($"https://localhost:7241/api/VoucherM/search-by-status?isActive={isActive}");
+            if (isActive == 5) {
+                var client = _httpClientFactory.CreateClient();
 
-            if (!response.IsSuccessStatusCode)
-            {
-                ViewBag.ErrorMessage = "Lỗi khi lấy dữ liệu từ API.";
-                return View("Index", new List<GetAllVoucherVM>()); // Trả về view Index rỗng
+                TempData["SuccessMessage"] = "Trạng thái chọn không xác định lọc không thành công";
+                var url = "https://localhost:7241/api/VoucherM/getall";
+                var response = await client.GetAsync(url);
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonResponse = await response.Content.ReadAsStringAsync();
+                    var vouchers = JsonConvert.DeserializeObject<List<GetAllVoucherVM>>(jsonResponse);
+                    return View("Index", vouchers);
+                }
+                else
+                {
+                    // Xử lý lỗi nếu cần
+                    return View("Index"); // Hoặc một trang lỗi phù hợp
+                }
             }
+            else
+            {
+                var client = _httpClientFactory.CreateClient();
+                var response = await client.GetAsync($"https://localhost:7241/api/VoucherM/search-by-status?isActive={isActive}");
 
-            var vouchers = await response.Content.ReadFromJsonAsync<List<GetAllVoucherVM>>();
+                if (!response.IsSuccessStatusCode)
+                {
+                    ViewBag.ErrorMessage = "Lỗi khi lấy dữ liệu từ API.";
+                    return View("Index", new List<GetAllVoucherVM>()); // Trả về view Index rỗng
+                }
 
-            return View("Index", vouchers);
+                var vouchers = await response.Content.ReadFromJsonAsync<List<GetAllVoucherVM>>();
+
+                return View("Index", vouchers);
+            }
         }
 
 

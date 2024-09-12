@@ -509,7 +509,6 @@ namespace BusinessLogicLayer.Services.Implements
                                               .Select(vu => new VoucherViewModel
                                               {
                                                   ID = vu.ID,
-                                                 
                                                   MinimumAmount = vu.MinimumAmount,
                                                   Code = vu.Code,
                                                   Name = vu.Name,
@@ -518,7 +517,7 @@ namespace BusinessLogicLayer.Services.Implements
                                                   Quantity = vu.Quantity,
                                                   ReducedValue = vu.ReducedValue,
                                                   IsActive = vu.IsActive,
-                                                  
+                                                  status = 0,
                                               })
                                               .ToListAsync();
             }
@@ -526,7 +525,7 @@ namespace BusinessLogicLayer.Services.Implements
             {
                 var connectedVouchers = await _dbcontext.VoucherUser
                                                 .Where(vu => vu.IDUser == idUser
-                                                          && vu.Status == 1
+                                                          //&& vu.Status == 0
                                                           && vu.Voucher.Status == 1
                                                           && vu.Voucher.IsActive == StatusVoucher.IsBeginning)
                                                 .Select(vu => new VoucherViewModel
@@ -561,6 +560,7 @@ namespace BusinessLogicLayer.Services.Implements
                                                               Quantity = v.Quantity,
                                                               ReducedValue = v.ReducedValue,
                                                               IsActive = v.IsActive,
+                                                              status = 0,
                                                           })
                                                           .ToListAsync();
 
