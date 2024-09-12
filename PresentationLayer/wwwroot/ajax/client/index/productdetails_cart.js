@@ -152,9 +152,10 @@ function fetchProductDetails() {
         xhr.onload = function () {
             if (xhr.status === 200) {
                 const data = JSON.parse(xhr.responseText);
+                console.log('data:', data);
 
                 document.getElementById('retal_price').innerText = data.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
-                document.getElementById('quantity').innerText = `Số lượng: ${data.quantity}`;
+                document.getElementById('quantity').innerText = `Số lượng: ${data.stockQuantity}`;
 
                 selectedIdOptions = data.idOptions;
                 const quantityInput = document.getElementById('quantityInput');
@@ -164,6 +165,7 @@ function fetchProductDetails() {
                     idOptions: selectedIdOptions,
                     quantity: quantity,
                 };
+                console.log('selectedIdOptions:', selectedIdOptions);
 
                 if (!product.idOptions || product.quantity < 1) {
                     Swal.fire({

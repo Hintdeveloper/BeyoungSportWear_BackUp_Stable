@@ -463,8 +463,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     });
                 } else {
                     console.log('có');
-                    checkOutOfStock().then(hasOutOfStockItem => {
-                        if (hasOutOfStockItem) {
+                    checkOutOfStock().then(({ hasOutOfStock, outOfStockOptions }) => {
+                        if (hasOutOfStock) {
                             event.preventDefault();
                             Swal.fire({
                                 icon: 'error',
@@ -532,7 +532,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 reverseButtons: true
             }).then((result) => {
                 if (result.isConfirmed) {
-                    deleteCartItem(idCart, idOptions);
+                    deleteCartOption(idCart, idOptions);
                 } else {
                     console.log('Xóa sản phẩm bị hủy.');
                 }

@@ -59,8 +59,6 @@ function getUserIdFromJwt(jwt) {
 }
 const jwt = getJwtFromCookie();
 const userId = getUserIdFromJwt(jwt);
-const jwt = getJwtFromCookie();
-const userId = getUserIdFromJwt(jwt);
 function checkAuthentication() {
     if (!jwt || !userId) {
         window.location.href = '/login';
@@ -96,45 +94,81 @@ function getOptions() {
 function renderOptions(data) {
     const tableBody = document.getElementById('productTableBody');
     tableBody.innerHTML = '';
+   
 
-    const productMap = {};
+    if (Array.isArray(data)) {
+        const productMap = {};
 
-    data.forEach(product => {
-        const key = `${product.keyCode}_${product.productName}`;
-        if (!productMap[key]) {
-            productMap[key] = [];
-        }
-        productMap[key].push(product);
-    });
-
-    Object.keys(productMap).forEach(key => {
-        const productOptions = productMap[key];
-        let isFirstRow = true;
-
-        productOptions.forEach(option => {
-            const row = document.createElement('tr');
-            const currentStock = stockQuantities[option.id] || option.stockQuantity;
-
-            row.innerHTML = `
-                <td>${isFirstRow ? `${option.productName}<br> (${option.keyCode})` : ''}</td>
-                <td class="col-2 text-center">${option.colorName} - ${option.sizesName} <p id="stock_quantity_${option.id}">(SLT: ${currentStock})</p></td>
-                <td class="col-2 text-center"><img src="${option.imageURL}" alt="${option.productName}" style="width: 50px; height: auto;"></td>
-                <td class="col-2 text-center" id="retail_price_options" style="width:70px">${option.retailPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</td>
-                <td class="col-2 text-center"><input type="number" id="quantity_options_${option.id}" value="1" min="1" style="width: 80px; text-align: center;"></td>
-                <td class="text-center">
-                    <button class="btn btn-primary add-product" data-option-id="${option.id}"><i class="fas fa-plus-circle"></i></button>
-                    <button class="btn btn-primary btn-sm view" type="button" title="Xem chi tiết"> <i class="fas fa-eye"></i></button>
-                </td>
-            `;
-
-            tableBody.appendChild(row);
-            isFirstRow = false;
+        data.forEach(product => {
+            const key = `${product.keyCode}_${product.productName}`;
+            if (!productMap[key]) {
+                productMap[key] = [];
+            }
+            productMap[key].push(product);
         });
-    });
+
+        Object.keys(productMap).forEach(key => {
+            const productOptions = productMap[key];
+            let isFirstRow = true;
+
+            productOptions.forEach(option => {
+                const row = document.createElement('tr');
+                const currentStock = stockQuantities[option.id] || option.stockQuantity;
+
+                row.innerHTML = `
+                    <td>${isFirstRow ? `${option.productName}<br> (${option.keyCode})` : ''}</td>
+                    <td class="col-2 text-center">${option.colorName} - ${option.sizesName} <p id="stock_quantity_${option.id}">(SLT: ${currentStock})</p></td>
+                    <td class="col-2 text-center"><img src="${option.imageURL}" alt="${option.productName}" style="width: 50px; height: auto;"></td>
+                    <td class="col-2 text-center" id="retail_price_options" style="width:70px">${option.retailPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</td>
+                    <td class="col-2 text-center"><input type="number" id="quantity_options_${option.id}" value="1" min="1" style="width: 80px; text-align: center;" oninput="validateQuantity(this)"></td>
+                    <td class="text-center">
+                        <button class="btn btn-primary add-product" data-option-id="${option.id}"><i class="fas fa-plus-circle"></i></button>
+                        <button class="btn btn-primary btn-sm view" type="button" title="Xem chi tiết"> <i class="fas fa-eye"></i></button>
+                    </td>
+                `;
+
+                tableBody.appendChild(row);
+                isFirstRow = false;
+            });
+        });
+    } else if (data && typeof data === 'object') {
+        const row = document.createElement('tr');
+        const currentStock = stockQuantities[data.id] || data.stockQuantity;
+
+        row.innerHTML = `
+            <td>${data.productName}<br> (${data.keyCode})</td>
+            <td class="col-2 text-center">${data.colorName} - ${data.sizesName} <p id="stock_quantity_${data.id}">(SLT: ${currentStock})</p></td>
+            <td class="col-2 text-center"><img src="${data.imageURL}" alt="${data.productName}" style="width: 50px; height: auto;"></td>
+            <td class="col-2 text-center" id="retail_price_options" style="width:70px">${data.retailPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</td>
+            <td class="col-2 text-center"><input type="number" id="quantity_options_${data.id}" value="1" min="1" style="width: 80px; text-align: center;" oninput="validateQuantity(this)"></td>
+            <td class="text-center">
+                <button class="btn btn-primary add-product" data-option-id="${data.id}"><i class="fas fa-plus-circle"></i></button>
+                <button class="btn btn-primary btn-sm view" type="button" title="Xem chi tiết"> <i class="fas fa-eye"></i></button>
+            </td>
+        `;
+
+        tableBody.appendChild(row);
+    } else {
+        console.error('Dữ liệu trả về không phải là mảng hoặc đối tượng mong đợi.');
+    }
 
     tableBody.removeEventListener('click', handleAddProduct);
     tableBody.addEventListener('click', handleAddProduct);
 }
+function validateQuantity(input) {
+    const min = 1;
+    let value = parseInt(input.value);
+
+    if (isNaN(value) || value < min) {
+        input.value = min;
+        toastr.error('Số lượng phải là số nguyên dương và lớn hơn 0.', 'Lỗi nhập liệu');
+    }
+
+    if (!Number.isInteger(value)) {
+        input.value = Math.floor(value);
+    }
+}
+
 function handleAddProduct(event) {
     const target = event.target;
     if (target.classList.contains('add-product') || target.parentElement.classList.contains('add-product')) {
@@ -462,8 +496,15 @@ function increaseQuantity(button) {
             if (xhr.status === 200) {
                 const option = JSON.parse(xhr.responseText);
                 const stockQuantity = option.stockQuantity;
-
-                if (currentQuantity < stockQuantity) {
+                if (stockQuantity === 0) {
+                    Swal.fire(
+                        'Lỗi!',
+                        'Số lượng sản phẩm không đủ!',
+                        'error'
+                    );
+                    return;
+                }
+                if (currentQuantity !== 0) {
                     currentQuantity += 1;
                     quantityElement.textContent = currentQuantity;
 
@@ -481,12 +522,8 @@ function increaseQuantity(button) {
 
                     stockQuantities[optionId] = stockQuantity + 1;
                     selectedQuantities[optionId] = currentQuantity;
-                    updateProductQuantity(option.id, selectedQuantities[optionId]);
 
-                    console.log('stockQuantities[optionId]', stockQuantities[optionId]);
-                    console.log('selectedQuantities[optionId]', selectedQuantities[optionId]);
-                    updateStockDisplay(optionId, stockQuantities[optionId]);
-
+                    // Cập nhật số lượng sản phẩm chỉ khi API trả về mã 200
                     const xhrUpdate = new XMLHttpRequest();
                     xhrUpdate.open('POST', 'https://localhost:7241/api/Options/decrease-quantity', true);
                     xhrUpdate.setRequestHeader('Content-Type', 'application/json');
@@ -495,9 +532,14 @@ function increaseQuantity(button) {
                     xhrUpdate.onreadystatechange = function () {
                         if (xhrUpdate.readyState === XMLHttpRequest.DONE) {
                             if (xhrUpdate.status === 200) {
+                                updateProductQuantity(option.id, selectedQuantities[optionId]);
+                                updateStockDisplay(optionId, stockQuantity - 1);
                                 calculateSubtotal();
+
+                                connection.invoke("UpdateProductQuantity", optionId, stockQuantities[optionId])
+                                    .catch(err => console.error('Error sending stock update:', err));
                             } else {
-                                console.error('Error:', xhrUpdate.status, xhrUpdate.statusText);
+                                console.error('Error updating quantity:', xhrUpdate.status, xhrUpdate.statusText);
                                 console.error('Response Text:', xhrUpdate.responseText);
                             }
                         }
@@ -509,8 +551,6 @@ function increaseQuantity(button) {
                     });
                     xhrUpdate.send(requestData);
 
-                    connection.invoke("UpdateProductQuantity", optionId, stockQuantities[optionId])
-                        .catch(err => console.error('Error sending stock update:', err));
                 } else {
                     Swal.fire({
                         icon: 'error',
@@ -561,11 +601,8 @@ function decreaseQuantity(button) {
                     stockQuantities[optionId] = stockQuantity + 1;
                     selectedQuantities[optionId] = currentQuantity;
                     updateProductQuantity(option.id, selectedQuantities[optionId]);
-                    console.log('stockQuantities[optionId]', stockQuantities[optionId]);
-                    console.log('selectedQuantities[optionId]', selectedQuantities[optionId]);
 
-                    updateStockDisplay(optionId, stockQuantities[optionId]);
-
+                    updateStockDisplay(optionId, stockQuantity + 1);
                     const xhrUpdate = new XMLHttpRequest();
                     xhrUpdate.open('POST', 'https://localhost:7241/api/Options/increase-quantity', true);
                     xhrUpdate.setRequestHeader('Content-Type', 'application/json');
@@ -603,6 +640,7 @@ function decreaseQuantity(button) {
             text: 'Số lượng không thể giảm xuống dưới 1.',
             confirmButtonText: 'OK'
         });
+        return;
     }
 }
 function removeProduct(button) {
@@ -651,8 +689,8 @@ function removeProduct(button) {
                     if (xhrUpdate.readyState === XMLHttpRequest.DONE) {
                         if (xhrUpdate.status === 200) {
                             calculateSubtotal();
-                            toastr.success('Sản phẩm đã được xóa thành công và số lượng tồn kho đã được cập nhật.', 'Thành công');
-
+                            getOptions();
+                            toastr.success('Cập nhật thành công!', 'Thành công');
                         } else {
                             console.error('Error:', xhrUpdate.status, xhrUpdate.statusText);
                             console.error('Response Text:', xhrUpdate.responseText);
@@ -690,46 +728,20 @@ window.addToSelectedProducts = function (optionId) {
 
                 const currentStockQuantity = stockQuantities[optionId] || option.stockQuantity;
                 const totalQuantity = (selectedQuantities[optionId] || 0) + newQuantity;
+                console.log('option', option);
+                console.log('totalQuantity', totalQuantity);
+                console.log('currentStockQuantity', currentStockQuantity);
 
-                if (totalQuantity > currentStockQuantity) {
+                if (currentStockQuantity === 0) {
                     Swal.fire(
                         'Lỗi!',
-                        'Số lượng sản phẩm vượt quá số lượng tồn kho!',
+                        'Số lượng sản phẩm không đủ!',
                         'error'
                     );
                     return;
                 }
-                selectedQuantities[optionId] = totalQuantity;
-                let totalPrice = option.retailPrice * newQuantity;
-                if (Number.isNaN(totalPrice) || !Number.isFinite(totalPrice)) {
-                    console.error('Invalid totalPrice:', totalPrice);
-                    return;
-                }
-                const noProductsMessage = document.getElementById('noProductsMessage');
-                if (noProductsMessage) {
-                    noProductsMessage.remove();
-                }
 
-                let productRow = Array.from(selectedProductsList.children).find(row => row.dataset.optionId === optionId);
-
-                if (productRow) {
-                    const quantityElement = productRow.querySelector('.product-quantity');
-                    const oldQuantity = parseInt(quantityElement.textContent) || 0;
-                    quantityElement.textContent = oldQuantity + newQuantity;
-
-                    const priceElement = productRow.querySelector('.product-total');
-                    const currentPrice = parseFloat(priceElement.textContent.replace(/\D/g, ''));
-                    const newPrice = currentPrice + totalPrice;
-                    priceElement.textContent = newPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
-
-                } else {
-                    productRow = createProductRow(option, newQuantity, totalPrice, optionId);
-                    selectedProductsList.appendChild(productRow);
-                }
-
-                stockQuantities[optionId] = currentStockQuantity - newQuantity;
-                updateStockDisplay(optionId, stockQuantities[optionId]);
-
+                // Tạo request để giảm số lượng sản phẩm
                 const xhrUpdate = new XMLHttpRequest();
                 xhrUpdate.open('POST', 'https://localhost:7241/api/Options/decrease-quantity', true);
                 xhrUpdate.setRequestHeader('Content-Type', 'application/json');
@@ -738,8 +750,46 @@ window.addToSelectedProducts = function (optionId) {
                 xhrUpdate.onreadystatechange = function () {
                     if (xhrUpdate.readyState === XMLHttpRequest.DONE) {
                         if (xhrUpdate.status === 200) {
+                            // Chỉ cập nhật giao diện khi API trả về mã 200
+                            selectedQuantities[optionId] = totalQuantity;
+                            let totalPrice = option.retailPrice * newQuantity;
+                            if (Number.isNaN(totalPrice) || !Number.isFinite(totalPrice)) {
+                                toastr.error('Số lượng không hợp lệ.', 'Lỗi nhập liệu');
+                                return;
+                            }
+
+                            const noProductsMessage = document.getElementById('noProductsMessage');
+                            if (noProductsMessage) {
+                                noProductsMessage.remove();
+                            }
+
+                            let productRow = Array.from(selectedProductsList.children).find(row => row.dataset.optionId === optionId);
+
+                            if (productRow) {
+                                const quantityElement = productRow.querySelector('.product-quantity');
+                                const oldQuantity = parseInt(quantityElement.textContent) || 0;
+                                quantityElement.textContent = oldQuantity + newQuantity;
+
+                                const priceElement = productRow.querySelector('.product-total');
+                                const currentPrice = parseFloat(priceElement.textContent.replace(/\D/g, ''));
+                                const newPrice = currentPrice + totalPrice;
+                                priceElement.textContent = newPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+
+                            } else {
+                                productRow = createProductRow(option, newQuantity, totalPrice, optionId);
+                                selectedProductsList.appendChild(productRow);
+                            }
+
+                            stockQuantities[optionId] = currentStockQuantity - newQuantity;
+                            updateStockDisplay(optionId, stockQuantities[optionId]);
+
                             connection.invoke("UpdateProductQuantity", optionId, stockQuantities[optionId])
                                 .catch(err => console.error('Error sending stock update:', err));
+
+                            addToOrderDetails(option.id, newQuantity);
+                            updateSubmitButtonState();
+                            calculateSubtotal();
+
                         } else {
                             console.error('Error updating stock quantity:', xhrUpdate.statusText);
                         }
@@ -753,14 +803,9 @@ window.addToSelectedProducts = function (optionId) {
 
                 xhrUpdate.send(requestData);
 
-                addToOrderDetails(option.id, newQuantity);
-                updateSubmitButtonState();
-                calculateSubtotal();
-
             } else {
                 console.error('Error fetching option:', xhr.statusText);
             }
-
         }
     };
     xhr.send();
@@ -779,9 +824,11 @@ function createProductRow(option, newQuantity, totalPrice, optionId) {
         <td class="text-center">Size: ${option.sizesName}<br> Color: ${option.colorName}</td>
         <td class="text-center product-price">${option.retailPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</td>
         <td class="text-center">
-            <button id="btn_decreaseQuantity" onclick="decreaseQuantity(this)" style="padding: 3px 6px; background-color: #f44336; color: white; border: none; border-radius: 4px; margin-right: 5px;">-</button>
+            <button id="btn_decreaseQuantity" onclick="decreaseQuantity(this)" 
+                style="padding: 3px 6px; background-color: #f44336; color: white; border: none; border-radius: 4px; margin-right: 5px;">-</button>
             <span class="product-quantity">${newQuantity}</span>
-            <button id="btn_increaseQuantity" onclick="increaseQuantity(this)" style="padding: 3px 6px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; margin-left: 5px;">+</button>
+            <button id="btn_increaseQuantity" onclick="increaseQuantity(this)" 
+                style="padding: 3px 6px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; margin-left: 5px;">+</button>
         </td>
         <td class="text-center product-total">${totalPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</td>
         <td class="text-center">
@@ -889,8 +936,6 @@ function saveDataToCookies() {
     const tabName = invoiceNumberDisplay.replace('Hóa đơn số: ', '').replace(/\s/g, '');
 
     document.cookie = `${'HoaDon' + tabName}=${encodeURIComponent(JSON.stringify(data))}; path=/; max-age=86400;`;
-
-    console.log('Data saved to cookies:', data);
 }
 function getCookie(name) {
     const nameEQ = name + "=";
@@ -980,11 +1025,20 @@ function attachEventListeners() {
         const decreaseBtn = document.getElementById('btn_decreaseQuantity');
         const increaseBtn = document.getElementById('btn_increaseQuantity');
 
+
         if (decreaseBtn) {
-            decreaseBtn.addEventListener('click', saveDataToCookies);
+            decreaseBtn.addEventListener('click', function (event) {
+                event.preventDefault(); 
+                event.stopPropagation(); 
+                saveDataToCookies();
+            });
         }
         if (increaseBtn) {
-            increaseBtn.addEventListener('click', saveDataToCookies);
+            increaseBtn.addEventListener('click', function (event) {
+                event.preventDefault();
+                event.stopPropagation(); 
+                saveDataToCookies();
+            });
         }
     });
 
@@ -1586,7 +1640,7 @@ function fetchProductDetails() {
     const productId = encodeURIComponent(productSelect.value.trim());
 
     if (productId && size && color && size !== "" && color !== "") {
-        const url = `https://localhost:7241/api/ProductDetails/GetProductDetailInfo/${productId}/?size=${size}&color=${color}`;
+        const url = `https://localhost:7241/api/Options/find-by-standard?IDProductDetails=${productId}&size=${size}&color=${color}`;
         console.log('productId:', productId);
 
         const xhr = new XMLHttpRequest();
@@ -1598,19 +1652,9 @@ function fetchProductDetails() {
                 if (xhr.status === 200) {
                     try {
                         const data = JSON.parse(xhr.responseText);
-                        const productDetailsDiv = document.getElementById('productTableBody');
-                        productDetailsDiv.innerHTML = `
-                            <td>${data.name}</td>
-                            <td class="col-2 text-center">${data.color} - ${data.size} <p id="stock_quantity_${data.idOptions}">(SLT: ${data.quantity})</p></td>
-                            <td class="col-2 text-center"><img src="${data.urlImg}" alt="${data.productName}" style="width: 50px; height: auto;"></td>
-                            <td class="col-2 text-center" style="width:70px" >${data.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</td>
-                            <td class="col-2 text-center"><input type="number" id="quantity_options_${data.id}"value="1" min="1" style="width: 80px; text-align: center;"></td>
-                            <td class="text-center">
-                                <button class="btn btn-primary" data-option-id="${data.idOptions}"><i class="fas fa-plus-circle"></i></button>
-                                <button class="btn btn-primary btn-sm view" type="button" title="Xem chi tiết")"> <i class="fas fa-eye"></i></button>
-                            </td>
-                        `;
                         console.log('API Response:', data);
+
+                        renderOptions(data);
                     } catch (e) {
                         console.error('Error parsing JSON response:', e);
                     }

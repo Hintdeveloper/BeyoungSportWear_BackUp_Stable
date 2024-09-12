@@ -186,7 +186,7 @@ function updateTableWithProductDetails() {
 }
 function removeProduct(id) {
     cartItems = cartItems.filter(item => item.idOptions !== id);
-
+    orderDetails = orderDetails.filter(detail => detail.idOptions !== id);
     updateTableWithProductDetails();
 
     updateURL();
@@ -209,6 +209,22 @@ function removeProduct(id) {
         toastr.success('Sản phẩm đã được xóa!', 'Thành công');
     }
 }
+function addToOrderDetails(optionId, quantity) {
+    let existingDetail = orderDetails.find(detail => detail.idOptions === optionId);
+    if (existingDetail) {
+        existingDetail.quantity += quantity;
+    } else {
+        const newDetail = {
+            createBy: userId || "Khách vãng lai",
+            idOptions: optionId,
+            quantity: quantity,
+            discount: 0,
+            status: 1
+        };
+        orderDetails.push(newDetail);
+    }
+}
+
 function changeQuantity(id, delta) {
     const quantityInput = document.getElementById(`quantity-${id}`);
     let quantity = parseInt(quantityInput.value, 10);
@@ -604,7 +620,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         li.innerHTML = `${index + 1}. 
                             <strong>Họ và tên:</strong> ${address.firstAndLastName} - <strong>Số điện thoại:</strong> ${address.phoneNumber} <small style="color:red;">${address.isDefault ? '(Mặc định)' : ''}</small><br> 
                             <strong>Email:</strong> ${address.gmail}<br>
-                            <strong>Thành phố:</strong> ${address.city} - <strong>Quận/Huyện:</strong> ${address.districtCounty} - <strong>Xã/Phường:</strong> ${address.commune}<br>
+                            <strong>Địa chỉ:</strong> ${address.commune}, ${address.districtCounty}, ${address.city}<br>
                             <strong>Địa chỉ cụ thể:</strong> ${address.specificAddress}<br>
                         `;
                         li.dataset.id = address.id;
@@ -780,21 +796,6 @@ function getFormData() {
     } else {
         console.error("Các trường bắt buộc không được để trống.");
         return null;
-    }
-}
-function addToOrderDetails(optionId, quantity) {
-    let existingDetail = orderDetails.find(detail => detail.idOptions === optionId);
-    if (existingDetail) {
-        existingDetail.quantity += quantity;
-    } else {
-        const newDetail = {
-            createBy: userId || "Khách vãng lai",
-            idOptions: optionId,
-            quantity: quantity,
-            discount: 0,
-            status: 1
-        };
-        orderDetails.push(newDetail);
     }
 }
 function setCookie(name, value, days) {

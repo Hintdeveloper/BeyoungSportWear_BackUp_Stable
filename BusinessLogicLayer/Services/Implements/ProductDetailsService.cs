@@ -744,6 +744,7 @@ namespace BusinessLogicLayer.Services.Implements
 
             var sizes = productDetails.Options.Select(o => o.Sizes.Name).Distinct().ToList();
             var colors = productDetails.Options.Select(o => o.Colors.Name).Distinct().ToList();
+            var keycode = productDetails.KeyCode;
             var image = option?.ImageURL ?? "N/A";
             var quantity = option?.StockQuantity ?? 0;
             var price = option?.RetailPrice ?? 0;
@@ -754,12 +755,13 @@ namespace BusinessLogicLayer.Services.Implements
                 ID = productDetails.ID,
                 IDOptions = option.ID.ToString(),
                 Name = productDetails.Products.Name,
+                KeyCode = keycode,
                 Price = price,
                 Description = description,
                 Size = sizes,
                 Color = colors,
                 UrlImg = image,
-                Quantity = quantity,
+                StockQuantity = quantity,
             };
         }
         public async Task<ProductDetailsVM> GetByIDAsyncVer_1(Guid ID)

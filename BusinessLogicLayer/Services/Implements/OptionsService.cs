@@ -8,6 +8,7 @@ using DataAccessLayer.Application;
 using DataAccessLayer.Entity;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using BusinessLogicLayer.Viewmodels;
 
 namespace BusinessLogicLayer.Services.Implements
 {
@@ -56,6 +57,7 @@ namespace BusinessLogicLayer.Services.Implements
 			var checkVariant = await _dbcontext.ProductDetails.FirstOrDefaultAsync(pd => pd.ID == request.IDProductDetails);
 			if (checkVariant == null)
 			{
+
 				return false; 
 			}
 
@@ -131,10 +133,6 @@ namespace BusinessLogicLayer.Services.Implements
                 throw new Exception("Failed to upload image to Cloudinary");
             }
         }
-        public Task<OptionsVM> FindIDOptionsAsync(Guid IDProductDetails, string size, string color)
-        {
-            throw new NotImplementedException();
-        }
         public async Task<List<OptionsVM>> GetAllActiveAsync()
         {
             var objList = await _dbcontext.Options
@@ -162,10 +160,6 @@ namespace BusinessLogicLayer.Services.Implements
                            .FirstOrDefaultAsync();
 
             return obj;
-        }
-        public Task<Guid> GetProductDetailsByID(Guid IDOptions)
-        {
-            throw new NotImplementedException();
         }
         public async Task<bool> RemoveAsync(Guid ID, string IDUserdelete)
         {
@@ -268,31 +262,7 @@ namespace BusinessLogicLayer.Services.Implements
             {
                 return "Không thể upload hình ảnh";
             }
-        }
-        public async Task<List<OptionsVM>> GetOptionsByProductDetailsIdAsync(Guid IDProductDetails)
-        {
-            var optionsList = await _dbcontext.Options
-                       .AsNoTracking()
-                       .Where(opt => opt.IDProductDetails == IDProductDetails)
-                       .Select(opt => new OptionsVM
-                       {
-                           ID = opt.ID,
-                           IDProductDetails = opt.IDProductDetails,
-                           SizesName = opt.Sizes.Name,
-                           IDSize = opt.Sizes.ID,
-                           ColorName = opt.Colors.Name,
-                           IDColor = opt.Colors.ID,
-                           StockQuantity = opt.StockQuantity,
-                           CreateBy = opt.CreateBy,
-                           ImageURL = opt.ImageURL,
-                           CreateDate = opt.CreateDate,
-                           RetailPrice = opt.RetailPrice,
-                           Status = opt.Status
-                       })
-                       .ToListAsync();
-
-            return optionsList;
-        }
+        }  
         public async Task<bool> UpdateIsActiveAsync(Guid IDOptions, bool isActive)
         {
             using (var transaction = await _dbcontext.Database.BeginTransactionAsync())
@@ -329,49 +299,115 @@ namespace BusinessLogicLayer.Services.Implements
                 }
             }
         }
-
-        public async Task<bool> DecreaseQuantityAsync(Guid IDOptions, int quantityToDecrease)
+        public async Task<Result> DecreaseQuantityAsync(Guid IDOptions, int quantityToDecrease)
         {
             if (quantityToDecrease <= 0)
             {
-                throw new ArgumentException("Số lượng giảm phải lớn hơn 0.");
+                return new Result
+                {
+                    Success = false,
+                    ErrorMessage = "Số lượng giảm phải lớn hơn 0."
+                };
             }
             var option = await _dbcontext.Options.FindAsync(IDOptions);
             if (option == null)
             {
-                return false;
+                return new Result
+                {
+                    Success = false,
+                    ErrorMessage = "Không tìm thấy sản phẩm với ID tương ứng."
+                };
             }
 
             if (option.StockQuantity < quantityToDecrease)
             {
-                throw new InvalidOperationException("Số lượng trong kho không đủ để giảm.");
+                return new Result
+                {
+                    Success = false,
+                    ErrorMessage = "Số lượng trong kho không đủ để giảm."
+                };
             }
 
             option.StockQuantity -= quantityToDecrease;
             _dbcontext.Options.Update(option);
             await _dbcontext.SaveChangesAsync();
 
-            return true;
+            return new Result
+            {
+                Success = true,
+                ErrorMessage = "Giảm số lượng sản phẩm thành công."
+            };
         }
-
-        public async Task<bool> IncreaseQuantityAsync(Guid IDOptions, int quantityToIncrease)
+        public async Task<Result> IncreaseQuantityAsync(Guid IDOptions, int quantityToIncrease)
         {
             if (quantityToIncrease <= 0)
             {
-                throw new ArgumentException("Số lượng tăng phải lớn hơn 0.");
+                return new Result
+                {
+                    Success = false,
+                    ErrorMessage = "Số lượng tăng phải lớn hơn 0."
+                };
             }
 
             var option = await _dbcontext.Options.FindAsync(IDOptions);
             if (option == null)
             {
-                return false;
+                return new Result
+                {
+                    Success = false,
+                    ErrorMessage = "Không tìm thấy sản phẩm với ID tương ứng."
+                };
             }
 
             option.StockQuantity += quantityToIncrease;
             _dbcontext.Options.Update(option);
             await _dbcontext.SaveChangesAsync();
 
-            return true;
+            return new Result
+            {
+                Success = true,
+                ErrorMessage = "Tăng số lượng sản phẩm thành công."
+            };
+        }
+        public async Task<OptionsVM> FindIDOptionsAsync(Guid IDProductDetails, string size, string color)
+        {
+            var option = await _dbcontext.Options
+                 .Include(o => o.Colors)
+                 .Include(o => o.Sizes)
+                 .Where(o =>
+                     o.IDProductDetails == IDProductDetails &&
+                     (string.IsNullOrEmpty(size) || o.Sizes.Name == size) &&
+                     (string.IsNullOrEmpty(color) || o.Colors.Name == color))
+                 .ProjectTo<OptionsVM>(_mapper.ConfigurationProvider)
+                 .FirstOrDefaultAsync();
+
+            return option;
+        }
+
+        public async Task<List<OptionsVM>> FindIDOptionsBySize(Guid IDProductDetails, string size)
+        {
+            var options = await _dbcontext.Options
+                .Include(o => o.Sizes) 
+                .Where(b =>
+                    b.IDProductDetails == IDProductDetails &&
+                    b.Sizes.Name == size && b.Status != 0 && b.IsActive != false & b.StockQuantity != 0)
+                .ProjectTo<OptionsVM>(_mapper.ConfigurationProvider)
+                .ToListAsync();
+
+            return _mapper.Map<List<OptionsVM>>(options);
+        }
+
+        public async Task<List<OptionsVM>> FindIDOptionsByColor(Guid IDProductDetails, string color)
+        {
+            var option = await _dbcontext.Options
+                .Include(o => o.Colors)
+                .Where(b =>
+                    b.IDProductDetails == IDProductDetails &&
+                    b.Colors.Name == color && b.Status != 0 && b.IsActive != false & b.StockQuantity != 0)
+                .ProjectTo<OptionsVM>(_mapper.ConfigurationProvider)
+                .ToListAsync();
+
+            return _mapper.Map<List<OptionsVM>>(option);
         }
     }
 }

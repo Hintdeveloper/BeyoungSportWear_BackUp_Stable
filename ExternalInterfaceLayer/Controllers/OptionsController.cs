@@ -35,17 +35,6 @@ namespace ExternalInterfaceLayer.Controllers
                 return BadRequest(new { status = "Error", message = "There was an error uploading the Options." });
             }
         }
-        [HttpGet("GetByProductDetailsId/{IDProductDetails}")]
-        public async Task<IActionResult> GetByProductDetailsId(Guid IDProductDetails)
-        {
-            var options = await _IOptionsService.GetOptionsByProductDetailsIdAsync(IDProductDetails);
-            if (options == null || !options.Any())
-            {
-                return NotFound("No options found for the given ProductDetails ID.");
-            }
-
-            return Ok(options);
-        }
         [HttpPut]
         [Route("update/{ID}")]
         public async Task<IActionResult> UpdateOption(Guid ID, [FromForm] OptionsUpdateVM request)
@@ -84,13 +73,6 @@ namespace ExternalInterfaceLayer.Controllers
             }
         }
         [HttpGet]
-        [Route("GetProductDetailsByID/{IDOptions}")]
-        public async Task<IActionResult> GetProductDetailsByID(Guid IDOptions)
-        {
-            var variantdata = await _IOptionsService.GetOptionsByProductDetailsIdAsync(IDOptions);
-            return Ok(variantdata);
-        }
-        [HttpGet]
         [Route("getall")]
         public async Task<IActionResult> GetAll()
         {
@@ -125,7 +107,7 @@ namespace ExternalInterfaceLayer.Controllers
                 if (ModelState.IsValid)
                 {
                     var success = await _IOptionsService.DecreaseQuantityAsync(request.IDOptions, request.QuantityToDecrease);
-                    if (success)
+                    if (success.Success)
                     {
                         return Ok("Số lượng đã được cập nhật.");
                     }
@@ -155,7 +137,7 @@ namespace ExternalInterfaceLayer.Controllers
                 if (ModelState.IsValid)
                 {
                     var success = await _IOptionsService.IncreaseQuantityAsync(request.IDOptions, request.QuantityToDecrease);
-                    if (success)
+                    if (success.Success)
                     {
                         return Ok("Số lượng đã được cập nhật.");
                     }
@@ -179,6 +161,41 @@ namespace ExternalInterfaceLayer.Controllers
             {
                 return StatusCode(500, "Đã xảy ra lỗi hệ thống.");
             }
+        }
+        [HttpGet("find-by-standard")]
+        public async Task<IActionResult> FindOptionsAsync(Guid IDProductDetails, string size, string color)
+        {
+            var option = await _IOptionsService.FindIDOptionsAsync(IDProductDetails, size, color);
+            if (option == null)
+            {
+                return NotFound(new { message = "Không tìm thấy tùy chọn sản phẩm." });
+            }
+
+            return Ok(option);
+        }
+
+        [HttpGet("find-by-size")]
+        public async Task<IActionResult> FindOptionsBySizeAsync(Guid IDProductDetails, string size)
+        {
+            var option = await _IOptionsService.FindIDOptionsBySize(IDProductDetails, size);
+            if (option == null)
+            {
+                return NotFound(new { message = "Không tìm thấy tùy chọn sản phẩm với kích thước này." });
+            }
+
+            return Ok(option);
+        }
+
+        [HttpGet("find-by-color")]
+        public async Task<IActionResult> FindOptionsByColorAsync(Guid IDProductDetails, string color)
+        {
+            var option = await _IOptionsService.FindIDOptionsByColor(IDProductDetails, color);
+            if (option == null)
+            {
+                return NotFound(new { message = "Không tìm thấy tùy chọn sản phẩm với màu sắc này." });
+            }
+
+            return Ok(option);
         }
     }
 }

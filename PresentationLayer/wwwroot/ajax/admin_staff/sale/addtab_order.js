@@ -30,95 +30,109 @@ function closeTab(event, tabId) {
     event.stopPropagation();
     event.preventDefault();
 
-    // Xóa tab và nội dung của nó
-    var tabElement = document.querySelector(`[onclick="openTab(event, '${tabId}')"]`);
-    var tabContentElement = document.getElementById(tabId);
-    if (tabElement) tabElement.remove();
-    if (tabContentElement) tabContentElement.remove();
+    // Hiển thị SweetAlert2 để yêu cầu xác nhận
+    Swal.fire({
+        title: 'Bạn có chắc chắn muốn đóng tab này?',
+        text: "Tất cả các dữ liệu sẽ bị xóa!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Xác nhận',
+        cancelButtonText: 'Hủy bỏ'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            var tabElement = document.querySelector(`[onclick="openTab(event, '${tabId}')"]`);
+            var tabContentElement = document.getElementById(tabId);
+            if (tabElement) tabElement.remove();
+            if (tabContentElement) tabContentElement.remove();
 
-    // Xử lý dữ liệu cookie
-    var cookieData = getCookie(tabId);
-    if (cookieData) {
-        try {
-            var decodedData = decodeURIComponent(cookieData);
-            var parsedData = JSON.parse(decodedData);
+            var cookieData = getCookie(tabId);
+            if (cookieData) {
+                try {
+                    var decodedData = decodeURIComponent(cookieData);
+                    var parsedData = JSON.parse(decodedData);
 
-            if (parsedData.selectedProducts) {
-                parsedData.selectedProducts.forEach(product => {
-                    const xhrGet = new XMLHttpRequest();
-                    xhrGet.open('GET', `https://localhost:7241/api/Options/GetByID/${product.idoptions}`, true);
-                    xhrGet.setRequestHeader('Accept', 'application/json');
+                    if (parsedData.selectedProducts) {
+                        parsedData.selectedProducts.forEach(product => {
+                            const xhrGet = new XMLHttpRequest();
+                            xhrGet.open('GET', `https://localhost:7241/api/Options/GetByID/${product.idoptions}`, true);
+                            xhrGet.setRequestHeader('Accept', 'application/json');
 
-                    xhrGet.onreadystatechange = function () {
-                        if (xhrGet.readyState === XMLHttpRequest.DONE) {
-                            if (xhrGet.status === 200) {
-                                const option = JSON.parse(xhrGet.responseText);
-                                const stockQuantity = option.stockQuantity;
+                            xhrGet.onreadystatechange = function () {
+                                if (xhrGet.readyState === 4) {
+                                    if (xhrGet.status === 200) {
+                                        const option = JSON.parse(xhrGet.responseText);
+                                        const stockQuantity = option.stockQuantity;
 
-                                updateStockDisplay(product.idoptions, stockQuantity);
-                                const xhrUpdate = new XMLHttpRequest();
-                                xhrUpdate.open('POST', 'https://localhost:7241/api/Options/increase-quantity', true);
-                                xhrUpdate.setRequestHeader('Content-Type', 'application/json');
-                                xhrUpdate.setRequestHeader('Accept', 'application/json');
+                                        updateStockDisplay(product.idoptions, stockQuantity);
+                                        const xhrUpdate = new XMLHttpRequest();
+                                        xhrUpdate.open('POST', 'https://localhost:7241/api/Options/increase-quantity', true);
+                                        xhrUpdate.setRequestHeader('Content-Type', 'application/json');
+                                        xhrUpdate.setRequestHeader('Accept', 'application/json');
 
-                                xhrUpdate.onreadystatechange = function () {
-                                    if (xhrUpdate.readyState === XMLHttpRequest.DONE) {
-                                        if (xhrUpdate.status === 200) {
-                                            toastr.success(`Đã kết thúc phiên giao dịch`, 'Thành công');
-                                        } else {
-                                            toastr.error(`Bạn vừa bấm vào nút xóa ${tabId} nhưng mà lỗi`, 'Lỗi');
-                                            console.error('Error:', xhrUpdate.status, xhrUpdate.statusText);
-                                            console.error('Response Text:', xhrUpdate.responseText);
-                                        }
+                                        xhrUpdate.onreadystatechange = function () {
+                                            if (xhrUpdate.readyState === XMLHttpRequest.DONE) {
+                                                if (xhrUpdate.status === 200) {
+                                                    toastr.success(`Đã kết thúc phiên giao dịch`, 'Thành công');
+                                                } else {
+                                                    toastr.error(`Bạn vừa bấm vào nút xóa ${tabId} nhưng mà lỗi`, 'Lỗi');
+                                                    console.error('Error:', xhrUpdate.status, xhrUpdate.statusText);
+                                                    console.error('Response Text:', xhrUpdate.responseText);
+                                                }
+                                            }
+                                        };
+
+                                        const requestData = JSON.stringify({
+                                            idOptions: product.idoptions,
+                                            quantityToDecrease: product.quantity
+                                        });
+
+                                        xhrUpdate.send(requestData);
+
+                                        connection.invoke("UpdateProductQuantity", product.idoptions, stockQuantity)
+                                            .catch(err => console.error('Error sending stock update:', err));
+                                    } else {
+                                        console.error('Error fetching option:', xhrGet.status, xhrGet.statusText);
+                                        console.error('Response Text:', xhrGet.responseText);
                                     }
-                                };
+                                }
+                            };
 
-                                const requestData = JSON.stringify({
-                                    idOptions: product.idoptions,
-                                    quantityToDecrease: product.quantity
-                                });
-
-                                xhrUpdate.send(requestData);
-
-                                connection.invoke("UpdateProductQuantity", product.idoptions, stockQuantity)
-                                    .catch(err => console.error('Error sending stock update:', err));
-                            } else {
-                                console.error('Error fetching option:', xhrGet.status, xhrGet.statusText);
-                                console.error('Response Text:', xhrGet.responseText);
-                            }
-                        }
-                    };
-
-                    xhrGet.send();
-                });
+                            xhrGet.send();
+                        });
+                    }
+                } catch (e) {
+                    console.error('Error parsing cookie data:', e);
+                }
             }
-        } catch (e) {
-            console.error('Error parsing cookie data:', e);
+
+            var tabs = document.querySelectorAll('.tab');
+            if (tabs.length > 0) {
+                var activeTab = tabs[0];
+                var activeTabId = activeTab.getAttribute('onclick').match(/'(.*?)'/)[1];
+                openTab(null, activeTabId);
+            }
+
+            let cookieTabs = getCookie('tabs');
+            if (cookieTabs) {
+                try {
+                    let decodedData = decodeURIComponent(cookieTabs);
+                    let tabs = JSON.parse(decodedData);
+                    tabs = tabs.filter(tab => tab.id !== tabId);
+                    document.cookie = 'tabs=' + encodeURIComponent(JSON.stringify(tabs)) + '; path=/; max-age=86400';
+                } catch (e) {
+                    console.error('Error parsing cookie data:', e);
+                }
+            }
+
+            deleteCookie(tabId);
+            updateInvoiceNumbers();
+            saveTabsToCookies();
+
+            toastr.success(`Đã kết thúc phiên giao dịch`, 'Thành công');
         }
-    }
-
-    var tabs = document.querySelectorAll('.tab');
-    if (tabs.length > 0) {
-        var activeTab = tabs[0];
-        var activeTabId = activeTab.getAttribute('onclick').match(/'(.*?)'/)[1];
-        openTab(null, activeTabId);
-    }
-
-    let cookieTabs = getCookie('tabs');
-    if (cookieTabs) {
-        try {
-            let decodedData = decodeURIComponent(cookieTabs);
-            let tabs = JSON.parse(decodedData);
-            tabs = tabs.filter(tab => tab.id !== tabId);
-            document.cookie = 'tabs=' + encodeURIComponent(JSON.stringify(tabs)) + '; path=/; max-age=86400';
-        } catch (e) {
-            console.error('Error parsing cookie data:', e);
-        }
-    }
-
-    deleteCookie(tabId);
-    updateInvoiceNumbers();
-    saveTabsToCookies();
+    });
 }
 
 function deleteCookie(name) {
@@ -218,14 +232,17 @@ function loadTabsFromCookies() {
     }
 }
 function addTabFromCookie(tabId, invoiceNumber, iframeSrc) {
+    // Kiểm tra sự tồn tại của phần tử tabsContainer
     var tabsContainer = document.querySelector('.tabs');
     if (!tabsContainer) {
-        return; 
+        return; // Ngừng thực hiện nếu phần tử không tồn tại
     }
 
+    // Kiểm tra sự tồn tại của phần tử tabContainer
     var tabContainer = document.querySelector('#tabContainer');
     if (!tabContainer) {
-        return; 
+        console.error('Element with id "#tabContainer" not found.');
+        return; // Ngừng thực hiện nếu phần tử không tồn tại
     }
 
     // Nếu tab không tồn tại, tạo và thêm tab mới
