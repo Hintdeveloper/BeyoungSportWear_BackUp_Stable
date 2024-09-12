@@ -14,7 +14,7 @@ namespace BusinessLogicLayer.Viewmodels.VoucherM
         public string Code { get; set; } = null!;
 
         [Required(ErrorMessage = "Tên voucher không được để trống")]
-        [RegularExpression(@"^[\p{L}\p{N}\s]*$", ErrorMessage = "Tên voucher không được chứa ký tự đặc biệt")]
+        [RegularExpression(@"^[\p{L}\s]+$", ErrorMessage = "Tên voucher không được chứa ký tự đặc biệt")]
         public string Name { get; set; } = null!;
 
         [Required(ErrorMessage = "Ngày bắt đầu không được để trống")]
