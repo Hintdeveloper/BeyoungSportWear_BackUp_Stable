@@ -677,7 +677,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('phone').value = address.phoneNumber;
         document.getElementById('gmail').value = address.gmail;
         document.getElementById('street').value = address.specificAddress;
-        const fullAddress =  `${address.commune}, ${address.districtCounty}, ${address.city}`;
+        const fullAddress = `${address.commune}, ${address.districtCounty}, ${address.city}`;
 
         document.getElementById('shippingAddress').value = fullAddress;
         const provinceID = await fetchProvinces(address.city);
@@ -826,7 +826,7 @@ function sendOrderData() {
         return;
     }
     if (orderData.paymentMethods === 0) {
-        processOrder(orderData); 
+        processOrder(orderData);
         return;
     }
     const hasLargeQuantity = orderData.orderDetailsCreateVM.some(detail => detail.quantity > 100);
@@ -1328,11 +1328,11 @@ async function getShippingFee(provinceID, districtID, wardCode) {
                 `Giá giao hàng theo địa chỉ <strong style="font-size: 18px; color: red;">${shippingFee.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</strong>`,
                 'Phí giao hàng',
                 {
-                    timeOut: 5000, 
-                    escapeHtml: false, 
-                    positionClass: "toast-top-right", 
-                    closeButton: true, 
-                    progressBar: true 
+                    timeOut: 5000,
+                    escapeHtml: false,
+                    positionClass: "toast-top-right",
+                    closeButton: true,
+                    progressBar: true
                 }
             );
 
