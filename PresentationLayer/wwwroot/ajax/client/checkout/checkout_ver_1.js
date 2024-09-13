@@ -552,6 +552,18 @@ document.addEventListener("DOMContentLoaded", function () {
                     document.getElementById('fee_ship').innerText = shippingFee;
                     document.getElementById('fee_shipDisplay').innerText = shippingFee.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
                     updateTotalOrder();
+                    toastr.warning(
+                        `Giá giao hàng theo địa chỉ <strong style="font-size: 18px; color: red;">${shippingFee.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</strong>`,
+                        'Phí giao hàng',
+                        {
+                            timeOut: 5000, // Thời gian hiển thị 5 giây
+                            escapeHtml: false, // Cho phép sử dụng HTML trong nội dung toastr
+                            positionClass: "toast-top-right", // Vị trí hiện thông báo
+                            closeButton: true, // Hiển thị nút đóng
+                            progressBar: true // Hiển thị thanh tiến trình
+                        }
+                    );
+
                     console.log('Giá:' + shippingFee);
                 } else {
                     console.error('Error:', data.message);
@@ -1311,6 +1323,19 @@ async function getShippingFee(provinceID, districtID, wardCode) {
             document.getElementById('fee_ship').innerText = shippingFee;
             document.getElementById('fee_shipDisplay').innerText = shippingFee.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
             updateTotalOrder();
+            toastr.success('Địa chỉ mặc định đã được chọn!', 'Thành công');
+            toastr.warning(
+                `Giá giao hàng theo địa chỉ <strong style="font-size: 18px; color: red;">${shippingFee.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</strong>`,
+                'Phí giao hàng',
+                {
+                    timeOut: 5000, 
+                    escapeHtml: false, 
+                    positionClass: "toast-top-right", 
+                    closeButton: true, 
+                    progressBar: true 
+                }
+            );
+
             console.log('Giá:' + shippingFee)
         } else {
             console.error('Error:', data.message);
