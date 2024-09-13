@@ -394,12 +394,16 @@ function openCreateModal() {
             if (result.isConfirmed) {
                 saveAddress(); // Hàm tạo địa chỉ mới
                 $('#editAddressModal').modal('hide');
-                // location.reload(); // Refresh trang để hiển thị địa chỉ mới trong danh sách
             }
         });
     };
 }
 function submitAddressForm(addressId) {
+
+    var ischecked = document.getElementById(`toggleSwitch-${addressId}`).checked
+
+    console.log(ischecked)
+
     var updatedAddress = {
         firstAndLastName: document.getElementById('name_user_1').value,
         phoneNumber: document.getElementById('inputPhone').value,
@@ -408,7 +412,7 @@ function submitAddressForm(addressId) {
         districtCounty: document.getElementById('district').value,
         commune: document.getElementById('ward').value,
         specificAddress: document.getElementById('specificAddress').value,
-        isDefault: false,
+        isDefault: ischecked,
         IDUser: userId,
         ModifiedBy: userId
     };
@@ -466,7 +470,7 @@ function saveAddress() {
         city: city,
         districtCounty: districtCounty,
         commune: commune,
-        //isDefault: isDefault,
+        isDefault: false,
         specificAddress: specificAddress
     };
     console.log(addressData)
@@ -483,11 +487,12 @@ function saveAddress() {
                     text: 'Địa chỉ đã được thêm thành công.',
                     confirmButtonText: 'OK'
                 }).then(() => {
-                    document.getElementById('addAddressModal').classList.remove('show');
-                    document.getElementById('addAddressModal').style.display = 'none';
-                    document.body.classList.remove('modal-open');
-                    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+                    //document.getElementById('addAddressModal').classList.remove('show');
+                    //document.getElementById('addAddressModal').style.display = 'none';
+                    //document.body.classList.remove('modal-open');
+                    //document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
                     loadUserAddresses(userId);
+                    location.reload(true)
                 });
             }
         } else if (xhr.status === 400) {
