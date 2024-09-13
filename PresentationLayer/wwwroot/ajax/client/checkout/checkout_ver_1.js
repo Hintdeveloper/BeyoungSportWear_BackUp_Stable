@@ -1004,6 +1004,11 @@ function fetchVouchers(userId) {
                                 <p class="card-text" style="margin-bottom: 5px;"><strong>Kiểu:</strong> <span class="voucherType">${voucherType}</span></p>
                                 <p class="card-text" style="margin-bottom: 5px;"><strong>Giá trị giảm:</strong> <span class="voucherValue">${reducedValue}</span></p>
                                 <p class="card-text" style="margin-bottom: 5px;"><strong>Số lượng:</strong> <span class="voucherQuantity">${voucher.quantity}</span></p>
+                                <p class="card-text" style="margin-bottom: 5px;">
+                                    <strong>Kiểu voucher:</strong>
+                                    <span class="voucherStatus">${voucher.status === 1 ? 'Cá nhân' : 'Công khai'}</span>
+                                </p>
+
                                 <p class="card-text" style="margin-bottom: 5px;"><strong>Số tiền tối thiểu:</strong> <span class="voucherMinimumAmount">${voucher.minimumAmount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</span></p>
                                 <p class="card-text" style="margin-bottom: 5px;"><strong>Số tiền tối đa:</strong> <span class="voucherMaximumAmount">${voucher.maximumAmount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</span></p>
                                 <p class="card-text" style="margin-bottom: 5px;"><strong>Trạng thái:</strong> <span class="voucherStatus">${translateVoucherStatus(voucher.isActive)}</span></p>
@@ -1033,7 +1038,12 @@ function fetchVouchers(userId) {
     xhr.send();
 }
 function applyVoucher(voucherId) {
-    if (userId !== null) {
+    var selectedVoucherElement = document.getElementById(`voucher_${voucherId}`);
+    var voucherStatus = selectedVoucherElement.querySelector('.voucherStatus').textContent;
+
+    if (voucherStatus === 'Công khai') {
+        checkVoucherDetails(voucherId);
+    } else if (userId !== null) {
         var xhrVoucherUser = new XMLHttpRequest();
         xhrVoucherUser.open('GET', `https://localhost:7241/api/VoucherUser/${voucherId}/${userId}`, true);
         xhrVoucherUser.setRequestHeader('accept', '*/*');
@@ -1053,7 +1063,7 @@ function applyVoucher(voucherId) {
 
                 checkVoucherDetails(voucherId);
             } else {
-                console.error('Failed to fetch voucher user details:', xhrVoucherUser.statusText);
+                console.error('Failed to fetch voucher user details:', xhrVoucherUser.responseText);
             }
         };
 
@@ -1105,7 +1115,7 @@ function checkVoucherDetails(voucherId) {
             }
 
             updateTotalOrder();
-            console.log('Mã voucher được chọn:', voucher.code);
+            toastr.success(`Áp dụng thành công voucher ${voucher.code}!`, 'Thành công');
             voucherCode = voucher.code;
 
         } else {
