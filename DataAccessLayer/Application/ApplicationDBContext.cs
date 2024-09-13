@@ -19,7 +19,7 @@ namespace DataAccessLayer.Application
             if (!optionsBuilder.IsConfigured)
             {
                 optionsBuilder.UseSqlServer(
-                    "Data Source=.;Initial Catalog=BeyoungSportWear;Integrated Security=True;TrustServerCertificate=True"
+                    "Data Source=.\\SQLEXPRESS;Initial Catalog=BeyoungSportWear;Integrated Security=True;TrustServerCertificate=True"
                 );
             }
         }

@@ -152,11 +152,16 @@ namespace ExternalInterfaceLayer.Controllers
 
                     doc.Add(productTable);
 
-                    // Thêm mục tổng cộng
-                    var totalAmount = orderData.OrderDetailsVM.Sum(d => d.TotalAmount); // Tổng số tiền
+                    decimal? discount = orderData.OrderDetailsVM.FirstOrDefault(o=>o.IDOrder==orderData.ID).Discount;
+                    decimal? shippingCost = orderData.Cotsts;
+                    decimal totalAmount = orderData.TotalAmount;
+
+
                     PdfPTable totalTable = new PdfPTable(1) { WidthPercentage = 100 };
                     totalTable.SetWidths(new float[] { 1 });
 
+                    totalTable.AddCell(CreateCell($"Phí vận chuyển: {Currency.FormatCurrency(shippingCost.ToString())}", Element.ALIGN_RIGHT, false, boldFont));
+                    totalTable.AddCell(CreateCell($"Giảm giá: {Currency.FormatCurrency(discount.ToString())}", Element.ALIGN_RIGHT, false, boldFont));
                     totalTable.AddCell(CreateCell($"Tổng cộng: {Currency.FormatCurrency(totalAmount.ToString())}", Element.ALIGN_RIGHT, true, boldFont));
                     doc.Add(totalTable);
 

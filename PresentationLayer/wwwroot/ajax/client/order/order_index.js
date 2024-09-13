@@ -299,11 +299,11 @@ function translateOrderType(type) {
 function translateOrderStatus(status) {
     switch (status) {
         case 0:
-            return 'Chưa giải quyết';
+            return 'Chờ xác nhận';
         case 1:
-            return 'Đang xử lý';
+            return 'Đã xác nhận';
         case 2:
-            return 'Đã vận chuyển';
+            return 'Đang vận chuyển';
         case 3:
             return 'Đã giao hàng';
         case 4:
