@@ -1218,10 +1218,18 @@ async function fetchProvinces(provinceName) {
 
         const data = await response.json();
 
-        if (data && Array.isArray(data.data)) {
-            const cleanedProvinceName = provinceName.replace(/Tỉnh\s*/i, '').trim();
 
-            const province = data.data.find(province => province.ProvinceName.replace(/Tỉnh\s*/i, '').trim() === cleanedProvinceName);
+        if (data && Array.isArray(data.data)) {
+            const cleanedProvinceName = provinceName.replace(/Tỉnh\s*|Thành phố\s*/i, '').trim();
+
+            console.log(cleanedProvinceName);
+            console.log('Danh sách các tỉnh/thành phố:');
+            data.data.forEach(province => {
+                console.log(province.ProvinceName);
+            });
+
+            const province = data.data.find(province => province.ProvinceName.replace(/Tỉnh\s*|Thành phố\s*/i, '').trim() === cleanedProvinceName);
+
             return province ? province.ProvinceID : null;
         } else {
             console.error('Dữ liệu tỉnh không hợp lệ:', data);
