@@ -70,7 +70,7 @@ namespace BusinessLogicLayer.Services.Implements
                         {
                             IDUser = userId,
                             IDVoucher = newVoucher.ID,
-                            Status = 0,
+                            Status = 1,
                             CreateBy = request.CreateBy
                         };
                         await _dbcontext.VoucherUser.AddAsync(voucherUser);
@@ -496,7 +496,7 @@ namespace BusinessLogicLayer.Services.Implements
             {
                 // Trường hợp không có IDUser, trả về các voucher có status = 0 và IsActive = IsBeginning
                 voucherList = await _dbcontext.Voucher
-                                              .Where(vu => vu.Status == 0
+                                              .Where(vu => vu.Status == 1
                                                         && vu.IsActive == StatusVoucher.IsBeginning)
                                               .Select(vu => new VoucherViewModel
                                               {
@@ -510,7 +510,7 @@ namespace BusinessLogicLayer.Services.Implements
                                                   Quantity = vu.Quantity,
                                                   ReducedValue = vu.ReducedValue,
                                                   IsActive = vu.IsActive,
-                                                  Status = 0,
+                                                  Status = 1,
                                               })
                                               .ToListAsync();
             }
@@ -541,7 +541,7 @@ namespace BusinessLogicLayer.Services.Implements
 
                 
                 var unconnectedVouchers = await _dbcontext.Voucher
-                                                          .Where(v => v.Status == 0
+                                                          .Where(v => v.Status == 1
                                                                     && v.IsActive == StatusVoucher.IsBeginning
                                                                     && !_dbcontext.VoucherUser.Any(vu => vu.IDUser == idUser && vu.IDVoucher == v.ID))
                                                           .Select(v => new VoucherViewModel
@@ -557,7 +557,7 @@ namespace BusinessLogicLayer.Services.Implements
                                                               Quantity = v.Quantity,
                                                               ReducedValue = v.ReducedValue,
                                                               IsActive = v.IsActive,
-                                                              Status = 0,
+                                                              Status = 1,
                                                           })
                                                           .ToListAsync();
 
