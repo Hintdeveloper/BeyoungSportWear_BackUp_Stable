@@ -10,7 +10,7 @@
 <p>
     <a asp-action="Create" class="btn btn-primary createbtn">Create New</a>
 </p>
-<table class="table">
+<table id="table" class="table">
     <thead>
         <tr>
             <th>Tên thương hiệu</th>
@@ -56,6 +56,11 @@
     </tbody>
 </table>
 <script>
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // Khởi tạo DataTables
+        var table = new DataTable('#table');
+    });
     // Hàm xử lý khi người dùng nhấn vào nút Create hoặc Edit
     function handleSimpleAction(event) {
         event.preventDefault(); // Ngăn chặn hành vi mặc định của thẻ a
