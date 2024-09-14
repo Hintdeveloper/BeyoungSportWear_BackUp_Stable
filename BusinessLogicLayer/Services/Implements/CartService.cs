@@ -37,7 +37,23 @@ namespace BusinessLogicLayer.Services.Implements
                 }
                 return false;
             }
-            return false;
+            else {
+                if (request != null)
+                {
+                    var Obj = new Cart()
+                    {
+                        ID = Guid.NewGuid().ToString(),
+                        Description = request.Description,
+                        IDUser = request.IDUser,
+                        Status = 1,
+                    };
+                    await _dbcontext.Cart.AddRangeAsync(Obj);
+                    await _dbcontext.SaveChangesAsync();
+                    return true;
+                }
+                return false;
+            } 
+            
 
         }
         public async Task<List<CartVM>> GetAllActiveAsync()
