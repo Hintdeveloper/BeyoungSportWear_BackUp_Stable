@@ -70,7 +70,7 @@ namespace BusinessLogicLayer.Services.Implements
                         {
                             IDUser = userId,
                             IDVoucher = newVoucher.ID,
-                            Status = 0,
+                            Status = 1,
                             CreateBy = request.CreateBy
                         };
                         await _dbcontext.VoucherUser.AddAsync(voucherUser);
@@ -508,6 +508,7 @@ namespace BusinessLogicLayer.Services.Implements
                                                   StartDate = vu.StartDate,
                                                   EndDate = vu.EndDate,
                                                   Quantity = vu.Quantity,
+                                                  Type = vu.Type,
                                                   ReducedValue = vu.ReducedValue,
                                                   IsActive = vu.IsActive,
                                                   Status = 0,
@@ -527,7 +528,7 @@ namespace BusinessLogicLayer.Services.Implements
                                                     IDUser = vu.IDUser,
                                                     MinimumAmount = vu.Voucher.MinimumAmount,
                                                     MaximumAmount = vu.Voucher.MaximumAmount,
-
+                                                    Type = vu.Voucher.Type,
                                                     Code = vu.Voucher.Code,
                                                     Name = vu.Voucher.Name,
                                                     StartDate = vu.Voucher.StartDate,
@@ -549,7 +550,7 @@ namespace BusinessLogicLayer.Services.Implements
                                                               ID = v.ID,
                                                               MinimumAmount = v.MinimumAmount,
                                                               MaximumAmount = v.MaximumAmount,
-
+                                                              Type = v.Type,
                                                               Code = v.Code,
                                                               Name = v.Name,
                                                               StartDate = v.StartDate,
@@ -557,7 +558,7 @@ namespace BusinessLogicLayer.Services.Implements
                                                               Quantity = v.Quantity,
                                                               ReducedValue = v.ReducedValue,
                                                               IsActive = v.IsActive,
-                                                              Status = 0,
+                                                              Status = v.Status,
                                                           })
                                                           .ToListAsync();
 

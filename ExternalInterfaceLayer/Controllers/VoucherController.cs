@@ -34,7 +34,18 @@ namespace ExternalInterfaceLayer.Controllers
                 return StatusCode(500, "Internal server error");
             }
         }
+        [HttpGet("{code}")]
+        public async Task<IActionResult> GetVoucherByCode(string code)
+        {
+            var voucher = await _voucherService.GetByCodeAsync(code);
 
+            if (voucher == null)
+            {
+                return NotFound("Voucher không tồn tại."); 
+            }
+
+            return Ok(voucher);
+        }
         [HttpGet]
         [Route("getall")]
         public async Task<IActionResult> GetAllAsync()

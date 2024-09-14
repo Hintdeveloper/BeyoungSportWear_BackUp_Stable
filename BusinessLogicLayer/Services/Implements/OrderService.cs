@@ -187,7 +187,7 @@ namespace BusinessLogicLayer.Services.Implements
                        .FirstOrDefaultAsync(vu => vu.IDVoucher == voucher.ID && vu.IDUser == request.IDUser);
                     if (voucherUser_1 != null)
                     {
-                        voucherUser_1.Status =0;
+                        voucherUser_1.Status = 0;
                         _dbcontext.VoucherUser.Update(voucherUser_1);
                     }
                 }
@@ -984,11 +984,80 @@ namespace BusinessLogicLayer.Services.Implements
 
             if (newStatus == OrderStatus.Cancelled)
             {
+                // Hoàn lại tồn kho cho các sản phẩm trong đơn hàng
                 foreach (var orderItem in order.OrderDetails)
                 {
                     await IncreaseStockAsync(orderItem.IDOptions, orderItem.Quantity);
                 }
+
+                // Kiểm tra nếu đơn hàng có sử dụng voucher
+                if (!string.IsNullOrEmpty(order.VoucherCode))
+                {
+                    // Tìm voucher theo mã VoucherCode
+                    var voucher = await _dbcontext.Voucher.FirstOrDefaultAsync(v => v.Code == order.VoucherCode);
+
+                    if (voucher != null)
+                    {
+                        // Nếu voucher.Status == 0, chỉ cập nhật số lượng và không thao tác gì thêm
+                        if (voucher.Status == 0)
+                        {
+                            voucher.Quantity += 1;
+                            _dbcontext.Voucher.Update(voucher);
+                        }
+                        else
+                        {
+                            // Nếu voucher còn hoạt động và chưa hết hạn
+                            if (voucher.IsActive != StatusVoucher.Finished)
+                            {
+                                voucher.Quantity += 1;
+
+                                // Kiểm tra nếu voucher.Status == 1 nhưng đã hết hạn, bỏ qua `VoucherUser`
+                                if (voucher.Status == 1 && voucher.EndDate < DateTime.Now)
+                                {
+                                    // Voucher đã hết hạn, chỉ cập nhật số lượng
+                                    return new Result
+                                    {
+                                        Success = true,
+                                        ErrorMessage = "Voucher đã hết hạn, chỉ cập nhật số lượng, không thao tác với VoucherUser."
+                                    };
+                                }
+                                else
+                                {
+                                    // Nếu voucher chưa hết hạn, tiếp tục thao tác với VoucherUser
+                                    var voucherUser = await _dbcontext.VoucherUser
+                                        .FirstOrDefaultAsync(vu => vu.IDVoucher == voucher.ID && vu.IDUser == order.IDUser);
+
+                                    if (voucherUser != null)
+                                    {
+                                        // Cập nhật trạng thái của `VoucherUser`
+                                        voucherUser.Status = 1;
+                                        _dbcontext.VoucherUser.Update(voucherUser);
+                                    }
+                                    else
+                                    {
+                                        // Không tìm thấy `VoucherUser`
+                                        return new Result
+                                        {
+                                            Success = false,
+                                            ErrorMessage = "Không tìm thấy người dùng voucher tương ứng."
+                                        };
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Không tìm thấy voucher
+                        return new Result
+                        {
+                            Success = false,
+                            ErrorMessage = "Không tìm thấy voucher tương ứng với mã được cung cấp."
+                        };
+                    }
+                }
             }
+
 
             order.OrderStatus = newStatus;
             order.ModifiedBy = IDUserUpdate;

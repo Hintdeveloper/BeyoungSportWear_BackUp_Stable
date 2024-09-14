@@ -90,6 +90,13 @@ function displayData(data) {
 }
 document.getElementById('searchByKeycodeBtn').addEventListener('click', () => {
     const keycode = document.getElementById('searchByKeycodeInput').value.trim();
+    if (keycode === '') {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Lỗi',
+            text: 'Vui lòng điền mã trước khi tìm!'
+        });
+    }
     if (keycode) {
         const xhr = new XMLHttpRequest();
         xhr.open('GET', `https://localhost:7241/api/ProductDetails/product_getby_keycode/${keycode}`, true);
@@ -122,6 +129,13 @@ document.getElementById('searchByKeycodeBtn').addEventListener('click', () => {
 
 document.getElementById('searchByNameBtn').addEventListener('click', () => {
     const name = document.getElementById('searchByNameInput').value.trim();
+    if (name === '') {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Lỗi',
+            text: 'Vui lòng điền tên trước khi tìm!'
+        });
+    }
     if (name) {
         const xhr = new XMLHttpRequest();
         xhr.open('GET', `https://localhost:7241/api/ProductDetails/product_getby_name?name=${encodeURIComponent(name)}`, true);

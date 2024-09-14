@@ -7,77 +7,73 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="container" style="display: flex; flex-wrap: wrap; justify-content: space-between; padding: 20px;">
-    <h2 style="color: #333; width: 100%; margin-bottom: 20px; text-align: center;">Danh sách ưu đãi của bạn</h2>
-    @foreach (var item in Model)
-    {
-        var timeLeftInSeconds = (item.EndDate - DateTime.Now).TotalSeconds;
+<div style="font-family: Arial, sans-serif; padding: 20px;">
+    <h2 style="color: #333; margin-bottom: 20px;">Danh sách ưu đãi của bạn</h2>
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
+        @foreach (var item in Model)
+        {
+            var timeLeftInSeconds = (item.EndDate - DateTime.Now).TotalSeconds;
 
-        <div class="card" style="width: 30%; margin-bottom: 20px; border: 1px solid #ddd; box-shadow: 0 4px 8px rgba(0,0,0,0.1); border-radius: 10px; padding: 15px; transition: transform 0.3s ease;">
-            <div class="card-header" style="display: flex; align-items: center; margin-bottom: 10px;">
-                <i class="fa fa-gift" style="font-size: 24px; margin-right: 10px; color: #ff6b6b;"></i>
-                <div class="card-title" style="font-weight: bold; font-size: 18px;">Ưu đãi: @Html.DisplayFor(modelItem => item.Name)</div>
-            </div>
-
-            <div class="card-body" style="font-size: 14px; line-height: 1.5;">
-                <div class="status @(item.Status == 1 ? "status-used" : "status-expired")" style="margin-top: 5px;">
-                    @if (item.Status == 1)
-                    {
-                        <span style="color: green; font-weight: bold;">Đã sử dụng</span>
-                    }
-                    else
-                    {
-                        <span style="color: red; font-weight: bold;">Chưa sử dụng</span>
-                    }
+            <div style="border: 1px solid #ddd; border-radius: 8px; padding: 15px; background-color: #f9f9f9; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+                <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                    <i class="fa fa-gift" style="font-size: 24px; color: #e53935; margin-right: 10px;"></i>
+                    <div style="font-size: 18px; font-weight: bold; color: #333;">Ưu đãi: @Html.DisplayFor(modelItem => item.Name)</div>
                 </div>
-                <p><strong>Mã Voucher:</strong> @item.Code</p>
-                <p>
-                    <strong>Giảm:</strong>
-                    @if (item.Type == Types.Percent)
-                    {
-                        @($"{Currency.FormatCurrency(item.ReducedValue.ToString())} %")
-                    }
-                    else
-                    {
-                        @($"{Currency.FormatCurrency(item.ReducedValue.ToString())} đ")
-                    }
-                </p>
-                <p><strong>Đơn hàng tối thiểu:</strong> @Currency.FormatCurrency(item.MinimumAmount.ToString()) đ</p>
-                <p><strong>Giảm tối đa:</strong> @Currency.FormatCurrency(item.MaximumAmount.ToString()) đ</p>
-                <p><strong>Bắt đầu:</strong> @item.StartDate.ToString("dd/MM/yyyy HH:mm:ss")</p>
-                <p><strong>Kết thúc:</strong> @item.EndDate.ToString("dd/MM/yyyy HH:mm:ss")</p>
-                <p><strong>Số lượng còn lại:</strong> @item.Quantity</p>
+
+                <span class="status @(item.Status == 0 ? "status-used" : "status-unused")" style="color: @(item.Status == 0 ? "green" : "red"); font-weight: bold;">
+                    @(item.Status == 0 ? "Đã sử dụng" : "Chưa sử dụng")
+                </span>
+                <div style="margin-bottom: 15px;">
+                    <p><strong>Mã Voucher:</strong> @item.Code</p>
+                    <p>
+                        <strong>Giảm:</strong>
+                        @if (item.Type == Types.Percent)
+                        {
+                            @($"{Currency.FormatCurrency(item.ReducedValue.ToString())} %")
+                        }
+                        else
+                        {
+                            @($"{Currency.FormatCurrency(item.ReducedValue.ToString())} đ")
+                        }
+                    </p>
+                    <p><strong>Tối thiểu:</strong> @Currency.FormatCurrency(item.MinimumAmount.ToString()) đ</p>
+                    <p><strong>Giảm tối đa:</strong> @Currency.FormatCurrency(item.MaximumAmount.ToString()) đ</p>
+                    <p>
+                        <strong>Từ: </strong> @item.StartDate.ToString("dd/MM/yyyy HH:mm:ss")
+                        <strong>Đến:</strong> @item.EndDate.ToString("dd/MM/yyyy HH:mm:ss")
+                    </p>
+                    <p><strong>Số lượng còn lại:</strong> @item.Quantity</p>
+                </div>
+
+                <div>
+                    <strong>Hạn sử dụng còn:</strong> <span id="time-left-@item.ID" style="font-weight: bold; color: #e53935;">@item.DaysLeft ngày</span>
+                </div>
             </div>
 
-            <div class="card-footer" style="background-color: #f8f9fa; text-align: center; padding: 10px; border-top: 1px solid #ddd;">
-                <strong>Hạn sử dụng còn:</strong> <span id="time-left-@item.ID">@item.DaysLeft ngày</span>
-            </div>
-        </div>
+            <script>
+                (function () {
+                    var timeLeft = @timeLeftInSeconds;
 
-        <script>
-            (function () {
-                var timeLeft = @timeLeftInSeconds;
+                    function updateTimeLeft() {
+                        if (timeLeft <= 0) {
+                            document.getElementById("time-left-@item.ID").innerText = "Đã hết hạn";
+                            return;
+                        }
 
-                function updateTimeLeft() {
-                    if (timeLeft <= 0) {
-                        document.getElementById("time-left-@item.ID").innerText = "Đã hết hạn";
-                        return;
+                        var days = Math.floor(timeLeft / (60 * 60 * 24));
+                        var hours = Math.floor((timeLeft % (60 * 60 * 24)) / (60 * 60));
+                        var minutes = Math.floor((timeLeft % (60 * 60)) / 60);
+                        var seconds = Math.floor(timeLeft % 60);
+
+                        document.getElementById("time-left-@item.ID").innerText =
+                            days + " ngày " + hours + " giờ " + minutes + " phút " + seconds + " giây";
+
+                        timeLeft--;
                     }
 
-                    var days = Math.floor(timeLeft / (60 * 60 * 24));
-                    var hours = Math.floor((timeLeft % (60 * 60 * 24)) / (60 * 60));
-                    var minutes = Math.floor((timeLeft % (60 * 60)) / 60);
-                    var seconds = Math.floor(timeLeft % 60);
-
-                    document.getElementById("time-left-@item.ID").innerText =
-                        days + " ngày " + hours + " giờ " + minutes + " phút " + seconds + " giây";
-
-                    timeLeft--;
-                }
-
-                setInterval(updateTimeLeft, 1000);
-            })();
-        </script>
-    }
-    
+                    setInterval(updateTimeLeft, 1000);
+                })();
+            </script>
+        }
+    </div>
 </div>

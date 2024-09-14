@@ -5,7 +5,7 @@
     Layout = "~/Areas/Admin/Views/Shared/_layoutAdmin.cshtml";
 }
 
-<h1>Danh sách thương hiệu</h1>
+<h1 style="color: blue; font-size: 24px; text-align: center;">Danh sách thương hiệu</h1>
 
 <p>
     <a asp-action="Create" class="btn btn-primary createbtn">Create New</a>
@@ -13,28 +13,14 @@
 <table class="table">
     <thead>
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Description)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Address)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Phone)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Gmail)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Website)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Status)
-            </th>
-            <th></th>
+            <th>Tên thương hiệu</th>
+            <th>Mô tả</th>
+            <th>Địa chỉ</th>
+            <th>Điện thoại</th>
+            <th>Email</th>
+            <th>Website</th>
+            <th>Trạng thái</th>
+            <th>Thao tác</th>
         </tr>
     </thead>
     <tbody>
@@ -43,32 +29,22 @@
             @foreach (var item in Model)
             {
                 <tr>
+                    <td>@item.Name</td>
+                    <td>@item.Description</td>
+                    <td>@item.Address</td>
+                    <td>@item.Phone</td>
+                    <td>@item.Gmail</td>
+                    <td>@item.Website</td>
                     <td>
-                        @Html.DisplayFor(modelItem => item.Name)
+                        @if (item.Status == 1)
+                        {
+                            <strong> Hoạt động</strong>
+                       }
+                        else
+                        {
+                            <strong>Không hoạt động</strong>
+                        }
                     </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Description)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Address)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Phone)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Gmail)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Website)
-                    </td>
-                    @if (item.Status == 1)
-                    {
-                        <td>Hoạt động</td>
-                    }
-                    else
-                    {
-                        <td>Không hoạt động</td>
-                    }
                     <td>
                         <a asp-action="Edit" asp-route-id="@item.ID" class="btn btn-warning editbtn">Sửa</a> |
                         <a asp-action="Details" asp-route-id="@item.ID" class="btn btn-info">Chi tiết</a> |

@@ -296,5 +296,29 @@ namespace BusinessLogicLayer.Services.Implements
 
             return true;
         }
+
+        public async Task<VoucherVM> GetByCodeAsync(string code)
+        {
+            var voucher = await _dbcontext.Voucher.FirstOrDefaultAsync(c=>c.Code == code);
+            if (voucher == null)
+            {
+                return null; 
+            }
+            var voucherVM = new VoucherVM
+            {
+                Code = voucher.Code,
+                Name = voucher.Name,
+                StartDate = voucher.StartDate,
+                EndDate = voucher.EndDate,
+                Quantity = voucher.Quantity,
+                Type = voucher.Type,
+                MinimumAmount = voucher.MinimumAmount,
+                MaximumAmount = voucher.MaximumAmount,
+                ReducedValue = voucher.ReducedValue,
+                IsActive = voucher.IsActive
+            };
+
+            return voucherVM;
+        }
     }
 }

@@ -47,13 +47,11 @@ namespace BusinessLogicLayer.Viewmodels.VoucherM
             {
                 TimeSpan timeSpan = EndDate - DateTime.Now;
 
-                // Nếu thời gian còn lại âm (ngày kết thúc đã qua)
                 if (timeSpan.TotalSeconds < 0)
                 {
                     return "Đã hết hạn";
                 }
 
-                // Lấy số ngày, giờ, phút, giây từ TimeSpan
                 int days = timeSpan.Days;
                 int hours = timeSpan.Hours;
                 int minutes = timeSpan.Minutes;

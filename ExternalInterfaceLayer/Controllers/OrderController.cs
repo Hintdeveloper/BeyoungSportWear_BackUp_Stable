@@ -11,6 +11,7 @@ using static DataAccessLayer.Entity.Base.EnumBase;
 using Microsoft.AspNetCore.Authorization;
 using System.Drawing;
 using Font = iTextSharp.text.Font;
+using DataAccessLayer.Entity;
 
 namespace ExternalInterfaceLayer.Controllers
 {
@@ -19,10 +20,12 @@ namespace ExternalInterfaceLayer.Controllers
     public class OrderController : ControllerBase
     {
         private readonly IOrderService _orderService;
+        private readonly IVoucherService _IVoucherService;
 
-        public OrderController(IOrderService IOrderService)
+        public OrderController(IOrderService IOrderService, IVoucherService IVoucherService)
         {
             _orderService = IOrderService;
+            _IVoucherService = IVoucherService;
         }
         [HttpPost]
         [Route("create")]
@@ -130,17 +133,19 @@ namespace ExternalInterfaceLayer.Controllers
                     PdfPTable productTable = new PdfPTable(5) { WidthPercentage = 100 };
                     productTable.SetWidths(new float[] { 1, 4, 1, 2, 2 });  // Đặt tỷ lệ cho cột
 
-                    // Tiêu đề các cột
                     productTable.AddCell(CreateCell("STT", Element.ALIGN_CENTER, true, boldFont));
                     productTable.AddCell(CreateCell("Tên sản phẩm", Element.ALIGN_CENTER, true, boldFont));
                     productTable.AddCell(CreateCell("SL", Element.ALIGN_CENTER, true, boldFont));
                     productTable.AddCell(CreateCell("Đơn giá", Element.ALIGN_CENTER, true, boldFont));
                     productTable.AddCell(CreateCell("Thành tiền", Element.ALIGN_CENTER, true, boldFont));
 
-                    // Điền thông tin sản phẩm vào bảng
                     int index = 1;
+                    decimal totalProductAmount = 0;
                     foreach (var detail in orderData.OrderDetailsVM)
                     {
+                        decimal productTotal = detail.Quantity * detail.UnitPrice;
+                        totalProductAmount += productTotal;
+
                         productTable.AddCell(CreateCell(index.ToString(), Element.ALIGN_CENTER, false, normalFont));
                         productTable.AddCell(CreateCell(detail.ProductName, Element.ALIGN_LEFT, false, normalFont));
                         productTable.AddCell(CreateCell(detail.Quantity.ToString(), Element.ALIGN_CENTER, false, normalFont));
@@ -152,9 +157,27 @@ namespace ExternalInterfaceLayer.Controllers
 
                     doc.Add(productTable);
 
-                    decimal? discount = orderData.OrderDetailsVM.FirstOrDefault(o=>o.IDOrder==orderData.ID).Discount;
-                    decimal? shippingCost = orderData.Cotsts;
-                    decimal totalAmount = orderData.TotalAmount;
+                    decimal shippingCost = orderData.Cotsts ?? 0;
+                    decimal totalAmountBeforeDiscount = totalProductAmount + shippingCost;
+
+                    decimal discount = 0;
+                    if (!string.IsNullOrEmpty(orderData.VoucherCode))
+                    {
+                        var voucher = await _IVoucherService.GetByCodeAsync(orderData.VoucherCode);
+                        if (voucher != null)
+                        {
+                            if (voucher.Type == Voucher.Types.Percent)
+                            {
+                                discount = totalAmountBeforeDiscount * (voucher.ReducedValue / 100);
+                            }
+                            else if (voucher.Type == Voucher.Types.Cash)
+                            {
+                                discount = voucher.ReducedValue;
+                            }
+                        }
+                    }
+
+                    decimal totalPrice = totalAmountBeforeDiscount - discount;
 
 
                     PdfPTable totalTable = new PdfPTable(1) { WidthPercentage = 100 };
@@ -162,10 +185,9 @@ namespace ExternalInterfaceLayer.Controllers
 
                     totalTable.AddCell(CreateCell($"Phí vận chuyển: {Currency.FormatCurrency(shippingCost.ToString())}", Element.ALIGN_RIGHT, false, boldFont));
                     totalTable.AddCell(CreateCell($"Giảm giá: {Currency.FormatCurrency(discount.ToString())}", Element.ALIGN_RIGHT, false, boldFont));
-                    totalTable.AddCell(CreateCell($"Tổng cộng: {Currency.FormatCurrency(totalAmount.ToString())}", Element.ALIGN_RIGHT, true, boldFont));
+                    totalTable.AddCell(CreateCell($"Tổng cộng: {Currency.FormatCurrency(totalPrice.ToString())}", Element.ALIGN_RIGHT, true, boldFont));
                     doc.Add(totalTable);
 
-                    // Thêm khoảng cách trước khi footer
                     doc.Add(new iTextSharp.text.Paragraph("\n"));
 
                     // Thêm footer với logo
