@@ -92,6 +92,8 @@ namespace ExternalInterfaceLayer.Controllers
                     var boldFont = new Font(bf, 12, Font.BOLD, BaseColor.BLACK);
                     var titleFont = new Font(bf, 18, Font.BOLD, BaseColor.BLACK);
 
+                    var smallerFont = new Font(bf, 10, normalFont.Style, normalFont.Color); // Điều chỉnh kích thước xuống 8 (hoặc bất kỳ kích thước nào bạn thấy phù hợp)
+
                     Document doc = new Document(new iTextSharp.text.Rectangle(PageSize.A4.Width / 2, PageSize.A4.Height / 2), 20, 20, 20, 20);
                     PdfWriter.GetInstance(doc, memoryStream);
                     doc.Open();
@@ -116,12 +118,12 @@ namespace ExternalInterfaceLayer.Controllers
                     infoTable.WidthPercentage = 100;
                     infoTable.SetWidths(new float[] { 1, 1 });
 
-                    infoTable.AddCell(new PdfPCell(new Phrase($"Hóa đơn cho:\n{orderData.CustomerName}\n{orderData.ShippingAddress}\n{orderData.ShippingAddressLine2}", normalFont))
+                    infoTable.AddCell(new PdfPCell(new Phrase($"Hóa đơn cho:\n{orderData.CustomerName}\n{orderData.ShippingAddress}\n{orderData.ShippingAddressLine2}", smallerFont))
                     {
                         Border = iTextSharp.text.Rectangle.NO_BORDER
                     });
 
-                    infoTable.AddCell(new PdfPCell(new Phrase($"Thanh toán cho:\nBeyoung Sport Wear", normalFont))
+                    infoTable.AddCell(new PdfPCell(new Phrase($"Thanh toán cho:\nBeyoung Sport Wear", smallerFont))
                     {
                         Border = iTextSharp.text.Rectangle.NO_BORDER
                     });
@@ -220,8 +222,12 @@ namespace ExternalInterfaceLayer.Controllers
             var footerFont = new Font(bf, 10, Font.ITALIC, BaseColor.GRAY);
 
             // Tạo bảng footer với 2 cột
-            PdfPTable footerTable = new PdfPTable(2) { WidthPercentage = 100 };
-            footerTable.SetWidths(new float[] { 1, 3 }); // Điều chỉnh tỷ lệ cột nếu cần
+            PdfPTable footerTable = new PdfPTable(2)
+            {
+                WidthPercentage = 100,
+                HorizontalAlignment = Element.ALIGN_CENTER // Căn giữa toàn bộ bảng footer
+            };
+            footerTable.SetWidths(new float[] { 1, 3 }); // Điều chỉnh tỷ lệ cột
 
             // Cấu hình ô chứa logo (bên trái)
             logo.ScaleToFit(50f, 50f); // Điều chỉnh kích thước logo nếu cần
@@ -229,7 +235,8 @@ namespace ExternalInterfaceLayer.Controllers
             {
                 Border = iTextSharp.text.Rectangle.NO_BORDER,
                 HorizontalAlignment = Element.ALIGN_LEFT,
-                VerticalAlignment = Element.ALIGN_MIDDLE
+                VerticalAlignment = Element.ALIGN_MIDDLE,
+                PaddingLeft = 10f // Thêm khoảng cách bên trái nếu cần
             };
 
             // Cấu hình ô chứa thông tin cửa hàng (bên phải)
@@ -237,13 +244,17 @@ namespace ExternalInterfaceLayer.Controllers
             PdfPCell footerTextCell = new PdfPCell(new Phrase(storeInfo, footerFont))
             {
                 Border = iTextSharp.text.Rectangle.NO_BORDER,
-                HorizontalAlignment = Element.ALIGN_RIGHT,
-                VerticalAlignment = Element.ALIGN_MIDDLE
+                HorizontalAlignment = Element.ALIGN_LEFT,  // Đảm bảo căn lề trái cho văn bản
+                VerticalAlignment = Element.ALIGN_MIDDLE,
+                PaddingRight = 10f // Thêm khoảng cách bên phải nếu cần
             };
 
             // Thêm các ô vào bảng theo thứ tự: logo bên trái, thông tin bên phải
             footerTable.AddCell(logoCell);
             footerTable.AddCell(footerTextCell);
+
+            // Thêm một khoảng trống trước khi thêm footer (nếu cần thiết)
+            doc.Add(new iTextSharp.text.Paragraph("\n"));
 
             // Thêm bảng footer vào tài liệu
             doc.Add(footerTable);
