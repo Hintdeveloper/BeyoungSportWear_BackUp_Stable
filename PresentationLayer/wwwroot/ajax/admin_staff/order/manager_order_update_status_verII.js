@@ -23,6 +23,8 @@ function getUserIdFromJwt(jwt) {
 }
 const jwt = getJwtFromCookie();
 const userId = getUserIdFromJwt(jwt);
+console.log('userId', userId);
+
 function checkAuthentication() {
     if (!jwt || !userId) {
         window.location.href = '/login';
@@ -115,13 +117,26 @@ function updateStatus(orderStatus, orderHistories) {
 function viewOrderDetails(orderData) {
     document.getElementById('hexcode').textContent = orderData.hexCode;
     hexCode = orderData.hexCode;
-
     document.getElementById('customer_name').value = orderData.customerName;
     document.getElementById('customer_phone').value = orderData.customerPhone;
     document.getElementById('customer_gmail').value = orderData.customerEmail;
     document.getElementById('shippingadress').value = orderData.shippingAddress;
+    const voucherCodeElement = document.getElementById('voucher_code');
+
+    if (orderData.voucherCode) {
+        voucherCodeElement.innerHTML = `
+        <strong>
+            <button type="button" onclick="openOffersModal('${orderData.voucherCode}')">
+                Xem ưu đãi
+            </button> 
+            ${orderData.voucherCode}
+        </strong>`;
+    } else {
+        voucherCodeElement.innerHTML = 'Không có';
+    }
     document.getElementById('shippingadress2').value = orderData.shippingAddressLine2;
-    document.getElementById('total_price').textContent = `${orderData.totalAmount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })} (Phí giao hàng:${orderData.cotsts.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })})`;
+    document.getElementById('total_price').textContent = `${orderData.totalAmount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}`;
+    document.getElementById('costs_display_1').textContent = ` (Phí giao hàng: ${orderData.cotsts.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })})`;
     document.getElementById('paymentstatus').textContent = translatePaymentStatus(orderData.paymentStatus);
     document.getElementById('orderstatus').textContent = translateOrderStatus(orderData.orderStatus);
     document.getElementById('shippingmethod').textContent = translateShippingMethod(orderData.shippingMethod);
@@ -133,35 +148,35 @@ function viewOrderDetails(orderData) {
 
         orderData.orderDetailsVM.forEach(details => {
             const productHTML = `
-        <li class="col-md-4" data-id-options="${details.idOptions}" style="padding: 10px; box-sizing: border-box;">
-            <figure class="itemside"
-                    style="display: flex; align-items: center; border: 1px solid #ddd; border-radius: 5px; padding: 10px; background-color: #fff;">
-                <div class="aside" style="flex-shrink: 0; margin-right: 10px;">
-                    <img src="${details.imageURL}" class="img-sm" style="max-width: 100%; height: auto; border-radius: 5px;">
-                </div>
-                <figcaption class="info" style="flex: 1;">
-                    <p class="title" style="margin: 0 0 10px 0; font-size: 1.2em; font-weight: bold;">
-                        ${details.productName}<br>${details.sizeName}, ${details.colorName} 
-                    </p>
-                    <div class="d-flex align-items-center" style="margin-bottom: 10px;">
-                        <label for="quantity_${details.id}" class="me-2" style="margin: 0;">Số lượng:</label>
-                        <input type="number" id="quantity_${details.id}" name="quantity" value="${details.quantity}" min="1"
-                               class="form-control form-control-sm"
-                               style="width: 80px; padding: 5px; margin: 0;"
-                               oninput="updateTotalPrice('${details.id}', ${details.unitPrice})">
-                    </div>
-                    <span class="text-muted" style="font-size: 1.2em; font-weight: bold;">
-                        Giá bán: ${details.unitPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}                           
-                    </span>
-                    <br>
-                    <span class="text-muted" style="font-size: 1.2em; font-weight: bold;">
-                        Tổng giá: <span id="total_${details.id}">${details.totalAmount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</span>
-                    </span>
-                </figcaption>
-            </figure>
-        </li>
-    `;
-            productContainer.insertAdjacentHTML('beforeend', productHTML);
+                <li class="col-md-4" data-id-options="${details.idOptions}" style="padding: 10px; box-sizing: border-box;">
+                    <figure class="itemside"
+                            style="display: flex; align-items: center; border: 1px solid #ddd; border-radius: 5px; padding: 10px; background-color: #fff;">
+                        <div class="aside" style="flex-shrink: 0; margin-right: 10px;">
+                            <img src="${details.imageURL}" class="img-sm" style="max-width: 100%; height: auto; border-radius: 5px;">
+                        </div>
+                        <figcaption class="info" style="flex: 1;">
+                            <p class="title" style="margin: 0 0 10px 0; font-size: 1.2em; font-weight: bold;">
+                                ${details.productName}<br>${details.sizeName}, ${details.colorName} 
+                            </p>
+                            <div class="d-flex align-items-center" style="margin-bottom: 10px;">
+                                <label for="quantity_${details.id}" class="me-2" style="margin: 0;">Số lượng:</label>
+                                <input type="number" id="quantity_${details.id}" name="quantity" value="${details.quantity}" min="1"
+                                       class="form-control form-control-sm"
+                                       style="width: 80px; padding: 5px; margin: 0;"
+                                       oninput="updateTotalPrice('${details.id}', ${details.unitPrice})">
+                            </div>
+                            <span class="text-muted" style="font-size: 1.2em; font-weight: bold;">
+                                Giá bán: ${details.unitPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}                           
+                            </span>
+                            <br>
+                            <span class="text-muted" style="font-size: 1.2em; font-weight: bold;">
+                                Tổng giá: <span id="total_${details.id}">${details.totalAmount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</span>
+                            </span>
+                        </figcaption>
+                    </figure>
+                </li>
+            `;
+                    productContainer.insertAdjacentHTML('beforeend', productHTML);
         });
 
     }
@@ -219,6 +234,101 @@ function viewOrderDetails(orderData) {
 document.getElementById('btn_printf_order_pdf').addEventListener('click', function () {
     printf_order_pdf(hexCode);
 });
+function openOffersModal(voucherCode) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', 'https://localhost:7241/api/Voucher/' + voucherCode, true);
+    xhr.setRequestHeader('Accept', '*/*');
+
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            var data = JSON.parse(xhr.responseText);
+
+            var offersContent = document.getElementById('offersContent');
+            var voucherCodeElement = document.getElementById('voucher_code');
+
+            offersContent.innerHTML = `
+                <div style="border: 1px solid #ddd; border-radius: 8px; padding: 15px; background-color: #f9f9f9; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+                    <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                        <i class="fa fa-gift" style="font-size: 24px; color: #e53935; margin-right: 10px;"></i>
+                        <div style="font-size: 18px; font-weight: bold; color: #333;">Ưu đãi: ${data.name}</div>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <p><strong>Mã Voucher:</strong> ${data.code}</p>
+                        <p><strong>Giảm:</strong> ${data.type === 0 ? formatPercentage(data.reducedValue) : formatCurrency(data.reducedValue)} </p>
+                        <p><strong>Tối thiểu:</strong> ${formatCurrency(data.minimumAmount)}</p>
+                        <p><strong>Giảm tối đa:</strong> ${formatCurrency(data.maximumAmount)}</p>
+                        <div style="display: flex; gap: 10px;">
+                            <p><strong>Từ:</strong> ${formatDate_ver1(data.startDate)}</p>
+                            <p><strong>Đến:</strong> ${formatDate_ver1(data.endDate)}</p>
+                        </div>
+                        <p><strong>Số lượng còn lại:</strong> ${data.quantity}</p>
+                    </div>
+                    <div>
+                        <strong>Hạn sử dụng còn:</strong> <span id="time-left" style="font-weight: bold; color: #e53935;"></span>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('offersModal').style.display = 'block';
+            var countdownInterval = setInterval(function () {
+                calculateTimeLeft(data.endDate);
+            }, 1000);
+        } else {
+            console.error('Failed to fetch data');
+        }
+    };
+
+    xhr.onerror = function () {
+        console.error('Request error');
+    };
+
+    xhr.send();
+}
+function formatCurrency(value) {
+    return value.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+}
+
+function formatPercentage(value) {
+    return value.toFixed(0) + ' %';
+}
+
+function formatDate_ver1(date) {
+    const dateObj = new Date(date);
+
+    const datePart = dateObj.toLocaleDateString('vi-VN', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    });
+
+    const timePart = dateObj.toLocaleTimeString('vi-VN', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    });
+
+    return `${datePart} ${timePart}`;
+}
+
+
+function calculateTimeLeft(endDate) {
+    var end = new Date(endDate).getTime();
+    var now = new Date().getTime();
+    var timeLeft = end - now;
+
+    if (timeLeft <= 0) {
+        document.getElementById('time-left').innerHTML = 'Đã hết hạn';
+        clearInterval(countdownInterval); 
+        return;
+    }
+
+    var days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+    var hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    var minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+    var seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+    document.getElementById('time-left').innerHTML = days + ' ngày ' + hours + ' giờ ' + minutes + ' phút ' + seconds + ' giây';
+}
 function printf_order_pdf(hexCode) {
     Swal.fire({
         title: 'Xác nhận in hóa đơn?',
@@ -427,11 +537,11 @@ document.getElementById('btn_update_order').addEventListener('click', function (
                 customerName: document.getElementById('customer_name').value,
                 customerPhone: customerPhone,
                 customerEmail: customerEmail,
+                shippingAddress: document.getElementById('shippingadress').value,
                 shippingAddressLine2: document.getElementById('shippingadress2').value,
-                cotsts: 0,
+                cotsts: document.getElementById('costs_1').innerHTML,
                 orderDetails: orderDetails
             };
-
             var xhr = new XMLHttpRequest();
             xhr.open('PUT', apiUrl, true);
             xhr.setRequestHeader('Content-Type', 'application/json');
@@ -760,12 +870,14 @@ document.addEventListener("DOMContentLoaded", function () {
             modal.style.display = "none";
         }
     }
+
     var token = 'd01771f0-3f8b-11ef-8f55-4ee3d82283af';
     var Parameter = {
         url: "https://raw.githubusercontent.com/kenzouno1/DiaGioiHanhChinhVN/master/data.json",
         method: "GET",
         responseType: "json",
     };
+
     var xhr = new XMLHttpRequest();
     xhr.open('GET', Parameter.url, true);
     xhr.responseType = 'json';
@@ -780,6 +892,7 @@ document.addEventListener("DOMContentLoaded", function () {
         console.error('Request failed');
     };
     xhr.send();
+
     function renderCity(data) {
         var citiesSelect = document.getElementById("city_1");
         var districtsSelect = document.getElementById("district_1");
@@ -806,9 +919,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     districtsSelect.appendChild(option);
                 });
             }
+            updateAddress();
             calculateShippingFee();
         });
-
 
         districtsSelect.addEventListener('change', function () {
             wardsSelect.innerHTML = '<option value="" selected>Chọn phường xã</option>';
@@ -824,13 +937,24 @@ document.addEventListener("DOMContentLoaded", function () {
                     });
                 }
             }
+            updateAddress();
             calculateShippingFee();
         });
 
         wardsSelect.addEventListener('change', function () {
+            updateAddress();
             calculateShippingFee();
         });
+
+        function updateAddress() {
+            var city = citiesSelect.value;
+            var district = districtsSelect.value;
+            var ward = wardsSelect.value;
+            var fullAddress = `${city}, ${district}, ${ward}`;
+            document.getElementById('shippingadress').value = fullAddress;
+        }
     }
+
     async function calculateShippingFee() {
         var city = document.getElementById('city_1').value;
         var district = document.getElementById('district_1').value;
@@ -840,6 +964,7 @@ document.addEventListener("DOMContentLoaded", function () {
             await loadTinhThanh();
         }
     }
+
     async function loadTinhThanh() {
         var tinhthanh = document.getElementById('city_1').value;
         let provinceID;
@@ -905,7 +1030,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         wardCode = item.WardCode;
                     }
                 });
-                getShippingFee(provinceID, districtID, wardCode),
+                getShippingFee(provinceID, districtID, wardCode);
                 console.log('Mã Tỉnh: ' + provinceID + ', Mã quận: ' + districtID + ', Mã xã: ' + wardCode);
             } catch (error) {
                 console.error('Error:', error);
@@ -945,12 +1070,22 @@ async function getShippingFee(provinceID, districtID, wardCode) {
 
         if (responseData.code === 200) {
             let shippingFee = responseData.data.total;
-            shippingFee = responseData.data.total;
-            document.getElementById('costs_1').innerText = shippingFee;
-            document.getElementById('costs_display_1').innerText = shippingFee.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+            console.log('Giá:', shippingFee);
+
+            var costsElement = document.getElementById('costs_1');
+            var costsDisplayElement = document.getElementById('costs_display_1');
+            console.log('costs_1:', document.getElementById('costs_1'));
+            console.log('costs_display_1:', document.getElementById('costs_display_1'));
+
+
+            if (costsElement && costsDisplayElement) {
+                costsElement.innerText = shippingFee;
+                costsDisplayElement.innerText = ` (Phí giao hàng: ${shippingFee.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })})`; 
+            } else {
+                console.error('Elements not found: costs_1 or costs_display_1');
+            }
 
           
-            console.log('Giá:', shippingFee);
         } else {
             console.error('API Error:', responseData.message);
         }

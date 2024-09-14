@@ -226,13 +226,13 @@ namespace BusinessLogicLayer.Services.Implements
                     ID = Guid.NewGuid(),
                     IDOrder = order.ID,
                     IDUser = request.IDUser ?? defaultUserID,
-                    EditingHistory = "Đơn hàng được tạo vào ngày "
+                    ChangeDetails = "Đơn hàng được tạo vào ngày "
                                     + DateTime.Now.ToString("dd-MM-yyyy 'lúc' HH:mm") + " với tổng giá trị: "
                                     + @Currency.FormatCurrency(order.TotalAmount.ToString()) + "đ" + "("
                                     + @Currency.NumberToText((double)order.TotalAmount, true) + ")",
                     ChangeDate = DateTime.Now,
                     ChangeType = changeType,
-                    ChangeDetails = "Tạo đơn hàng mới",
+                    EditingHistory = "Tạo đơn hàng mới",
                     Status = 1,
                     CreateBy = request.CreateBy,
                     CreateDate = DateTime.Now,
@@ -720,8 +720,7 @@ namespace BusinessLogicLayer.Services.Implements
 
                 if (order.Cotsts != request.Cotsts)
                 {
-                    changeDetails.AppendLine($"Giá vận chuyển: {order.Cotsts} => {request.Cotsts}");
-                    editingHistory.AppendLine("Thay đổi giá vận chuyển");
+                    changeDetails.AppendLine($"Giá vận chuyển: {Currency.FormatCurrency(order.Cotsts.ToString())} đ => {Currency.FormatCurrency(request.Cotsts.ToString())} đ");
                     order.Cotsts = request.Cotsts;
                 }
 
@@ -984,21 +983,17 @@ namespace BusinessLogicLayer.Services.Implements
 
             if (newStatus == OrderStatus.Cancelled)
             {
-                // Hoàn lại tồn kho cho các sản phẩm trong đơn hàng
                 foreach (var orderItem in order.OrderDetails)
                 {
                     await IncreaseStockAsync(orderItem.IDOptions, orderItem.Quantity);
                 }
 
-                // Kiểm tra nếu đơn hàng có sử dụng voucher
                 if (!string.IsNullOrEmpty(order.VoucherCode))
                 {
-                    // Tìm voucher theo mã VoucherCode
                     var voucher = await _dbcontext.Voucher.FirstOrDefaultAsync(v => v.Code == order.VoucherCode);
 
                     if (voucher != null)
                     {
-                        // Nếu voucher.Status == 0, chỉ cập nhật số lượng và không thao tác gì thêm
                         if (voucher.Status == 0)
                         {
                             voucher.Quantity += 1;
@@ -1006,15 +1001,12 @@ namespace BusinessLogicLayer.Services.Implements
                         }
                         else
                         {
-                            // Nếu voucher còn hoạt động và chưa hết hạn
                             if (voucher.IsActive != StatusVoucher.Finished)
                             {
                                 voucher.Quantity += 1;
 
-                                // Kiểm tra nếu voucher.Status == 1 nhưng đã hết hạn, bỏ qua `VoucherUser`
                                 if (voucher.Status == 1 && voucher.EndDate < DateTime.Now)
                                 {
-                                    // Voucher đã hết hạn, chỉ cập nhật số lượng
                                     return new Result
                                     {
                                         Success = true,
@@ -1023,19 +1015,16 @@ namespace BusinessLogicLayer.Services.Implements
                                 }
                                 else
                                 {
-                                    // Nếu voucher chưa hết hạn, tiếp tục thao tác với VoucherUser
                                     var voucherUser = await _dbcontext.VoucherUser
                                         .FirstOrDefaultAsync(vu => vu.IDVoucher == voucher.ID && vu.IDUser == order.IDUser);
 
                                     if (voucherUser != null)
                                     {
-                                        // Cập nhật trạng thái của `VoucherUser`
                                         voucherUser.Status = 1;
                                         _dbcontext.VoucherUser.Update(voucherUser);
                                     }
                                     else
                                     {
-                                        // Không tìm thấy `VoucherUser`
                                         return new Result
                                         {
                                             Success = false,
@@ -1048,7 +1037,6 @@ namespace BusinessLogicLayer.Services.Implements
                     }
                     else
                     {
-                        // Không tìm thấy voucher
                         return new Result
                         {
                             Success = false,

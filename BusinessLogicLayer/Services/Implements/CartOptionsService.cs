@@ -107,6 +107,7 @@ namespace BusinessLogicLayer.Services.Implements
                                                             Quantity = co.Quantity,
                                                             SizeName = co.Options.Sizes.Name,
                                                             ColorName = co.Options.Colors.Name,
+                                                            CreateDate = co.CreateDate,
                                                             UnitPrice = co.UnitPrice,
                                                             TotalPrice = co.Quantity * co.UnitPrice,
                                                         })
@@ -117,6 +118,7 @@ namespace BusinessLogicLayer.Services.Implements
         {
             var Obj = await _dbcontext.CartOptions
                           .Where(c => c.IDCart == IDCart && c.IDOptions == IDOptions)
+                          .OrderByDescending(co => co.CreateDate)
                           .FirstOrDefaultAsync();
 
             if (Obj == null)

@@ -18,7 +18,8 @@ namespace BusinessLogicLayer.Services.Implements
         public async Task<List<OrderHistoryVM>> GetByIDOrderAsync(Guid IDOrder)
         {
             var orderHistories = await _dbContext.OrderHistory
-                                                 .Where(oh => oh.IDOrder == IDOrder)
+                                                 .Where(oh => oh.IDOrder == IDOrder).OrderByDescending(oh => oh.CreateDate)
+
                                                  .ToListAsync();
             return _mapper.Map<List<OrderHistoryVM>>(orderHistories);
         }
@@ -31,13 +32,15 @@ namespace BusinessLogicLayer.Services.Implements
         {
             var orderHistories = await _dbContext.OrderHistory
                             .Where(o => o.Status == 1)
+                            .OrderByDescending(oh => oh.CreateDate)
                             .ToListAsync();
             return _mapper.Map<List<OrderHistoryVM>>(orderHistories);
         }
 
         public async Task<List<OrderHistoryVM>> GetAllAsync()
         {
-            var orderHistories = await _dbContext.OrderHistory
+            var orderHistories = await _dbContext.OrderHistory.OrderByDescending(oh => oh.CreateDate)
+
                             .ToListAsync();
             return _mapper.Map<List<OrderHistoryVM>>(orderHistories);
         }

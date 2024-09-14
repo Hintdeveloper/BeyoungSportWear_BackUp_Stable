@@ -1222,11 +1222,11 @@ async function fetchProvinces(provinceName) {
         if (data && Array.isArray(data.data)) {
             const cleanedProvinceName = provinceName.replace(/Tỉnh\s*|Thành phố\s*/i, '').trim();
 
-            console.log(cleanedProvinceName);
-            console.log('Danh sách các tỉnh/thành phố:');
-            data.data.forEach(province => {
-                console.log(province.ProvinceName);
-            });
+            //console.log(cleanedProvinceName);
+            //console.log('Danh sách các tỉnh/thành phố:');
+            //data.data.forEach(province => {
+            //    console.log(province.ProvinceName);
+            //});
 
             const province = data.data.find(province => province.ProvinceName.replace(/Tỉnh\s*|Thành phố\s*/i, '').trim() === cleanedProvinceName);
 
@@ -1325,7 +1325,7 @@ async function getShippingFee(provinceID, districtID, wardCode) {
 
         const responseData = await response.json();
 
-        console.log('API Response:', responseData);
+        //console.log('API Response:', responseData);
         if (responseData.code === 200) {
             shippingFee = responseData.data.total;
             document.getElementById('fee_ship').innerText = shippingFee;
@@ -1344,7 +1344,7 @@ async function getShippingFee(provinceID, districtID, wardCode) {
                 }
             );
 
-            console.log('Giá:' + shippingFee)
+            //console.log('Giá:' + shippingFee)
         } else {
             console.error('Error:', data.message);
         }

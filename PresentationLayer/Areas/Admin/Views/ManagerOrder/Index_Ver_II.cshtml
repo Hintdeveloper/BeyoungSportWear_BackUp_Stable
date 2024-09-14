@@ -4,39 +4,6 @@
 }
 
 <style>
-    body {
-        background-color: #f5f5f5;
-        font-family: 'Open Sans', sans-serif;
-        margin: 0;
-        padding: 0;
-    }
-
-    .container {
-        margin: 50px auto;
-        max-width: 900px;
-    }
-
-    .card {
-        background-color: #fff;
-        border: 1px solid #ddd;
-        border-radius: 0.25rem;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        margin-bottom: 20px;
-        overflow: hidden;
-    }
-
-    .card-header {
-        background-color: #f8f9fa;
-        border-bottom: 1px solid #ddd;
-        padding: 15px 20px;
-        font-size: 18px;
-        font-weight: bold;
-        color: #333;
-    }
-
-    .card-body {
-        padding: 20px;
-    }
 
     .track {
         border-radius: 0.25rem;
@@ -297,85 +264,117 @@
 
 <article class="card">
     <div class="card-body">
-        <h5><label>Mã đơn hàng</label> <label id="hexcode"></label> </h5>
-        <article class="card" style="border: 1px solid #ced4da; border-radius: 4px; padding: 15px; background-color: #fff;">
-            <div class="card-body" style="padding: 0;">
-                <div class="row" style="margin: 0;">
-                    <div class="col-md-6" style="padding: 0;">
-                        <div class="col contact-info" style="margin-bottom: 10px;">
-                            <i class="fa fa-user icon" style="margin-right: 5px;"></i>
-                            <strong class="label" style="font-weight: bold;">Người nhận hàng:</strong>
-                            <input type="text" class="form-control" style="width: 70%; height: 21px; margin-left: 5px;" id="customer_name" />
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr>
+                    <th colspan="2">
+                        <h5>
+                            <label>Mã đơn hàng</label>
+                            <label id="hexcode"></label>
+                        </h5>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="width: 30%; vertical-align: middle;">
+                        <i class="fa fa-user icon"></i>
+                        <label for="customer_name" style="font-weight: bold;">Người nhận hàng:</label>
+                    </td>
+                    <td style="width: 70%;">
+                        <input type="text" class="form-control" style="border-radius: 10px; height: 21px; width: 100%;" id="customer_name" />
+                    </td>
+                </tr>
+                <tr>
+                    <td style="vertical-align: middle;">
+                        <i class="fa fa-phone icon"></i>
+                        <label for="customer_phone" style="font-weight: bold;">Số điện thoại:</label>
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" style="border-radius: 10px; height: 21px; width: 100%;" id="customer_phone" />
+                    </td>
+                </tr>
+                <tr>
+                    <td style="vertical-align: middle;">
+                        <i class="fa fa-envelope icon"></i>
+                        <label for="customer_gmail" style="font-weight: bold;">Email:</label>
+                    </td>
+                    <td>
+                        <input type="email" class="form-control" style="border-radius: 10px; height: 21px; width: 100%;" id="customer_gmail" />
+                    </td>
+                </tr>
+                <tr>
+                    <td style="vertical-align: middle;">
+                        <i class="fa fa-money-bill-wave icon"></i>
+                        <label for="total_price" style="font-weight: bold;">Giá trị đơn hàng:</label>
+                    </td>
+                    <td>
+                        <span id="total_price"></span><span id="costs_display_1"></span>
+                        <div id="costs_1" hidden></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td><i class="fas fa-tag icon"></i> <label for="voucher_code" style="font-weight: bold;">Mã voucher:</label></td>
+                    <td><div id="voucher_code"></div></td>
+                </tr>
+                <tr>
+                    <td style="vertical-align: middle;">
+                        <label for="shippingadress" style="font-weight: bold;">Địa chỉ giao hàng:</label>
+                    </td>
+                    <td>
+                        <div style="display: flex; align-items: center;">
+                            <input type="text" class="form-control" style="border-radius: 10px; border: 1px solid #ced4da; flex: 1;height: 21px; margin-right: 10px;" id="shippingadress" readonly />
+                            <button id="openAddressModalBtn1" type="button" style="font-size: 14px; background-color: #6c757d; color: #fff; border: none; border-radius: 20px; cursor: pointer; padding: 5px 10px;" class="btn btn-secondary">Chọn địa chỉ</button>
                         </div>
-
-                        <div class="col contact-info" style="margin-bottom: 10px;">
-                            <i class="fa fa-phone icon" style="margin-right: 5px;"></i>
-                            <strong class="label" style="font-weight: bold;">Số điện thoại:</strong>
-                            <input type="text" class="form-control" style="width: 70%; height: 21px; margin-left: 5px;" id="customer_phone" />
-                        </div>
-
-                        <div class="col contact-info" style="margin-bottom: 10px;">
-                            <i class="fa fa-envelope icon" style="margin-right: 5px;"></i>
-                            <strong class="label" style="font-weight: bold;">Email:</strong>
-                            <input type="email" class="form-control" style="width: 70%; height: 21px; margin-left: 5px;" id="customer_gmail" />
-                        </div>
-
-                        <div class="col contact-info" style="margin-bottom: 10px;">
-                            <i class="fa fa-money-bill-wave icon" style="margin-right: 5px;"></i>
-                            <strong class="label" style="font-weight: bold;">Giá trị đơn hàng:</strong>
-                            <span class="icon-text" id="total_price" style="margin-left: 5px;">(<small id="costs_display_1"></small>)</span>
-                            <div id="costs_1" hidden></div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6" style="padding: 0;">
-                        <div class="col contact-info row" style="margin-bottom: 10px;">
-                            <div class="col-md-7 d-flex align-items-center" style="padding: 10px; background-color: #f8f9fa;">
-                                <div style="flex: 1;">
-                                    <input type="text" class="form-control" style="width: 100%; height: 31px; border-radius: 4px; border: 1px solid #ced4da; margin-top: 5px;" id="shippingadress" placeholder="" readonly />
-                                </div>
-                            </div>
-
-                            <div class="col-md-3 d-flex align-items-center" style="padding: 10px; background-color: #f8f9fa;">
-                                <button id="openAddressModalBtn1" type="button" style="width: 100%; height: 40px; font-size: 14px; background-color: #6c757d; color: #fff; border: none; border-radius: 4px; cursor: pointer;" class="btn btn-secondary">
-                                    Chọn địa chỉ
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="col contact-info" style="margin-bottom: 10px;">
-                            <i class="fas fa-map-marker-alt" style="margin-right: 5px;"></i>
-                            <strong class="label" style="font-weight: bold;">Địa chỉ cụ thể:</strong>
-                            <input type="text" class="form-control" style="width: 70%; height: 21px; margin-left: 5px;" id="shippingadress2" />
-                        </div>
-
-                        <div class="col contact-info" style="margin-bottom: 10px;">
-                            <i class="fa fa-credit-card icon" style="margin-right: 5px;"></i>
-                            <strong class="label" style="font-weight: bold;">Trạng thái thanh toán:</strong>
-                            <span class="icon-text" id="paymentstatus" style="margin-left: 5px;"></span>
-                        </div>
-
-                        <div class="col contact-info" style="margin-bottom: 10px;">
-                            <i class="fas fa-info-circle icon" style="margin-right: 5px;"></i>
-                            <strong class="label" style="font-weight: bold;">Trạng thái đơn hàng:</strong>
-                            <span class="icon-text" id="orderstatus" style="margin-left: 5px;"></span>
-                        </div>
-
-                        <div class="col contact-info" style="margin-bottom: 10px;">
-                            <i class="fas fa-truck icon" style="margin-right: 5px;"></i>
-                            <strong class="label" style="font-weight: bold;">Phương thức giao hàng:</strong>
-                            <span class="icon-text" id="shippingmethod" style="margin-left: 5px;"></span>
-                        </div>
-
-                        <div class="col contact-info" style="margin-bottom: 10px;">
-                            <i class="fas fa-tags icon" style="margin-right: 5px;"></i>
-                            <strong class="label" style="font-weight: bold;">Loại đơn hàng:</strong>
-                            <span class="icon-text" id="orrdertype" style="margin-left: 5px;"></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </article>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="vertical-align: middle;">
+                        <i class="fas fa-map-marker-alt icon"></i>
+                        <label for="shippingadress2" style="font-weight: bold;">Địa chỉ cụ thể:</label>
+                    </td>
+                    <td>
+                        <input type="text" class="form-control" style="border-radius: 10px;height: 21px; width: 100%;" id="shippingadress2" />
+                    </td>
+                </tr>
+                <tr>
+                    <td style="vertical-align: middle;">
+                        <i class="fa fa-credit-card icon"></i>
+                        <label for="paymentstatus" style="font-weight: bold;">Trạng thái thanh toán:</label>
+                    </td>
+                    <td>
+                        <span id="paymentstatus"></span>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="vertical-align: middle;">
+                        <i class="fas fa-info-circle icon"></i>
+                        <label for="orderstatus" style="font-weight: bold;">Trạng thái đơn hàng:</label>
+                    </td>
+                    <td>
+                        <span id="orderstatus"></span>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="vertical-align: middle;">
+                        <i class="fas fa-truck icon"></i>
+                        <label for="shippingmethod" style="font-weight: bold;">Phương thức giao hàng:</label>
+                    </td>
+                    <td>
+                        <span id="shippingmethod"></span>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="vertical-align: middle;">
+                        <i class="fas fa-tags icon"></i>
+                        <label for="orrdertype" style="font-weight: bold;">Loại đơn hàng:</label>
+                    </td>
+                    <td>
+                        <span id="orrdertype"></span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
 
         <div class="track" id="track">
             <div class="step" id="step-0">
@@ -460,107 +459,50 @@
     </div>
 </div>
 
-<div class="modal fade" id="editUserModal">
-    <div class="modal-dialog modal-lg">
+<!-- Modal -->
+<div id="addressModal" class="modal" style="
+    display: none; /* Ẩn modal khi không cần thiết */
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4); /* Màu nền mờ */
+">
+    <div class="modal-dialog modal-lg" style="
+        margin: 15% auto;
+        padding: 20px;
+        width: 80%;
+        background-color: white;
+        border-radius: 4px;
+    ">
         <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title">Thông Tin Người Chỉnh Sửa</h4>
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="row">
-                    <div class="col-md-4">
-                        <img id="userImage" src="" alt="User Image" class="img-fluid">
-                    </div>
-                    <div class="col-md-8">
-                        <p><strong>UserName:</strong> <span id="userName"></span></p>
-                        <p><strong>Họ và Tên:</strong> <span id="firstAndLastName"></span></p>
-                        <p><strong>Số điện thoại:</strong> <span id="userPhoneNumber"></span></p>
-                        <p><strong>Gmail:</strong> <span id="userEmail"></span></p>
-                        <p><strong>Chức vụ:</strong> <span id="roleName"></span></p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-<div class="modal fade" id="editAddressModal" tabindex="-1" aria-labelledby="editAddressModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="editAddressModalLabel">Sửa thông tin người nhận hàng</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="editAddressForm">
-                    <div class="mb-3">
-                        <label for="recipientName" class="form-label">Tên người nhận</label>
-                        <input type="text" class="form-control" id="recipientName" value="">
-                    </div>
-                    <div class="mb-3">
-                        <label for="phoneNumber" class="form-label">Số điện thoại</label>
-                        <input type="text" class="form-control" id="phoneNumber" value="">
-                    </div>
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="email" value="">
-                    </div>
-                    <div class="mb-3 row">
-                        <div class="col-md-4">
-                            <label for="city" class="form-label">Tỉnh/Thành phố</label>
-                            <select id="city" class="form-control">
-                                <option value="">Chọn tỉnh/thành phố</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="district" class="form-label">Quận/Huyện</label>
-                            <select id="district" class="form-control">
-                                <option value="">Chọn quận/huyện</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="ward" class="form-label">Phường/Xã</label>
-                            <select id="ward" class="form-control">
-                                <option value="">Chọn phường/xã</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="street" class="form-label">Địa chỉ cụ thể</label>
-                        <input type="text" class="form-control" id="street" value="32/84/57 số 7">
-                    </div>
-
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                <button type="button" class="btn btn-primary">Lưu thay đổi</button>
-            </div>
-        </div>
-    </div>
-</div>
-<div id="addressModal" class="modal">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Chọn địa chỉ giao hàng</h2>
-            <div class="mb-3 row">
-                <div class="col-md-4">
-                    <label for="city" class="form-label">Tỉnh/Thành phố</label>
-                    <select id="city_1" class="form-control">
+            <span class="close" style="
+                color: #aaa;
+                float: right;
+                font-size: 28px;
+                font-weight: bold;
+                cursor: pointer;
+            ">&times;</span>
+            <h2 style="margin-top: 0;">Chọn địa chỉ giao hàng</h2>
+            <div class="mb-3 row" style="margin-bottom: 15px;">
+                <div class="col-md-4" style="margin-bottom: 10px;">
+                    <label for="city_1" class="form-label">Tỉnh/Thành phố</label>
+                    <select id="city_1" class="form-control" style="width: 100%;">
                         <option value="">Chọn tỉnh/thành phố</option>
                     </select>
                 </div>
-                <div class="col-md-4">
-                    <label for="district" class="form-label">Quận/Huyện</label>
-                    <select id="district_1" class="form-control">
+                <div class="col-md-4" style="margin-bottom: 10px;">
+                    <label for="district_1" class="form-label">Quận/Huyện</label>
+                    <select id="district_1" class="form-control" style="width: 100%;">
                         <option value="">Chọn quận/huyện</option>
                     </select>
                 </div>
-                <div class="col-md-4">
-                    <label for="ward" class="form-label">Phường/Xã</label>
-                    <select id="ward_1" class="form-control">
+                <div class="col-md-4" style="margin-bottom: 10px;">
+                    <label for="ward_1" class="form-label">Phường/Xã</label>
+                    <select id="ward_1" class="form-control" style="width: 100%;">
                         <option value="">Chọn phường/xã</option>
                     </select>
                 </div>
@@ -569,5 +511,15 @@
     </div>
 </div>
 
-<script src="~/ajax/admin_staff/order/manager_order_update_status_verII.js"></script>
+<div id="offersModal" class="modal">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Voucher đã sử dụng của đơn hàng</h2>
+            <div id="offersContent">
+            </div>
+        </div>
+    </div>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script type="text/javascript" src="~/ajax/admin_staff/order/manager_order_update_status_verII.js"></script>

@@ -306,6 +306,7 @@ namespace BusinessLogicLayer.Services.Implements
             }
             var voucherVM = new VoucherVM
             {
+                ID = voucher.ID,
                 Code = voucher.Code,
                 Name = voucher.Name,
                 StartDate = voucher.StartDate,
@@ -315,6 +316,7 @@ namespace BusinessLogicLayer.Services.Implements
                 MinimumAmount = voucher.MinimumAmount,
                 MaximumAmount = voucher.MaximumAmount,
                 ReducedValue = voucher.ReducedValue,
+                Status = voucher.Status,
                 IsActive = voucher.IsActive
             };
 

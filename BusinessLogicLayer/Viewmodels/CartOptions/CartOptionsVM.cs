@@ -6,6 +6,7 @@ namespace BusinessLogicLayer.Viewmodels.CartOptions
     public class CartOptionsVM
     {
         public Guid IDOptions { get; set; }
+        public DateTime CreateDate { get; set; }
         public string IDCart { get; set; }
         public string ProductName { get; set; }
         public string ImageURL { get; set; }

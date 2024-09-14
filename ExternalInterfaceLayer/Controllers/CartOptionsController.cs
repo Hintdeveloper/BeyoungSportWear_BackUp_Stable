@@ -97,7 +97,7 @@ namespace ExternalInterfaceLayer.Controllers
 
             if (result)
             {
-                return Ok("Cập nhật thành công.");
+                return Ok(request);
             }
             else
             {
