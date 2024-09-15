@@ -109,6 +109,7 @@ namespace ExternalInterfaceLayer.Controllers
                         throw new Exception("Order data is null.");
                     }
 
+                    // Tạo bảng thông tin khách hàng và thanh toán
                     PdfPTable infoTable = new PdfPTable(2);
                     infoTable.HorizontalAlignment = Element.ALIGN_LEFT;
                     infoTable.WidthPercentage = 100;
@@ -119,6 +120,10 @@ namespace ExternalInterfaceLayer.Controllers
                         Border = iTextSharp.text.Rectangle.NO_BORDER
                     });
 
+                    infoTable.AddCell(new PdfPCell(new Phrase($"Thanh toán cho:\nBeyoung Sport Wear", smallerFont))
+                    {
+                        Border = iTextSharp.text.Rectangle.NO_BORDER
+                    });
 
                     doc.Add(infoTable);
                     doc.Add(new iTextSharp.text.Paragraph("\n"));
@@ -150,7 +155,7 @@ namespace ExternalInterfaceLayer.Controllers
                     doc.Add(productTable);
 
                     decimal shippingCost = orderData.Cotsts ?? 0;
-                    decimal totalAmountBeforeDiscount = totalProductAmount + shippingCost;
+                    decimal totalAmountBeforeDiscount = totalProductAmount;
 
                     decimal discount = 0;
                     if (!string.IsNullOrEmpty(orderData.VoucherCode))
@@ -161,23 +166,36 @@ namespace ExternalInterfaceLayer.Controllers
                             if (voucher.Type == Voucher.Types.Percent)
                             {
                                 discount = totalAmountBeforeDiscount * (voucher.ReducedValue / 100);
+                                if(discount > voucher.MaximumAmount)
+                                {
+                                    discount = voucher.MaximumAmount;   
+                                }
+
                             }
                             else if (voucher.Type == Voucher.Types.Cash)
                             {
-                                discount = voucher.ReducedValue;
+                                if(voucher.ReducedValue > voucher.MaximumAmount)
+                                {
+                                    discount = voucher.MaximumAmount;
+                                }
+                                else
+                                {
+                                    discount = voucher.ReducedValue;
+                                }
                             }
                         }
                     }
 
                     decimal totalPrice = totalAmountBeforeDiscount - discount;
 
+                    decimal finalPrice = totalPrice + shippingCost;
 
                     PdfPTable totalTable = new PdfPTable(1) { WidthPercentage = 100 };
                     totalTable.SetWidths(new float[] { 1 });
 
                     totalTable.AddCell(CreateCell($"Phí vận chuyển: {Currency.FormatCurrency(shippingCost.ToString())}", Element.ALIGN_RIGHT, false, boldFont));
                     totalTable.AddCell(CreateCell($"Giảm giá: {Currency.FormatCurrency(discount.ToString())}", Element.ALIGN_RIGHT, false, boldFont));
-                    totalTable.AddCell(CreateCell($"Tổng cộng: {Currency.FormatCurrency(totalPrice.ToString())}", Element.ALIGN_RIGHT, true, boldFont));
+                    totalTable.AddCell(CreateCell($"Tổng cộng: {Currency.FormatCurrency(finalPrice.ToString())}", Element.ALIGN_RIGHT, true, boldFont));
                     doc.Add(totalTable);
 
                     doc.Add(new iTextSharp.text.Paragraph("\n"));
