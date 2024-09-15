@@ -18,11 +18,11 @@ namespace ExternalInterfaceLayer.Controllers
         }
         [HttpGet]
         [Route("{ID}/User")]
-        public async Task<ActionResult<List<VoucherUserVM>>> GetUserInPromotionAsync(Guid ID)
+        public async Task<ActionResult<List<VoucherUserVM>>> GetUserInVoucher(Guid ID)
         {
             try
             {
-                var user = await _voucherService.GetUserInPromotionAsync(ID);
+                var user = await _voucherService.GetUserInVoucher(ID);
                 if (user == null)
                 {
                     return NotFound(); 
@@ -60,7 +60,6 @@ namespace ExternalInterfaceLayer.Controllers
             var vouchers = await _voucherService.GetAllActiveAsync();
             return Ok(vouchers);
         }
-        // Lấy voucher theo ID
         [HttpGet("GetByID/{ID}")]
         public async Task<IActionResult> GetVoucher(Guid ID)
         {
@@ -70,7 +69,6 @@ namespace ExternalInterfaceLayer.Controllers
 
             return Ok(voucher);
         }
-
         [HttpGet]
         [Route("GetVoucherByIDUser/{IDUser}")]
         public async Task<IActionResult> GetVoucherByIDUser(string IDUser)
@@ -78,44 +76,11 @@ namespace ExternalInterfaceLayer.Controllers
             var datavoucher = await _voucherService.GetVoucherByUser(IDUser);
             return Ok(datavoucher);
         }
-        // Tạo voucher mới
-        [HttpPost]
-        [Route("create")]
-        public async Task<IActionResult> Create([FromBody] VoucherCreateVM voucherCreateVM)
+        [HttpGet("vouchers-public-private")]
+        public async Task<ActionResult<List<VoucherVM>>> GetVouchersAsync([FromQuery] string? idUser = null)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var created = await _voucherService.CreateAsync(voucherCreateVM);
-            if (!created)
-                return BadRequest("Could not create voucher");
-
-            return Ok(new { status = "Success", message = "Successfully." });
-        }
-
-        // Cập nhật voucher
-        [HttpPut("Edit_Voucher/{ID}")]
-        public async Task<IActionResult> UpdateVoucher(Guid ID, [FromBody] VoucherUpdateVM voucherUpdateVM)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var updated = await _voucherService.UpdateAsync(ID, voucherUpdateVM);
-            if (!updated)
-                return BadRequest("Could not update voucher");
-
-            return Ok(new { status = "Success", message = "Successfully." });
-        }
-
-        // Xóa voucher
-        [HttpDelete("{ID}/{IDUserDelete}")]
-        public async Task<IActionResult> DeleteVoucher(Guid ID, string IDUserDelete)
-        {
-            var deleted = await _voucherService.RemoveAsync(ID, IDUserDelete);
-            if (!deleted)
-                return NotFound();
-
-            return Ok(new { status = "Success", message = "Successfully." });
+            var vouchers = await _voucherService.GetVouchersAsync(idUser);
+            return Ok(vouchers);
         }
     }
 }

@@ -85,14 +85,13 @@ namespace ExternalInterfaceLayer.Controllers
             {
                 using (MemoryStream memoryStream = new MemoryStream())
                 {
-                    // Tải font hỗ trợ tiếng Việt (Times New Roman hoặc font khác hỗ trợ Unicode)
                     string fontPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Fonts), "times.ttf");
                     BaseFont bf = BaseFont.CreateFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
                     var normalFont = new Font(bf, 12, Font.NORMAL, BaseColor.BLACK);
                     var boldFont = new Font(bf, 12, Font.BOLD, BaseColor.BLACK);
                     var titleFont = new Font(bf, 18, Font.BOLD, BaseColor.BLACK);
 
-                    var smallerFont = new Font(bf, 10, normalFont.Style, normalFont.Color); // Điều chỉnh kích thước xuống 8 (hoặc bất kỳ kích thước nào bạn thấy phù hợp)
+                    var smallerFont = new Font(bf, 10, normalFont.Style, normalFont.Color); 
 
                     Document doc = new Document(new iTextSharp.text.Rectangle(PageSize.A4.Width / 2, PageSize.A4.Height / 2), 20, 20, 20, 20);
                     PdfWriter.GetInstance(doc, memoryStream);
@@ -100,19 +99,16 @@ namespace ExternalInterfaceLayer.Controllers
 
                     var icon = GetIcon("logo.jpg");
 
-                    // Thêm logo và tiêu đề
                     doc.Add(new iTextSharp.text.Paragraph("HÓA ĐƠN", titleFont));
                     doc.Add(new iTextSharp.text.Paragraph($"Ngày lập: {DateTime.Now.ToString("dd/MM/yyyy")}", normalFont));
                     doc.Add(new iTextSharp.text.Paragraph("\n"));
 
-                    // Lấy dữ liệu đơn hàng từ DB
                     var orderData = await _orderService.GetByHexCodeAsync(hexcode);
                     if (orderData == null)
                     {
                         throw new Exception("Order data is null.");
                     }
 
-                    // Tạo bảng thông tin khách hàng và thanh toán
                     PdfPTable infoTable = new PdfPTable(2);
                     infoTable.HorizontalAlignment = Element.ALIGN_LEFT;
                     infoTable.WidthPercentage = 100;
@@ -123,18 +119,12 @@ namespace ExternalInterfaceLayer.Controllers
                         Border = iTextSharp.text.Rectangle.NO_BORDER
                     });
 
-                    infoTable.AddCell(new PdfPCell(new Phrase($"Thanh toán cho:\nBeyoung Sport Wear", smallerFont))
-                    {
-                        Border = iTextSharp.text.Rectangle.NO_BORDER
-                    });
 
                     doc.Add(infoTable);
                     doc.Add(new iTextSharp.text.Paragraph("\n"));
 
-                    // Tạo bảng chi tiết sản phẩm
                     PdfPTable productTable = new PdfPTable(5) { WidthPercentage = 100 };
-                    productTable.SetWidths(new float[] { 1, 4, 1, 2, 2 });  // Đặt tỷ lệ cho cột
-
+                    productTable.SetWidths(new float[] { 1, 4, 1, 2, 2 }); 
                     productTable.AddCell(CreateCell("STT", Element.ALIGN_CENTER, true, boldFont));
                     productTable.AddCell(CreateCell("Tên sản phẩm", Element.ALIGN_CENTER, true, boldFont));
                     productTable.AddCell(CreateCell("SL", Element.ALIGN_CENTER, true, boldFont));
@@ -192,7 +182,6 @@ namespace ExternalInterfaceLayer.Controllers
 
                     doc.Add(new iTextSharp.text.Paragraph("\n"));
 
-                    // Thêm footer với logo
                     AddFooterWithLogo(doc, icon);
 
                     doc.Close();

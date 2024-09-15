@@ -24,5 +24,6 @@ namespace BusinessLogicLayer.Viewmodels.Voucher
         public StatusVoucher? IsActive { get; set; }
         public List<string> IDUser { get; set; }
         public int Status { get; set; }
+        public int IsUsed { get; set; }
     }
 }

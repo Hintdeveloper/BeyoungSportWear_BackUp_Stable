@@ -190,7 +190,6 @@ function fetchProductDetails() {
                         product.imageURL = optionData.imageURL;
                         product.retailPrice = optionData.unitPrice;
 
-                        options_only.push(product);
                         console.log('Product added:', product);
                     } else {
                         console.error('Có lỗi xảy ra khi gọi API.', optionXhr.responseText);
@@ -216,6 +215,7 @@ function fetchProductDetails() {
         console.log('Vui lòng chọn cả size và màu.');
     }
 }
+
 document.getElementById('PayImmediately').addEventListener('click', function (event) {
     event.preventDefault();
 
@@ -232,24 +232,90 @@ document.getElementById('PayImmediately').addEventListener('click', function (ev
         });
         return;
     }
-    Swal.fire({
-        title: 'Xác nhận mua hàng',
-        text: "Bạn có chắc chắn muốn mua sản phẩm này không?",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Xác nhận',
-        cancelButtonText: 'Hủy'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            const encodedCartData = encodeURIComponent(JSON.stringify(options_only));
-            const checkoutUrl = `${window.location.origin}/checkout_user?data=${encodedCartData}`;
 
-            window.location.href = checkoutUrl;
+    const quantityInput = document.getElementById('quantityInput');
+    const quantity = quantityInput ? parseInt(quantityInput.value) : 1;
+
+    if (isNaN(quantity) || quantity <= 0) {
+        Swal.fire({
+            title: 'Lỗi',
+            text: 'Số lượng không hợp lệ.',
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+        return;
+    }
+
+    const xhrGetProduct = new XMLHttpRequest();
+    xhrGetProduct.open('GET', `https://localhost:7241/api/Options/GetByID/${selectedIdOptions}`, true);
+
+    xhrGetProduct.onload = function () {
+        if (xhrGetProduct.status === 200) {
+            const productData = JSON.parse(xhrGetProduct.responseText);
+            const availableQuantity = productData.stockQuantity;
+
+            if (quantity > availableQuantity) {
+                Swal.fire({
+                    title: 'Lỗi!',
+                    text: 'Số lượng sản phẩm bạn muốn thêm lớn hơn số lượng có sẵn.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
+
+            Swal.fire({
+                title: 'Xác nhận mua hàng',
+                text: "Bạn có chắc chắn muốn mua sản phẩm này không?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Xác nhận',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const product = {
+                        idOptions: selectedIdOptions,
+                        quantity: quantity,
+                        colorName: productData.colorName,
+                        productName: productData.productName,
+                        sizeName: productData.sizesName,
+                        imageURL: productData.imageURL,
+                        retailPrice: productData.unitPrice
+                    };
+
+                    options_only.push(product);
+                    console.log('Product added:', product);
+
+                    const encodedCartData = encodeURIComponent(JSON.stringify(options_only));
+                    const checkoutUrl = `${window.location.origin}/checkout_user?data=${encodedCartData}`;
+
+                    window.location.href = checkoutUrl;
+                }
+            });
+        } else {
+            Swal.fire({
+                title: 'Lỗi!',
+                text: 'Đã xảy ra lỗi khi lấy thông tin sản phẩm. Vui lòng thử lại.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
         }
-    });
+    };
+
+    xhrGetProduct.onerror = function () {
+        Swal.fire({
+            title: 'Lỗi!',
+            text: 'Có lỗi xảy ra khi lấy thông tin sản phẩm.',
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+    };
+
+    xhrGetProduct.send();
 });
+
 function addProductToCart() {
     const sizeRadio = document.querySelector('.product__details__option__size input[type="radio"]:checked');
     const colorRadio = document.querySelector('.color-options input[type="radio"]:checked');

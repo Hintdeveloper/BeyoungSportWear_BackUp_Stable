@@ -286,12 +286,13 @@ function displayCart(cartData) {
                 });
 
                 itemsProcessed++;
+                console.log('itemsProcessed', itemsProcessed)
 
                 if (itemsProcessed === cartData.length) {
                     document.getElementById('total_amount').innerText = `Tổng cộng: ${totalAmount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}`;
                     var checkoutButton = document.getElementById('btn_checkout');
                     if (totalAmount <= 0) {
-                        checkoutButton.style.backgroundColor = '#b7b7b7';
+                        checkoutButton.style.backgroundColor = 'red';
                         checkoutButton.style.color = '#ffffff';
                         checkoutButton.style.cursor = 'not-allowed';
                         checkoutButton.disabled = true;
@@ -392,14 +393,14 @@ function displayCartCookies(cartData) {
 
 
         itemsProcessed++;
-
+        console.log('itemsProcessed', itemsProcessed)
         if (itemsProcessed === cartData.length) {
             document.getElementById('total_amount').innerText = `Tổng cộng: ${totalAmount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}`;
             var checkoutButton = document.getElementById('btn_checkout');
             if (totalAmount <= 0) {
-                checkoutButton.style.backgroundColor = '#b7b7b7';
+                //checkoutButton.style.backgroundColor = '#b7b7b7';
                 checkoutButton.style.color = '#ffffff';
-                checkoutButton.style.cursor = 'not-allowed';
+                //checkoutButton.style.cursor = 'not-allowed';
                 checkoutButton.disabled = true;
             } else {
                 checkoutButton.style.backgroundColor = 'blue';

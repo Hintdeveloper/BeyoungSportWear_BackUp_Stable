@@ -381,17 +381,25 @@ namespace BusinessLogicLayer.Services.Implements
         }
         private decimal CalculateDiscountAmount(Voucher voucher, decimal totalAmount)
         {
+            decimal discountAmount = 0;
+
             if (voucher.Type == Types.Percent)
             {
-                return (voucher.ReducedValue / 100m) * totalAmount;
+                discountAmount = (voucher.ReducedValue / 100m) * totalAmount;
             }
-            if (voucher.Type == Types.Cash)
+            else if (voucher.Type == Types.Cash)
             {
-                return voucher.ReducedValue;
+                discountAmount = voucher.ReducedValue;
             }
 
-            return 0;
+            if (discountAmount > voucher.MaximumAmount)
+            {
+                return voucher.MaximumAmount;
+            }
+
+            return discountAmount;
         }
+
         private async Task<bool> CheckAndReduceStock(Guid IDOptions, int quantity)
         {
             if (IDOptions != Guid.Empty && IDOptions != null)

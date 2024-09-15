@@ -94,7 +94,7 @@ function getOptions() {
 function renderOptions(data) {
     const tableBody = document.getElementById('productTableBody');
     tableBody.innerHTML = '';
-   
+
 
     if (Array.isArray(data)) {
         const productMap = {};
@@ -168,7 +168,6 @@ function validateQuantity(input) {
         input.value = Math.floor(value);
     }
 }
-
 function handleAddProduct(event) {
     const target = event.target;
     if (target.classList.contains('add-product') || target.parentElement.classList.contains('add-product')) {
@@ -890,7 +889,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (orderData) {
         displayOrders([orderData]);
-    } 
+    }
 });
 function saveDataToCookies() {
     const selectedProducts = [];
@@ -1028,15 +1027,15 @@ function attachEventListeners() {
 
         if (decreaseBtn) {
             decreaseBtn.addEventListener('click', function (event) {
-                event.preventDefault(); 
-                event.stopPropagation(); 
+                event.preventDefault();
+                event.stopPropagation();
                 saveDataToCookies();
             });
         }
         if (increaseBtn) {
             increaseBtn.addEventListener('click', function (event) {
                 event.preventDefault();
-                event.stopPropagation(); 
+                event.stopPropagation();
                 saveDataToCookies();
             });
         }
@@ -1367,9 +1366,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 }).then(() => {
                     if (printInvoice) {
                         window.open(`http://127.0.0.1:8080/${pdfUrl}`, '_blank');
-                    } else {
-                        window.location.href = `/order_success`;
                     }
+                    window.location.href = `/order_success`;
                 });
             } else {
                 try {
@@ -1869,7 +1867,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 function fetchVouchers(userId) {
     var xhr = new XMLHttpRequest();
-    xhr.open('GET', `https://localhost:7241/api/VoucherM/GetVouchersByUserId?idUser=${userId}`, true);
+    xhr.open('GET', `https://localhost:7241/api/Voucher/vouchers-public-private?idUser=${userId}`, true);
     xhr.setRequestHeader('accept', '*/*');
 
     xhr.onload = function () {
@@ -1877,7 +1875,6 @@ function fetchVouchers(userId) {
             var response = JSON.parse(xhr.responseText);
             var voucherContainer = document.getElementById('voucherContainer');
             voucherContainer.innerHTML = '';
-            console.log(response)
             response.forEach(function (voucher) {
 
                 var voucherType = translateOrderType(voucher.type);
@@ -1888,7 +1885,12 @@ function fetchVouchers(userId) {
                     <div class="col-md-4 mb-3 voucher-item" id="voucher_${voucher.id}">
                         <div class="card" style="border: 1px solid #dee2e6;">
                             <div class="card-body" style="padding: 10px;">
-                                <h6 class="card-title" style="font-weight: bold;">Mã: <strong class="voucherCode">${voucher.code}</strong></h6>
+                                <h6 class="card-title" style="font-weight: bold;">
+                                    Mã: <strong class="voucherCode">${voucher.code}</strong>
+                                    <small style="color: ${voucher.isUsed === 1 ? 'green' : 'red'};">
+                                        ${voucher.isUsed === 0 ? 'Chưa dùng' : 'Đã dùng'}
+                                    </small>
+                                </h6>
                                 <p class="card-text" style="margin-bottom: 5px;"><strong>Tên:</strong> <span class="voucherName">${voucher.name}</span></p>
                                 <p class="card-text" style="margin-bottom: 5px;"><strong>Bắt đầu:</strong> <span class="voucherStartDate">${startDate}</span></p>
                                 <p class="card-text" style="margin-bottom: 5px;"><strong>Kết thúc:</strong> <span class="voucherEndDate">${endDate}</span></p>
@@ -1945,20 +1947,51 @@ function applyVoucher(voucherId) {
 
             var totalAmount = parseFloat(document.getElementById('temporary_payment_for_goods').textContent.replace(/[^0-9]/g, '')) || 0;
 
-            if (voucher.isActive === 0 || voucher.isActive === 2 || voucher.quantity <= 0 || voucher.minimumAmount > totalAmount) {
+            if (voucher.isActive === 0) {
                 Swal.fire({
                     icon: 'warning',
                     title: 'Không thể áp dụng',
-                    text: `Voucher ${voucher.code} không khả dụng.`,
+                    text: `Voucher ${voucher.code} chưa kích hoạt hoặc đã hết hạn.`,
                 });
                 return;
             }
+
+            if (voucher.isActive === 2) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Không thể áp dụng',
+                    text: `Voucher ${voucher.code} đã bị hủy.`,
+                });
+                return;
+            }
+
+            if (voucher.quantity <= 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Không thể áp dụng',
+                    text: `Voucher ${voucher.code} đã hết số lượng.`,
+                });
+                return;
+            }
+
+            if (voucher.minimumAmount > totalAmount) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Không thể áp dụng',
+                    text: `Voucher ${voucher.code} yêu cầu số tiền tối thiểu là ${voucher.minimumAmount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}, nhưng tổng tiền của bạn chỉ là ${totalAmount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}.`,
+                });
+                return;
+            }
+
 
             let reducedValue = 0;
             if (voucher.type === 0) {
                 reducedValue = totalAmount * (voucher.reducedValue / 100);
             } else if (voucher.type === 1) {
                 reducedValue = voucher.reducedValue;
+            }
+            if (reducedValue > voucher.maximumAmount) {
+                reducedValue = voucher.maximumAmount;
             }
 
             const selectedBtn = document.querySelector(`#voucher_${voucherId} .useVoucherBtn`);
@@ -2045,7 +2078,6 @@ function checkVoucherDetails(voucherId) {
 
     xhrVoucher.send();
 }
-
 function translateOrderType(type) {
     switch (type) {
         case 0:

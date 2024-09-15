@@ -24,7 +24,12 @@ function getUserIdFromJwt(jwt) {
 }
 const jwt = getJwtFromCookie();
 const userId = getUserIdFromJwt(jwt);
-
+const openModalBtn = document.getElementById('openModalBtn');
+if (jwt) {
+    openModalBtn.style.display = 'block';
+} else {
+    openModalBtn.style.display = 'none';
+}
 document.addEventListener('DOMContentLoaded', function () {
     const url = window.location.href;
     const queryString = url.split('?')[1];
@@ -990,7 +995,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 function fetchVouchers(userId) {
     var xhr = new XMLHttpRequest();
-    xhr.open('GET', `https://localhost:7241/api/VoucherM/GetVouchersByUserId?idUser=${userId}`, true);
+    xhr.open('GET', `https://localhost:7241/api/Voucher/vouchers-public-private?idUser=${userId}`, true);
     xhr.setRequestHeader('accept', '*/*');
 
     xhr.onload = function () {
@@ -998,8 +1003,9 @@ function fetchVouchers(userId) {
             var response = JSON.parse(xhr.responseText);
             var voucherContainer = document.getElementById('voucherContainer');
             voucherContainer.innerHTML = '';
-            console.log(response)
+            console.log('response', response);
             response.forEach(function (voucher) {
+                console.log('response.status', voucher.status);
 
                 var voucherType = translateOrderType(voucher.type);
                 var reducedValue = formatReducedValue(voucher.type, voucher.reducedValue);
@@ -1009,7 +1015,13 @@ function fetchVouchers(userId) {
                     <div class="col-md-4 mb-3 voucher-item" id="voucher_${voucher.id}">
                         <div class="card" style="border: 1px solid #dee2e6;">
                             <div class="card-body" style="padding: 10px;">
-                                <h6 class="card-title" style="font-weight: bold;">Mã: <strong class="voucherCode">${voucher.code}</strong></h6>
+                                <h6 class="card-title" style="font-weight: bold;">
+                                    Mã: <strong class="voucherCode">${voucher.code}</strong>
+                                    <small style="color: ${voucher.isUsed === 1 ? 'green' : 'red'};">
+                                        ${voucher.isUsed === 0 ? 'Chưa dùng' : 'Đã dùng'}
+                                    </small>
+                                </h6>
+                               
                                 <p class="card-text" style="margin-bottom: 5px;"><strong>Tên:</strong> <span class="voucherName">${voucher.name}</span></p>
                                 <p class="card-text" style="margin-bottom: 5px;"><strong>Bắt đầu:</strong> <span class="voucherStartDate">${startDate}</span></p>
                                 <p class="card-text" style="margin-bottom: 5px;"><strong>Kết thúc:</strong> <span class="voucherEndDate">${endDate}</span></p>
@@ -1100,14 +1112,42 @@ function checkVoucherDetails(voucherId) {
 
             var totalAmount = parseFloat(document.getElementById('provisional_fee').textContent.replace(/[^0-9]/g, '')) || 0;
 
-            if (voucher.isActive === 0 || voucher.isActive === 2 || voucher.quantity <= 0 || voucher.minimumAmount > totalAmount) {
+            if (voucher.isActive === 0) {
                 Swal.fire({
                     icon: 'warning',
                     title: 'Không thể áp dụng',
-                    text: `Voucher ${voucher.code} không khả dụng.`,
+                    text: `Voucher ${voucher.code} chưa kích hoạt hoặc đã hết hạn.`,
                 });
                 return;
             }
+
+            if (voucher.isActive === 2) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Không thể áp dụng',
+                    text: `Voucher ${voucher.code} đã bị hủy.`,
+                });
+                return;
+            }
+
+            if (voucher.quantity <= 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Không thể áp dụng',
+                    text: `Voucher ${voucher.code} đã hết số lượng.`,
+                });
+                return;
+            }
+
+            if (voucher.minimumAmount > totalAmount) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Không thể áp dụng',
+                    text: `Voucher ${voucher.code} yêu cầu số tiền tối thiểu là ${voucher.minimumAmount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}, nhưng tổng tiền của bạn chỉ là ${totalAmount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}.`,
+                });
+                return;
+            }
+
 
             const reducedValue = calculateDiscount(voucher, totalAmount);
 

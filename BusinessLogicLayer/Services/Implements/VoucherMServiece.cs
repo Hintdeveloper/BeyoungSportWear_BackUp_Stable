@@ -511,7 +511,7 @@ namespace BusinessLogicLayer.Services.Implements
                                                   Type = vu.Type,
                                                   ReducedValue = vu.ReducedValue,
                                                   IsActive = vu.IsActive,
-                                                  Status = 0,
+                                                  Status = vu.Status,
                                               })
                                               .ToListAsync();
             }
