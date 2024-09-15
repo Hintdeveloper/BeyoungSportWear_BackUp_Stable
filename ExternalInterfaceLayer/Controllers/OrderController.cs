@@ -109,6 +109,7 @@ namespace ExternalInterfaceLayer.Controllers
                         throw new Exception("Order data is null.");
                     }
 
+                    // Tạo bảng thông tin khách hàng và thanh toán
                     PdfPTable infoTable = new PdfPTable(2);
                     infoTable.HorizontalAlignment = Element.ALIGN_LEFT;
                     infoTable.WidthPercentage = 100;
@@ -119,6 +120,10 @@ namespace ExternalInterfaceLayer.Controllers
                         Border = iTextSharp.text.Rectangle.NO_BORDER
                     });
 
+                    infoTable.AddCell(new PdfPCell(new Phrase($"Thanh toán cho:\nBeyoung Sport Wear", smallerFont))
+                    {
+                        Border = iTextSharp.text.Rectangle.NO_BORDER
+                    });
 
                     doc.Add(infoTable);
                     doc.Add(new iTextSharp.text.Paragraph("\n"));
@@ -161,10 +166,22 @@ namespace ExternalInterfaceLayer.Controllers
                             if (voucher.Type == Voucher.Types.Percent)
                             {
                                 discount = totalAmountBeforeDiscount * (voucher.ReducedValue / 100);
+                                if(discount > voucher.MaximumAmount)
+                                {
+                                    discount = voucher.MaximumAmount;   
+                                }
+
                             }
                             else if (voucher.Type == Voucher.Types.Cash)
                             {
-                                discount = voucher.ReducedValue;
+                                if(voucher.ReducedValue > voucher.MaximumAmount)
+                                {
+                                    discount = voucher.MaximumAmount;
+                                }
+                                else
+                                {
+                                    discount = voucher.ReducedValue;
+                                }
                             }
                         }
                     }
