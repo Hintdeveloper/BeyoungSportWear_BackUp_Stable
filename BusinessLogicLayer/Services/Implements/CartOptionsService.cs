@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using BusinessLogicLayer.Services.Interface;
+using BusinessLogicLayer.Viewmodels;
 using BusinessLogicLayer.Viewmodels.CartOptions;
 using DataAccessLayer.Application;
 using DataAccessLayer.Entity;
@@ -129,7 +130,7 @@ namespace BusinessLogicLayer.Services.Implements
             var ObjVm = _mapper.Map<CartOptionsVM>(Obj);
             return ObjVm;
         }
-        public async Task<bool> RemoveAsync(string IDCart, Guid? IDOptions)
+        public async Task<Result> RemoveAsync(string IDCart, Guid? IDOptions)
         {
             try
             {
@@ -139,18 +140,30 @@ namespace BusinessLogicLayer.Services.Implements
                 if (cartItem != null)
                 {
                     _dbcontext.CartOptions.Remove(cartItem);
-                    await _dbcontext.SaveChangesAsync(); 
+                    await _dbcontext.SaveChangesAsync();
 
-                    return true;
+                    return new Result
+                    {
+                        Success = true,
+                        ErrorMessage = "Cập nhật thành công"
+                    };
                 }
                 else
                 {
-                    return false; 
+                    return new Result
+                    {
+                        Success = false,
+                        ErrorMessage = "Không tìm thấy sản phẩm trong giỏ hàng."
+                    };
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return false;
+                return new Result
+                {
+                    Success = false,
+                    ErrorMessage = $"Lỗi xảy ra: {ex.Message}"
+                };
             }
         }
         public async Task<bool> UpdateAsync(string IDCart, Guid? IDOptions, CartOptionsUpdateVM request)

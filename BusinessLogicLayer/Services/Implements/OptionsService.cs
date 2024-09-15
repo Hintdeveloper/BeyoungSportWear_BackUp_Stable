@@ -383,7 +383,6 @@ namespace BusinessLogicLayer.Services.Implements
 
             return option;
         }
-
         public async Task<List<OptionsVM>> FindIDOptionsBySize(Guid IDProductDetails, string size)
         {
             var options = await _dbcontext.Options
@@ -396,7 +395,6 @@ namespace BusinessLogicLayer.Services.Implements
 
             return _mapper.Map<List<OptionsVM>>(options);
         }
-
         public async Task<List<OptionsVM>> FindIDOptionsByColor(Guid IDProductDetails, string color)
         {
             var option = await _dbcontext.Options
@@ -408,6 +406,20 @@ namespace BusinessLogicLayer.Services.Implements
                 .ToListAsync();
 
             return _mapper.Map<List<OptionsVM>>(option);
+        }
+        public async Task<List<OptionsVM>> GetByNameAsync(string Name)
+        {
+            if (string.IsNullOrWhiteSpace(Name))
+            {
+                return new List<OptionsVM>();
+            }
+
+            var options = await _dbcontext.Options
+                .Where(o => o.ProductDetails.Products.Name.Contains(Name)) 
+                .ProjectTo<OptionsVM>(_mapper.ConfigurationProvider) 
+                .ToListAsync();
+
+            return options;
         }
     }
 }

@@ -180,24 +180,44 @@
             <div class="header">
                 <div id="invoiceNumberDisplay"></div>
             </div>
+            <div class="row" style="margin-bottom: 15px;">
+                <div class="col-md-6" style="padding: 0 10px;">
+                    <input type="text" id="searchProduct" class="form-control" placeholder="Tìm kiếm sản phẩm..."
+                           style="width: 100%; box-sizing: border-box;">
+                </div>
+                <div class="col-md-3" style="padding: 0 10px;">
+                    <button id="searchByNameBtn" class="btn btn-primary"
+                            style="width: 100%; box-sizing: border-box; margin-bottom: 10px;">
+                        Tìm kiếm
+                    </button>
+                </div>
+                <div class="col-md-3" style="padding: 0 10px;">
+                    <button id="btn_reload" class="btn btn-primary" style="width: 100%; box-sizing: border-box;">
+                        Làm mới
+                    </button>
+                </div>
+            </div>
+            <br />
+
             <div class="row">
-                <div class="col-md-4">
-                    <select id="product" class="form-control">
+                <div class="col-md-4" style="padding: 0 10px;">
+                    <select id="product" class="form-control" style="width: 100%; box-sizing: border-box;">
                         <option value="">-- Chọn sản phẩm --</option>
                     </select>
                 </div>
-                <div class="col-md-4">
-                    <select id="color" class="form-control">
+                <div class="col-md-4" style="padding: 0 10px;">
+                    <select id="color" class="form-control" style="width: 100%; box-sizing: border-box;">
                         <option value="">-- Chọn màu --</option>
                     </select>
                 </div>
-                <div class="col-md-4">
-                    <select id="size" class="form-control">
+                <div class="col-md-4" style="padding: 0 10px;">
+                    <select id="size" class="form-control" style="width: 100%; box-sizing: border-box;">
                         <option value="">-- Chọn size --</option>
                     </select>
                 </div>
             </div>
             <br />
+
 
             <div id="barcodeModal" class="modal">
                 <div class="modal-content">
@@ -352,6 +372,7 @@
         </div>
     </div>
 </div>
+
 <div class="modal fade" id="voucherModal" tabindex="-1" role="dialog" aria-labelledby="voucherModalLabel" aria-hidden="true" style="padding-top: 0px;">
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
         <div class="modal-content" style="max-width: 800px">
@@ -431,6 +452,54 @@
                 ">
                     Xác nhận đã chuyển khoản
                 </button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="optionsModal" tabindex="-1" role="dialog" aria-labelledby="voucherModalLabel" aria-hidden="true" style="padding-top: 0px;">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content" style="max-width: 800px; margin: 0% auto;">
+            <div class="modal-header" style="background-color: #f8f9fa; padding: 15px;">
+                <h5 class="modal-title" id="optionsModalLabel" style="font-weight: bold; color: #333;">Chi tiết Tùy chọn</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="font-size: 1.5rem; opacity: 0.7;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="display: flex;">
+                <div class="col-md-6" style="flex: 1; padding: 0 15px;">
+                    <img id="imageURL" class="img-fluid" src="" alt="Image" style="width: 100%; height: auto; border-radius: 5px;">
+                </div>
+                <div class="col-md-6" style="flex: 1; padding: 0 15px;">
+                    <form id="optionsForm">
+                        <div class="form-group" style="margin-bottom: 1rem;">
+                            <label for="productDetails">Chi tiết sản phẩm</label>
+                            <input type="text" class="form-control" id="productDetails" readonly style="background-color: #f8f9fa;">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 1rem;">
+                            <label for="color">Màu</label>
+                            <input type="text" class="form-control" id="color_options" readonly style="background-color: #f8f9fa;">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 1rem;">
+                            <label for="size">Kích thước</label>
+                            <input type="text" class="form-control" id="size_options" readonly style="background-color: #f8f9fa;">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 1rem;">
+                            <label for="stockQuantity">Số lượng tồn kho</label>
+                            <input type="number" class="form-control" id="stockQuantity" readonly style="background-color: #f8f9fa;">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 1rem;">
+                            <label for="retailPrice">Giá bán lẻ</label>
+                            <input type="text" class="form-control" id="retailPrice" readonly style="background-color: #f8f9fa;">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 1rem;">
+                            <label for="isActive">Trạng thái</label>
+                            <input type="text" class="form-control" id="isActive" readonly style="background-color: #f8f9fa;">
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
             </div>
         </div>
     </div>

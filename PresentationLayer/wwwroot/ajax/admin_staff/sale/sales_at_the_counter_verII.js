@@ -91,10 +91,13 @@ function getOptions() {
     };
     xhr.send();
 }
+document.getElementById('btn_reload').addEventListener('click', () => {
+    getOptions();
+});
+
 function renderOptions(data) {
     const tableBody = document.getElementById('productTableBody');
     tableBody.innerHTML = '';
-
 
     if (Array.isArray(data)) {
         const productMap = {};
@@ -123,8 +126,10 @@ function renderOptions(data) {
                     <td class="col-2 text-center"><input type="number" id="quantity_options_${option.id}" value="1" min="1" style="width: 80px; text-align: center;" oninput="validateQuantity(this)"></td>
                     <td class="text-center">
                         <button class="btn btn-primary add-product" data-option-id="${option.id}"><i class="fas fa-plus-circle"></i></button>
-                        <button class="btn btn-primary btn-sm view" type="button" title="Xem chi tiết"> <i class="fas fa-eye"></i></button>
-                    </td>
+                         <button id="btn_view_options" class="btn btn-primary btn-sm view" type="button" title="Xem chi tiết" data-option-id="${option.id}">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            </td>
                 `;
 
                 tableBody.appendChild(row);
@@ -143,7 +148,9 @@ function renderOptions(data) {
             <td class="col-2 text-center"><input type="number" id="quantity_options_${data.id}" value="1" min="1" style="width: 80px; text-align: center;" oninput="validateQuantity(this)"></td>
             <td class="text-center">
                 <button class="btn btn-primary add-product" data-option-id="${data.id}"><i class="fas fa-plus-circle"></i></button>
-                <button class="btn btn-primary btn-sm view" type="button" title="Xem chi tiết"> <i class="fas fa-eye"></i></button>
+                <button id="btn_view_options" class="btn btn-primary btn-sm view" type="button" title="Xem chi tiết" data-option-id="${data.id}">
+                    <i class="fas fa-eye"></i>
+                </button>
             </td>
         `;
 
@@ -152,6 +159,35 @@ function renderOptions(data) {
         console.error('Dữ liệu trả về không phải là mảng hoặc đối tượng mong đợi.');
     }
 
+    document.getElementById('productTableBody').addEventListener('click', function (event) {
+        if (event.target.closest('.view')) {
+            const optionId = event.target.closest('.view').getAttribute('data-option-id');
+            fetchOptionDetails(optionId);
+        }
+    });
+
+    function fetchOptionDetails(optionId) {
+        fetch(`https://localhost:7241/api/Options/GetByID/${optionId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data) {
+                    console.log('data', data);
+
+                    document.getElementById('imageURL').src = data.imageURL;
+                    document.getElementById('productDetails').value = data.productName;
+                    document.getElementById('color_options').value = data.colorName;
+                    document.getElementById('size_options').value = data.sizesName;
+                    document.getElementById('stockQuantity').value = data.stockQuantity;
+                    document.getElementById('retailPrice').value = data.retailPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+                    document.getElementById('isActive').value = data.isActive ? 'Đang bán' : 'Ngừng bán';
+
+                    // Hiển thị modal
+                    const optionsModal = new bootstrap.Modal(document.getElementById('optionsModal'));
+                    optionsModal.show();
+                }
+            })
+            .catch(error => console.error('Có lỗi xảy ra:', error));
+    }
     tableBody.removeEventListener('click', handleAddProduct);
     tableBody.addEventListener('click', handleAddProduct);
 }
@@ -426,8 +462,6 @@ function searchCustomerByPhoneNumber(phoneNumber) {
                     selectedUser = users[0];
                     const data = fillOrderData(selectedUser);
                     selectedUserId = users[0].id;
-                    console.log('Selected User ID:', selectedUserId);
-                    console.log('data', data);
                 } else {
                     console.error('Error fetching customer data:', 'No users found');
                     Swal.fire({
@@ -727,9 +761,6 @@ window.addToSelectedProducts = function (optionId) {
 
                 const currentStockQuantity = stockQuantities[optionId] || option.stockQuantity;
                 const totalQuantity = (selectedQuantities[optionId] || 0) + newQuantity;
-                console.log('option', option);
-                console.log('totalQuantity', totalQuantity);
-                console.log('currentStockQuantity', currentStockQuantity);
 
                 if (currentStockQuantity === 0) {
                     Swal.fire(
@@ -740,7 +771,6 @@ window.addToSelectedProducts = function (optionId) {
                     return;
                 }
 
-                // Tạo request để giảm số lượng sản phẩm
                 const xhrUpdate = new XMLHttpRequest();
                 xhrUpdate.open('POST', 'https://localhost:7241/api/Options/decrease-quantity', true);
                 xhrUpdate.setRequestHeader('Content-Type', 'application/json');
@@ -749,7 +779,6 @@ window.addToSelectedProducts = function (optionId) {
                 xhrUpdate.onreadystatechange = function () {
                     if (xhrUpdate.readyState === XMLHttpRequest.DONE) {
                         if (xhrUpdate.status === 200) {
-                            // Chỉ cập nhật giao diện khi API trả về mã 200
                             selectedQuantities[optionId] = totalQuantity;
                             let totalPrice = option.retailPrice * newQuantity;
                             if (Number.isNaN(totalPrice) || !Number.isFinite(totalPrice)) {
@@ -1655,6 +1684,7 @@ function fetchProductDetails() {
                         renderOptions(data);
                     } catch (e) {
                         console.error('Error parsing JSON response:', e);
+                        console.error(xhr.responseText);
                     }
                 } else {
                     console.error('Có lỗi xảy ra khi gọi API. Status:', xhr.status, xhr.statusText);
@@ -2014,6 +2044,7 @@ function applyVoucher(voucherId) {
 
             console.log('Mã voucher được chọn:', voucher.code);
             voucherCode = voucher.code;
+            toastr.success(`Đã áp dụng thành công voucher ${voucherCode}`, 'Thành công');
 
         } else {
             console.error('Failed to fetch voucher details:', xhr.statusText);
@@ -2178,3 +2209,56 @@ document.getElementById('saveUserBtn').addEventListener('click', function () {
         }
     });
 });
+
+document.getElementById('searchByNameBtn').addEventListener('click', () => {
+    const name = document.getElementById('searchProduct').value.trim();
+    if (name === '') {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Lỗi',
+            text: 'Vui lòng nhập tên sản phẩm!'
+        });
+        return;
+    }
+
+    searchProduct(name);
+});
+function searchProduct(name) {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', `https://localhost:7241/api/Options/get-options-by-name/${encodeURIComponent(name)}`, true);
+    xhr.setRequestHeader('Accept', '*/*');
+
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            const data = JSON.parse(xhr.responseText);
+            if (data && data.length > 0) {
+                console.log('data', data)
+
+                renderOptions(data);
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: 'Không tìm thấy sản phẩm với tên này!'
+                });
+            }
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: 'Có lỗi xảy ra khi tìm kiếm sản phẩm!'
+            });
+        }
+    };
+
+    xhr.onerror = function () {
+        Swal.fire({
+            icon: 'error',
+            title: 'Lỗi',
+            text: 'Đã xảy ra lỗi khi gửi yêu cầu!'
+
+        });
+    };
+
+    xhr.send();
+}

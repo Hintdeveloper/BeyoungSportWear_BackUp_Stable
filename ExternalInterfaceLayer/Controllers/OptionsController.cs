@@ -99,6 +99,17 @@ namespace ExternalInterfaceLayer.Controllers
             }
             return Ok(obj);
         }
+        [HttpGet]
+        [Route("get-options-by-name/{name}")]
+        public async Task<IActionResult> GetByNameAsync(string name)
+        {
+            var obj = await _IOptionsService.GetByNameAsync(name);
+            if (obj == null)
+            {
+                return NotFound();
+            }
+            return Ok(obj);
+        }
         [HttpPost("decrease-quantity")]
         public async Task<IActionResult> DecreaseQuantity([FromBody] DecreaseQuantityRequest request)
         {

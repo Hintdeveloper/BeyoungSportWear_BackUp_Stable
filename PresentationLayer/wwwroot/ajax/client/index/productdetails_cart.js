@@ -49,7 +49,13 @@ function getProductDetailsById(ID) {
             document.getElementById('manufacturersName').innerText = `Nhà sản xuất:${data.manufacturersName}`;
             document.getElementById('materialName').innerText = `Chất liệu:${data.materialName}`;
             document.getElementById('description').innerText = `Mô tả: ${data.description}`;
-
+            if (data.isActive) {
+                document.getElementById('isActive').innerText = " ( Đang bán )";
+                document.getElementById('isActive').style.color = "green";
+            } else {
+                document.getElementById('isActive').innerText = " ( Đã ngừng bán )";
+                document.getElementById('isActive').style.color = "red";
+            }
             const sizeContainer = document.querySelector('.product__details__option__size');
             data.size.forEach(size => {
                 const sizeItem = document.createElement('label');
@@ -58,6 +64,8 @@ function getProductDetailsById(ID) {
                   ${size}
                   <input type="radio" id="${size}" name="size">
                 `;
+                console.log('size', size);
+
                 sizeContainer.appendChild(sizeItem);
             });
 
@@ -69,6 +77,8 @@ function getProductDetailsById(ID) {
                     <input type="radio" id="${color}" name="color">
                     ${color}
                 `;
+                console.log('color', color);
+
                 colorContainer.appendChild(colorItem);
             });
             updateProductImages(data.productDetails_ImagePaths);
@@ -188,8 +198,18 @@ function fetchProductDetails() {
                         product.productName = optionData.productName;
                         product.sizeName = optionData.sizesName;
                         product.imageURL = optionData.imageURL;
-                        product.retailPrice = optionData.unitPrice;
+                        product.retailPrice = optionData.retailPrice;
+                        console.log('data.isActive:', optionData.isActive);
 
+                        if (optionData.isActive) {
+                            document.getElementById('isActive').innerText = " ( Đang bán )";
+                            document.getElementById('isActive').style.color = "green";
+                        } else {
+                            document.getElementById('isActive').innerText = " ( Đã ngừng bán )";
+                            document.getElementById('isActive').style.color = "red";
+                        }
+
+                        console.log('optionData:', optionData);
                         console.log('Product added:', product);
                     } else {
                         console.error('Có lỗi xảy ra khi gọi API.', optionXhr.responseText);
@@ -253,6 +273,17 @@ document.getElementById('PayImmediately').addEventListener('click', function (ev
         if (xhrGetProduct.status === 200) {
             const productData = JSON.parse(xhrGetProduct.responseText);
             const availableQuantity = productData.stockQuantity;
+            console.log('productData', productData);
+
+            if (productData.isActive === false) {
+                Swal.fire({
+                    title: 'Lỗi!',
+                    text: 'Phân loại này đã ngừng bán! Vui lòng chọn phân loại khác!.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
 
             if (quantity > availableQuantity) {
                 Swal.fire({
@@ -361,6 +392,15 @@ function addProductToCart() {
                 return;
             }
 
+            if (productData.isActive === false) {
+                Swal.fire({
+                    title: 'Lỗi!',
+                    text: 'Phân loại này đã ngừng bán! Vui lòng chọn phân loại khác!.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
 
             if (userId) {
                 const xhrGetCart = new XMLHttpRequest();

@@ -421,9 +421,10 @@ namespace BusinessLogicLayer.Services.Implements
                 .Include(pd => pd.Options)
                     .ThenInclude(opt => opt.Sizes)
                 .Include(pd => pd.Images)
-                .Where(pd => pd.ID == ID)
+                .Where(pd => pd.ID == ID && pd.IsActive == true)
                 .Select(pd => new ProductDetailsOnly
                 {
+
                     ID = pd.ID,
                     CreateDate = pd.CreateDate,
                     KeyCode = pd.KeyCode,
@@ -432,19 +433,19 @@ namespace BusinessLogicLayer.Services.Implements
                     ManufacturersName = pd.Manufacturers.Name,
                     MaterialName = pd.Material.Name,
                     BrandName = pd.Brand.Name,
-                    SmallestPrice = pd.Options.Any() ? pd.Options.Min(opt => opt.RetailPrice) : 0,
-                    BiggestPrice = pd.Options.Any() ? pd.Options.Max(opt => opt.RetailPrice) : 0,
-                    TotalQuantity = pd.Options.Sum(opt => opt.StockQuantity),
-                    RetailPrice_Only = pd.Options.FirstOrDefault().RetailPrice,
-                    Quantity_Only = pd.Options.FirstOrDefault().StockQuantity,
+                    SmallestPrice = pd.Options.Any(opt => opt.IsActive) ? pd.Options.Where(opt => opt.IsActive).Min(opt => opt.RetailPrice) : 0,
+                    BiggestPrice = pd.Options.Any(opt => opt.IsActive) ? pd.Options.Where(opt => opt.IsActive).Max(opt => opt.RetailPrice) : 0,
+                    TotalQuantity = pd.Options.Where(opt => opt.IsActive).Sum(opt => opt.StockQuantity),
+                    RetailPrice_Only = pd.Options.FirstOrDefault(opt => opt.IsActive).RetailPrice,
+                    Quantity_Only = pd.Options.FirstOrDefault(opt => opt.IsActive).StockQuantity,
                     Description = pd.Description,
                     Style = pd.Style,
                     Origin = pd.Origin,
                     ProductDetails_ImagePaths = pd.Images.Select(img => img.Path).ToList(),
                     IsActive = pd.IsActive,
-                    IDOptions = pd.Options.FirstOrDefault().ID.ToString(),
-                    Size = pd.Options.Select(o => o.Sizes.Name).Distinct().ToList(),
-                    Color = pd.Options.Select(o => o.Colors.Name).Distinct().ToList(),
+                    IDOptions = pd.Options.FirstOrDefault(opt => opt.IsActive).ID.ToString(),
+                    Size = pd.Options.Where(opt => opt.IsActive).Select(o => o.Sizes.Name).Distinct().ToList(),
+                    Color = pd.Options.Where(opt => opt.IsActive).Select(o => o.Colors.Name).Distinct().ToList(),
                     ImageURL_Only = pd.Images.FirstOrDefault().Path,
                     Status = pd.Status
                 })
@@ -721,7 +722,7 @@ namespace BusinessLogicLayer.Services.Implements
         public async Task<ProductDetailUser> GetProductDetailInfo(Guid IDProductDetails, string size, string color)
         {
             var productDetails = await _dbcontext.ProductDetails
-                            .Where(pd => pd.ID == IDProductDetails)
+                            .Where(pd => pd.ID == IDProductDetails && pd.IsActive != false)
                             .Include(pd => pd.Products)
                             .Include(pd => pd.Options)
                                 .ThenInclude(o => o.Colors)
