@@ -13,37 +13,37 @@
         <form asp-action="Edit" id="editForm">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
+                <label asp-for="Name" class="control-label">Tên thương hiệu</label>
                 <input asp-for="Name" class="form-control" />
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Description" class="control-label"></label>
+                <label asp-for="Description" class="control-label">Mô tả</label>
                 <input asp-for="Description" class="form-control" />
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Address" class="control-label"></label>
+                <label asp-for="Address" class="control-label">Địa chỉ</label>
                 <input asp-for="Address" class="form-control" />
                 <span asp-validation-for="Address" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Phone" class="control-label"></label>
+                <label asp-for="Phone" class="control-label">Số điện thoại</label>
                 <input asp-for="Phone" class="form-control" />
                 <span asp-validation-for="Phone" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Gmail" class="control-label"></label>
+                <label asp-for="Gmail" class="control-label">Gmail</label>
                 <input asp-for="Gmail" class="form-control" />
                 <span asp-validation-for="Gmail" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Website" class="control-label"></label>
+                <label asp-for="Website" class="control-label">Website</label>
                 <input asp-for="Website" class="form-control" />
                 <span asp-validation-for="Website" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Status" class="control-label">Status</label>
+                <label asp-for="Status" class="control-label">Trạng thái</label>
                 <select asp-for="Status" class="form-control">
                     <option value="0">Không hoạt động</option>
                     <option value="1">Hoạt động</option>

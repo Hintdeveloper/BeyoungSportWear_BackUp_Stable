@@ -8,22 +8,26 @@
 <h1>Danh sách nhà sản xuất</h1>
 
 <p>
-    <a asp-action="Create" class="btn btn-primary createbtn">Create New</a>
+    <a asp-action="Create" class="btn btn-primary createbtn">Tạo mới</a>
 </p>
 <table id="table" class="table">
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Name)
+@*                 @Html.DisplayNameFor(model => model.Name)
+ *@                Tên
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Description)
+@*                 @Html.DisplayNameFor(model => model.Description)
+ *@                Mô tả
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Address)
+@*                 @Html.DisplayNameFor(model => model.Address)
+ *@                Địa chỉ
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Phone)
+@*                 @Html.DisplayNameFor(model => model.Phone)
+ *@                Số điện thoại
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.Gmail)
@@ -32,7 +36,8 @@
                 @Html.DisplayNameFor(model => model.Website)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Status)
+@*                 @Html.DisplayNameFor(model => model.Status)
+ *@                Trạng thái
             </th>
             <th></th>
         </tr>
