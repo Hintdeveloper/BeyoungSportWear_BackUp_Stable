@@ -160,6 +160,14 @@ namespace DataAccessLayer.Migrations
                         .HasFilter("[IDUser] IS NOT NULL");
 
                     b.ToTable("Cart");
+
+                    b.HasData(
+                        new
+                        {
+                            ID = "80e99c65-9eb8-40f1-ab4a-ebad354a22ef",
+                            IDUser = "98838772-cde2-4d6c-9f75-ec8525438e3c",
+                            Status = 1
+                        });
                 });
 
             modelBuilder.Entity("DataAccessLayer.Entity.CartOptions", b =>
@@ -290,45 +298,45 @@ namespace DataAccessLayer.Migrations
                     b.HasData(
                         new
                         {
-                            ID = new Guid("ffd04e06-c2d2-44fe-b8fc-42c799329540"),
+                            ID = new Guid("a7c031b6-d8e2-4544-9a7c-0de3f1542ee4"),
                             CreateBy = "",
-                            CreateDate = new DateTime(2024, 9, 10, 0, 11, 41, 846, DateTimeKind.Local).AddTicks(5093),
+                            CreateDate = new DateTime(2024, 9, 16, 20, 36, 33, 259, DateTimeKind.Local).AddTicks(8308),
                             Description = "",
                             Name = "White",
                             Status = 1
                         },
                         new
                         {
-                            ID = new Guid("a4c2b98a-f047-40d1-9b42-c3ec8ad14e4f"),
+                            ID = new Guid("57258d87-8912-411e-942d-e8cbd9360b8b"),
                             CreateBy = "",
-                            CreateDate = new DateTime(2024, 9, 10, 0, 11, 41, 846, DateTimeKind.Local).AddTicks(5109),
+                            CreateDate = new DateTime(2024, 9, 16, 20, 36, 33, 259, DateTimeKind.Local).AddTicks(8325),
                             Description = "",
                             Name = "Black",
                             Status = 1
                         },
                         new
                         {
-                            ID = new Guid("e307daf3-1ef3-4e00-b8a6-9215df6c13c1"),
+                            ID = new Guid("157f7fb1-00c5-439a-82d8-a548c83930a2"),
                             CreateBy = "",
-                            CreateDate = new DateTime(2024, 9, 10, 0, 11, 41, 846, DateTimeKind.Local).AddTicks(5123),
+                            CreateDate = new DateTime(2024, 9, 16, 20, 36, 33, 259, DateTimeKind.Local).AddTicks(8327),
                             Description = "",
                             Name = "Red",
                             Status = 1
                         },
                         new
                         {
-                            ID = new Guid("5526c8a4-d6a2-488f-bdbc-bd16d3e6cfce"),
+                            ID = new Guid("2ddf05fc-b4a3-4be4-82d2-b6d74415e35f"),
                             CreateBy = "",
-                            CreateDate = new DateTime(2024, 9, 10, 0, 11, 41, 846, DateTimeKind.Local).AddTicks(5126),
+                            CreateDate = new DateTime(2024, 9, 16, 20, 36, 33, 259, DateTimeKind.Local).AddTicks(8330),
                             Description = "",
                             Name = "Blue",
                             Status = 1
                         },
                         new
                         {
-                            ID = new Guid("32940775-50ab-4634-bb3e-6612d43ff33a"),
+                            ID = new Guid("21901e79-f526-4eaf-9ee9-161618c9de5d"),
                             CreateBy = "",
-                            CreateDate = new DateTime(2024, 9, 10, 0, 11, 41, 846, DateTimeKind.Local).AddTicks(5128),
+                            CreateDate = new DateTime(2024, 9, 16, 20, 36, 33, 259, DateTimeKind.Local).AddTicks(8332),
                             Description = "",
                             Name = "Green",
                             Status = 1
@@ -900,45 +908,45 @@ namespace DataAccessLayer.Migrations
                     b.HasData(
                         new
                         {
-                            ID = new Guid("c90d5a97-9fb3-49e1-a0a5-2e63ce31c036"),
+                            ID = new Guid("89f96dc4-3129-43ae-ad9b-4e544fc276a2"),
                             CreateBy = "",
-                            CreateDate = new DateTime(2024, 9, 10, 0, 11, 41, 846, DateTimeKind.Local).AddTicks(5349),
+                            CreateDate = new DateTime(2024, 9, 16, 20, 36, 33, 259, DateTimeKind.Local).AddTicks(8540),
                             Description = "",
                             Name = "XS",
                             Status = 1
                         },
                         new
                         {
-                            ID = new Guid("2a575096-2e6c-4107-aa58-b039605190a3"),
+                            ID = new Guid("297e4da7-ca91-48c3-804d-daa6d8c3889d"),
                             CreateBy = "",
-                            CreateDate = new DateTime(2024, 9, 10, 0, 11, 41, 846, DateTimeKind.Local).AddTicks(5351),
+                            CreateDate = new DateTime(2024, 9, 16, 20, 36, 33, 259, DateTimeKind.Local).AddTicks(8542),
                             Description = "",
                             Name = "S",
                             Status = 1
                         },
                         new
                         {
-                            ID = new Guid("20fd0478-197a-4d16-9150-a74b0b3fece1"),
+                            ID = new Guid("579e55b3-4917-4ff2-9321-0378e6b8d746"),
                             CreateBy = "",
-                            CreateDate = new DateTime(2024, 9, 10, 0, 11, 41, 846, DateTimeKind.Local).AddTicks(5353),
+                            CreateDate = new DateTime(2024, 9, 16, 20, 36, 33, 259, DateTimeKind.Local).AddTicks(8547),
                             Description = "",
                             Name = "M",
                             Status = 1
                         },
                         new
                         {
-                            ID = new Guid("22022e15-01b6-435c-82ad-f938c3d2c452"),
+                            ID = new Guid("338bedf0-a5b1-4477-86d0-33f06f02cb2a"),
                             CreateBy = "",
-                            CreateDate = new DateTime(2024, 9, 10, 0, 11, 41, 846, DateTimeKind.Local).AddTicks(5355),
+                            CreateDate = new DateTime(2024, 9, 16, 20, 36, 33, 259, DateTimeKind.Local).AddTicks(8549),
                             Description = "",
                             Name = "L",
                             Status = 1
                         },
                         new
                         {
-                            ID = new Guid("400dc2ba-8d34-4eac-aeb3-b124ba857a79"),
+                            ID = new Guid("c0a40de5-d535-4a35-9796-6645369c6dba"),
                             CreateBy = "",
-                            CreateDate = new DateTime(2024, 9, 10, 0, 11, 41, 846, DateTimeKind.Local).AddTicks(5356),
+                            CreateDate = new DateTime(2024, 9, 16, 20, 36, 33, 259, DateTimeKind.Local).AddTicks(8551),
                             Description = "",
                             Name = "XL",
                             Status = 1
@@ -1072,6 +1080,26 @@ namespace DataAccessLayer.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "IDRole_Admin_key_112233",
+                            Name = "Admin",
+                            NormalizedName = "ADMIN"
+                        },
+                        new
+                        {
+                            Id = "IDRole_Client_key_331122",
+                            Name = "Client",
+                            NormalizedName = "CLIENT"
+                        },
+                        new
+                        {
+                            Id = "IDRole_Staff_key_223311",
+                            Name = "Staff",
+                            NormalizedName = "STAFF"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -1157,6 +1185,10 @@ namespace DataAccessLayer.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Email")
+                        .IsUnique()
+                        .HasFilter("[Email] IS NOT NULL");
+
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
 
@@ -1232,6 +1264,13 @@ namespace DataAccessLayer.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("AspNetUserRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            UserId = "98838772-cde2-4d6c-9f75-ec8525438e3c",
+                            RoleId = "IDRole_Admin_key_112233"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
@@ -1277,6 +1316,29 @@ namespace DataAccessLayer.Migrations
                         .HasColumnType("int");
 
                     b.HasDiscriminator().HasValue("ApplicationUser");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "98838772-cde2-4d6c-9f75-ec8525438e3c",
+                            AccessFailedCount = 0,
+                            ConcurrencyStamp = "f1b8e8c7-cf8a-4da0-a37a-6060ab86bbf4",
+                            Email = "admin@gmail.com",
+                            EmailConfirmed = true,
+                            LockoutEnabled = false,
+                            NormalizedEmail = "ADMIN@GMAIL.COM",
+                            NormalizedUserName = "ADMIN",
+                            PasswordHash = "AQAAAAIAAYagAAAAEBXYAaUQ6wfKYCy1/cHBOg+1sFQNOqknguMYZpO/QwZ3xLULfEasC9IUQqYVkA/Big==",
+                            PhoneNumberConfirmed = false,
+                            SecurityStamp = "14b038fd-d3e5-4643-9ea7-e29d826eb54c",
+                            TwoFactorEnabled = false,
+                            UserName = "admin",
+                            DateOfBirth = new DateTime(1990, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            FirstAndLastName = "Admin",
+                            Gender = 1,
+                            JoinDate = new DateTime(2024, 9, 16, 20, 36, 33, 259, DateTimeKind.Local).AddTicks(8590),
+                            Status = 1
+                        });
                 });
 
             modelBuilder.Entity("DataAccessLayer.Entity.Address", b =>

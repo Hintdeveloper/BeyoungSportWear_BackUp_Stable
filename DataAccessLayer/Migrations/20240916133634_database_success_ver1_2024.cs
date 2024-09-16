@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DataAccessLayer.Migrations
 {
     /// <inheritdoc />
-    public partial class db1 : Migration
+    public partial class database_success_ver1_2024 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -297,9 +297,9 @@ namespace DataAccessLayer.Migrations
                 columns: table => new
                 {
                     ID = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    FirstAndLastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Gmail = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    FirstAndLastName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Gmail = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IDUser = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     City = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     DistrictCounty = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -683,20 +683,30 @@ namespace DataAccessLayer.Migrations
                 });
 
             migrationBuilder.InsertData(
+                table: "AspNetRoles",
+                columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
+                values: new object[,]
+                {
+                    { "IDRole_Admin_key_112233", null, "Admin", "ADMIN" },
+                    { "IDRole_Client_key_331122", null, "Client", "CLIENT" },
+                    { "IDRole_Staff_key_223311", null, "Staff", "STAFF" }
+                });
+
+            migrationBuilder.InsertData(
                 table: "AspNetUsers",
-                columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "Discriminator", "Email", "EmailConfirmed", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UserName" },
-                values: new object[] { "0be40e8d-3f4b-4707-a01f-050f797a9af8", 0, "cdfedf23-6fae-4f89-a37a-454f73b8040a", "IdentityUser", "admin@gmail.com", true, false, null, "ADMIN@GMAIL.COM", "ADMIN", "AQAAAAIAAYagAAAAENY6u5Na7oHyospdduqZ5F2Ozd41KH+3xLoFvMXp8mEMbdyBF+J1vcr6GBnJzdcJvQ==", null, false, "5926012e-3326-4788-a91c-466ba6653f03", false, "admin" });
+                columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "DateOfBirth", "Discriminator", "Email", "EmailConfirmed", "FirstAndLastName", "Gender", "Images", "JoinDate", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "Status", "TwoFactorEnabled", "UserName" },
+                values: new object[] { "98838772-cde2-4d6c-9f75-ec8525438e3c", 0, "f1b8e8c7-cf8a-4da0-a37a-6060ab86bbf4", new DateTime(1990, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "ApplicationUser", "admin@gmail.com", true, "Admin", 1, null, new DateTime(2024, 9, 16, 20, 36, 33, 259, DateTimeKind.Local).AddTicks(8590), false, null, "ADMIN@GMAIL.COM", "ADMIN", "AQAAAAIAAYagAAAAEBXYAaUQ6wfKYCy1/cHBOg+1sFQNOqknguMYZpO/QwZ3xLULfEasC9IUQqYVkA/Big==", null, false, "14b038fd-d3e5-4643-9ea7-e29d826eb54c", 1, false, "admin" });
 
             migrationBuilder.InsertData(
                 table: "Colors",
                 columns: new[] { "ID", "CreateBy", "CreateDate", "DeleteBy", "DeleteDate", "Description", "ModifiedBy", "ModifiedDate", "Name", "Status" },
                 values: new object[,]
                 {
-                    { new Guid("01822efe-a344-4aa9-a74c-cc06742ae69f"), "", new DateTime(2024, 9, 3, 3, 8, 55, 350, DateTimeKind.Local).AddTicks(9876), null, null, "", null, null, "White", 1 },
-                    { new Guid("2e4ade72-b296-4a56-a97b-969d423c1a6d"), "", new DateTime(2024, 9, 3, 3, 8, 55, 350, DateTimeKind.Local).AddTicks(9915), null, null, "", null, null, "Black", 1 },
-                    { new Guid("3e52dde2-59ba-46e9-9979-27da78c9a150"), "", new DateTime(2024, 9, 3, 3, 8, 55, 350, DateTimeKind.Local).AddTicks(9918), null, null, "", null, null, "Red", 1 },
-                    { new Guid("497aa989-4631-4d01-893e-13d177b769c9"), "", new DateTime(2024, 9, 3, 3, 8, 55, 350, DateTimeKind.Local).AddTicks(9920), null, null, "", null, null, "Blue", 1 },
-                    { new Guid("db74d7aa-6f82-482a-bed1-701a5db639db"), "", new DateTime(2024, 9, 3, 3, 8, 55, 350, DateTimeKind.Local).AddTicks(9921), null, null, "", null, null, "Green", 1 }
+                    { new Guid("157f7fb1-00c5-439a-82d8-a548c83930a2"), "", new DateTime(2024, 9, 16, 20, 36, 33, 259, DateTimeKind.Local).AddTicks(8327), null, null, "", null, null, "Red", 1 },
+                    { new Guid("21901e79-f526-4eaf-9ee9-161618c9de5d"), "", new DateTime(2024, 9, 16, 20, 36, 33, 259, DateTimeKind.Local).AddTicks(8332), null, null, "", null, null, "Green", 1 },
+                    { new Guid("2ddf05fc-b4a3-4be4-82d2-b6d74415e35f"), "", new DateTime(2024, 9, 16, 20, 36, 33, 259, DateTimeKind.Local).AddTicks(8330), null, null, "", null, null, "Blue", 1 },
+                    { new Guid("57258d87-8912-411e-942d-e8cbd9360b8b"), "", new DateTime(2024, 9, 16, 20, 36, 33, 259, DateTimeKind.Local).AddTicks(8325), null, null, "", null, null, "Black", 1 },
+                    { new Guid("a7c031b6-d8e2-4544-9a7c-0de3f1542ee4"), "", new DateTime(2024, 9, 16, 20, 36, 33, 259, DateTimeKind.Local).AddTicks(8308), null, null, "", null, null, "White", 1 }
                 });
 
             migrationBuilder.InsertData(
@@ -704,12 +714,22 @@ namespace DataAccessLayer.Migrations
                 columns: new[] { "ID", "CreateBy", "CreateDate", "DeleteBy", "DeleteDate", "Description", "ModifiedBy", "ModifiedDate", "Name", "Status" },
                 values: new object[,]
                 {
-                    { new Guid("2e976485-b970-4379-b2a5-9f72cc7b9130"), "", new DateTime(2024, 9, 3, 3, 8, 55, 351, DateTimeKind.Local).AddTicks(148), null, null, "", null, null, "XL", 1 },
-                    { new Guid("32c89139-e8ea-4081-8282-ea96d42da20e"), "", new DateTime(2024, 9, 3, 3, 8, 55, 351, DateTimeKind.Local).AddTicks(142), null, null, "", null, null, "M", 1 },
-                    { new Guid("73aec868-0a80-44f8-a23a-5d4f25a648f7"), "", new DateTime(2024, 9, 3, 3, 8, 55, 351, DateTimeKind.Local).AddTicks(140), null, null, "", null, null, "S", 1 },
-                    { new Guid("a6c201de-6554-4b3c-aca9-2a575fa9982d"), "", new DateTime(2024, 9, 3, 3, 8, 55, 351, DateTimeKind.Local).AddTicks(144), null, null, "", null, null, "L", 1 },
-                    { new Guid("ccabe5ba-2126-412f-9f7d-f316b90a65e2"), "", new DateTime(2024, 9, 3, 3, 8, 55, 351, DateTimeKind.Local).AddTicks(137), null, null, "", null, null, "XS", 1 }
+                    { new Guid("297e4da7-ca91-48c3-804d-daa6d8c3889d"), "", new DateTime(2024, 9, 16, 20, 36, 33, 259, DateTimeKind.Local).AddTicks(8542), null, null, "", null, null, "S", 1 },
+                    { new Guid("338bedf0-a5b1-4477-86d0-33f06f02cb2a"), "", new DateTime(2024, 9, 16, 20, 36, 33, 259, DateTimeKind.Local).AddTicks(8549), null, null, "", null, null, "L", 1 },
+                    { new Guid("579e55b3-4917-4ff2-9321-0378e6b8d746"), "", new DateTime(2024, 9, 16, 20, 36, 33, 259, DateTimeKind.Local).AddTicks(8547), null, null, "", null, null, "M", 1 },
+                    { new Guid("89f96dc4-3129-43ae-ad9b-4e544fc276a2"), "", new DateTime(2024, 9, 16, 20, 36, 33, 259, DateTimeKind.Local).AddTicks(8540), null, null, "", null, null, "XS", 1 },
+                    { new Guid("c0a40de5-d535-4a35-9796-6645369c6dba"), "", new DateTime(2024, 9, 16, 20, 36, 33, 259, DateTimeKind.Local).AddTicks(8551), null, null, "", null, null, "XL", 1 }
                 });
+
+            migrationBuilder.InsertData(
+                table: "AspNetUserRoles",
+                columns: new[] { "RoleId", "UserId" },
+                values: new object[] { "IDRole_Admin_key_112233", "98838772-cde2-4d6c-9f75-ec8525438e3c" });
+
+            migrationBuilder.InsertData(
+                table: "Cart",
+                columns: new[] { "ID", "Description", "IDUser", "Status" },
+                values: new object[] { "80e99c65-9eb8-40f1-ab4a-ebad354a22ef", null, "98838772-cde2-4d6c-9f75-ec8525438e3c", 1 });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Address_IDUser",

@@ -28,12 +28,12 @@ namespace DataAccessLayer.Application
             CreateRoles(modelBuilder);
             CreateColor(modelBuilder);
             CreateSizes(modelBuilder);
-            //CreateUsers(modelBuilder);
+            CreateUsers(modelBuilder);
 
-            //modelBuilder.Entity<IdentityUser>()
-            // .ToTable("AspNetUsers")
-            // .HasIndex(u => u.Email)
-            // .IsUnique();
+            modelBuilder.Entity<IdentityUser>()
+             .ToTable("AspNetUsers")
+             .HasIndex(u => u.Email)
+             .IsUnique();
             modelBuilder.ApplyConfiguration(new AddressConfiguration());
             modelBuilder.ApplyConfiguration(new OptionsConfiguration());
             modelBuilder.ApplyConfiguration(new BrandConfiguration());
@@ -56,17 +56,8 @@ namespace DataAccessLayer.Application
             base.OnModelCreating(modelBuilder);
         }
 
-        private void CreateRoles(ModelBuilder builder)
-        {
-            var roles = new List<IdentityRole>
-            {
-            new IdentityRole() { Id = Convert.ToString(Guid.NewGuid), Name = "Admin", NormalizedName = "ADMIN" },
-            new IdentityRole() { Id = Convert.ToString(Guid.NewGuid),Name = "Client", NormalizedName = "CLIENT" },
-            new IdentityRole() { Id = Convert.ToString(Guid.NewGuid),Name = "Staff", NormalizedName = "STAFF" }
-            };
 
-        }
-     
+
 
         private void CreateColor(ModelBuilder builder)
         {
@@ -88,39 +79,69 @@ namespace DataAccessLayer.Application
                     new Sizes() { ID = Guid.NewGuid(), Name = "XL", Description = "", CreateBy = "", CreateDate = DateTime.Now, Status = 1 }
                 );
         }
+        private void CreateRoles(ModelBuilder builder)
+        {
+            var roles = new List<IdentityRole>
+            {
+            new IdentityRole() { Id = "IDRole_Admin_key_112233", Name = "Admin", NormalizedName = "ADMIN" },
+            new IdentityRole() { Id = "IDRole_Client_key_331122",Name = "Client", NormalizedName = "CLIENT" },
+            new IdentityRole() { Id = "IDRole_Staff_key_223311",Name = "Staff", NormalizedName = "STAFF" }
+            };
+            builder.Entity<IdentityRole>().HasData(roles);
+        }
         private void CreateUsers(ModelBuilder builder)
         {
-            var adminUser = new IdentityUser()
+            var adminUser = new ApplicationUser()
             {
                 Id = Guid.NewGuid().ToString(),
                 UserName = "admin",
                 NormalizedUserName = "ADMIN",
                 Email = "admin@gmail.com",
                 NormalizedEmail = "ADMIN@GMAIL.COM",
-                EmailConfirmed = true
+                EmailConfirmed = true,
+                FirstAndLastName = "Admin",
+                Gender = 1,
+                DateOfBirth = new DateTime(1990, 1, 1),
+                JoinDate = DateTime.Now,
+                Status = 1
             };
 
-            adminUser.PasswordHash = new PasswordHasher<IdentityUser>().HashPassword(adminUser, "Admin@123");
+            adminUser.PasswordHash = new PasswordHasher<ApplicationUser>().HashPassword(adminUser, "Admin@123");
 
-            builder.Entity<IdentityUser>().HasData(adminUser);
+            builder.Entity<ApplicationUser>().HasData(adminUser);
+            var userRoles = new List<IdentityUserRole<string>>
+            {
+                new IdentityUserRole<string> { UserId = adminUser.Id, RoleId = "IDRole_Admin_key_112233" } 
+            };
+
+            builder.Entity<IdentityUserRole<string>>().HasData(userRoles);
+
+            var cart = new Cart
+            {
+                ID = Guid.NewGuid().ToString(),
+                IDUser = adminUser.Id,
+                Status = 1,
+            };
+            builder.Entity<Cart>().HasData(cart);
+
         }
         public virtual DbSet<ApplicationUser> ApplicationUser { get; set; } = null!;
-        public virtual DbSet<Brand> Brand { get; set; } 
+        public virtual DbSet<Brand> Brand { get; set; }
         public virtual DbSet<Options> Options { get; set; } = null!;
         public virtual DbSet<Cart> Cart { get; set; } = null!;
         public virtual DbSet<Address> Address { get; set; } = null!;
         public virtual DbSet<CartOptions> CartOptions { get; set; } = null!;
         public virtual DbSet<Category> Category { get; set; } = null!;
-        public virtual DbSet<Colors> Colors { get; set; } 
+        public virtual DbSet<Colors> Colors { get; set; }
         public virtual DbSet<Images> Images { get; set; } = null!;
-        public virtual DbSet<Manufacturer> Manufacturer { get; set; } 
-        public virtual DbSet<Material> Material { get; set; } 
+        public virtual DbSet<Manufacturer> Manufacturer { get; set; }
+        public virtual DbSet<Material> Material { get; set; }
         public virtual DbSet<Order> Order { get; set; } = null!;
         public virtual DbSet<OrderDetails> OrderDetails { get; set; } = null!;
         public virtual DbSet<OrderHistory> OrderHistory { get; set; } = null!;
         public virtual DbSet<Product> Product { get; set; } = null!;
         public virtual DbSet<ProductDetails> ProductDetails { get; set; } = null!;
-        public virtual DbSet<Sizes> Sizes { get; set; } 
+        public virtual DbSet<Sizes> Sizes { get; set; }
         public virtual DbSet<Voucher> Voucher { get; set; } = null!;
         public virtual DbSet<VoucherUser> VoucherUser { get; set; } = null!;
     }

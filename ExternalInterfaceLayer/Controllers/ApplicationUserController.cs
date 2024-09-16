@@ -104,12 +104,10 @@ namespace ExternalInterfaceLayer.Controllers
             var result = await _IUserService.RegisterAsync(registerUser, role);
             if (result.IsSuccess)
             {
-                Console.WriteLine("User's password: " + registerUser.Password);
                 return Ok(new { status = "Success", message = "Successfully." });
             }
             else
             {
-                // Trả về HTTP 400 với thông báo lỗi
                 return StatusCode(result.StatusCode, new { message = result.Message });
             }
         }

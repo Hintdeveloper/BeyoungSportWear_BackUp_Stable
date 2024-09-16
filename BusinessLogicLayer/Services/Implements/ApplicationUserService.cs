@@ -494,7 +494,7 @@ namespace BusinessLogicLayer.Services.Implements
         {
             if (model == null || string.IsNullOrWhiteSpace(model.UserName) || string.IsNullOrWhiteSpace(model.PassWord))
             {
-                return new Response { IsSuccess = false, StatusCode = 400, Message = "Username and password must be provided." };
+                return new Response { IsSuccess = false, StatusCode = 400, Message = "Tên đăng nhập và mật khẩu không được để trống." };
             }
 
             try
@@ -503,11 +503,11 @@ namespace BusinessLogicLayer.Services.Implements
                 var user = await _userManager.FindByNameAsync(model.UserName);
                 if (user == null || !(await _userManager.CheckPasswordAsync(user, model.PassWord)))
                 {
-                    return new Response { IsSuccess = false, StatusCode = 401, Message = "Invalid credentials." };
+                    return new Response { IsSuccess = false, StatusCode = 401, Message = "Thông tin đăng nhập không hợp lệ." };
                 }
                 if (user.Status == 0)
                 {
-                    return new Response { IsSuccess = false, StatusCode = 403, Message = "Đã bị khóa" };
+                    return new Response { IsSuccess = false, StatusCode = 403, Message = "Tài khoản đã bị khóa." };
                 }
                 await _userManager.RemoveAuthenticationTokenAsync(user, _configuration["JWT:Issuer"], "JWT");
                 var logins = await _userManager.GetLoginsAsync(user);
@@ -541,7 +541,7 @@ namespace BusinessLogicLayer.Services.Implements
                 {
                     IsSuccess = true,
                     StatusCode = 200,
-                    Message = "Authentication successful.",
+                    Message = "Đăng nhập thành công.",
                     Token = tokenString,
                     Roles = roles.ToList()
                 };
@@ -550,7 +550,7 @@ namespace BusinessLogicLayer.Services.Implements
             {
                 Console.WriteLine($"An error occurred in Login: {ex.Message}");
                 Console.WriteLine(ex.StackTrace);
-                return new Response { IsSuccess = false, StatusCode = 500, Message = "Internal server error." };
+                return new Response { IsSuccess = false, StatusCode = 500, Message = "Lỗi hệ thống." };
             }
         }
         public async Task<Response> RegisterAsync(RegisterUser registerUser, string role)
@@ -712,12 +712,12 @@ namespace BusinessLogicLayer.Services.Implements
                     var callbackUri = new Uri(callbackUrl);
                     await SendConfirmationEmailAsync(newUser.Email, newUser.FirstAndLastName, callbackUri, registerUser.Password);
 
-                    await transaction.RollbackAsync();
+                    await transaction.CommitAsync();
                     return new Response
                     {
-                        IsSuccess = false,
-                        StatusCode = 500,
-                        Message = "Đăng ký thất bại, vai trò không tồn tại."
+                        IsSuccess = true,
+                        StatusCode = 200,
+                        Message = "Đăng ký thành công, vui lòng kiểm tra email để xác nhận."
                     };
                 }
                 else
@@ -757,7 +757,6 @@ namespace BusinessLogicLayer.Services.Implements
 
             return errorDictionary.ContainsKey(error) ? errorDictionary[error] : error;
         }
-
         public async Task<bool> SetStatus(Guid ID)
         {
             using (var transaction = _dbContext.Database.BeginTransaction())
@@ -812,46 +811,6 @@ namespace BusinessLogicLayer.Services.Implements
             user.Gender = userUpdateVM.Gender ?? user.Gender;
             user.DateOfBirth = userUpdateVM.DateOfBirth ?? user.DateOfBirth;
 
-            // Cập nhật thông tin địa chỉ nếu có thay đổi
-            //if (userUpdateVM.AddressUpdateVM != null)
-            //{
-            //    // Tìm địa chỉ của người dùng hiện tại
-            //    var address = user.Addresss?.FirstOrDefault(a =>
-            //        a.City == userUpdateVM.AddressUpdateVM.City &&
-            //        a.DistrictCounty == userUpdateVM.AddressUpdateVM.DistrictCounty &&
-            //        a.Commune == userUpdateVM.AddressUpdateVM.Commune); 
-
-            //    if (address == null)
-            //    {
-            //        // Nếu người dùng chưa có địa chỉ, tạo địa chỉ mới
-            //        address = new Address
-            //        {
-            //            IDUser = user.Id,
-            //            FirstAndLastName = userUpdateVM.FirstAndLastName ?? user.FirstAndLastName,
-            //            PhoneNumber = userUpdateVM.PhoneNumber ?? user.PhoneNumber,
-            //            Gmail = userUpdateVM.Email ?? user.Email,
-            //            City = userUpdateVM.AddressUpdateVM.City,
-            //            DistrictCounty = userUpdateVM.AddressUpdateVM.DistrictCounty,
-            //            Commune = userUpdateVM.AddressUpdateVM.Commune,
-            //            SpecificAddress = userUpdateVM.AddressUpdateVM.SpecificAddress,
-            //            Status = 1,
-            //            ModifiedBy = user.Id,
-            //            CreateBy = user.Id,
-            //            ID = Guid.NewGuid() // Sử dụng một giá trị GUID mới để đảm bảo khóa chính là duy nhất
-            //        };
-            //        _dbContext.Address.Add(address);
-            //    }
-            //    else
-            //    {
-            //        // Nếu người dùng đã có địa chỉ, cập nhật địa chỉ hiện tại
-            //        address.City = userUpdateVM.AddressUpdateVM.City ?? address.City;
-            //        address.DistrictCounty = userUpdateVM.AddressUpdateVM.DistrictCounty ?? address.DistrictCounty;
-            //        address.Commune = userUpdateVM.AddressUpdateVM.Commune ?? address.Commune;
-            //        address.SpecificAddress = userUpdateVM.AddressUpdateVM.SpecificAddress ?? address.SpecificAddress;
-            //        address.Status = 1; // Cập nhật trạng thái nếu cần
-            //        address.ModifiedBy = user.Id;
-            //    }
-            //}
             if (userUpdateVM.Images != null)
             {
                 var uploadParams = new ImageUploadParams()
@@ -899,17 +858,14 @@ namespace BusinessLogicLayer.Services.Implements
         {
             return await GetUsersByCriteriaAsync(u => u.Email.Contains(email));
         }
-
         public async Task<List<UserDataVM>> GetUsersByPhoneNumberAsync(string phoneNumber)
         {
             return await GetUsersByCriteriaAsync(u => u.PhoneNumber.Contains(phoneNumber));
         }
-
         public async Task<List<UserDataVM>> GetUsersByStatusAsync(int status)
         {
             return await GetUsersByCriteriaAsync(u => u.Status == status);
         }
-
         public async Task<List<UserDataVM>> GetUsersByNameAsync(string name)
         {
             return await GetUsersByCriteriaAsync(u => u.FirstAndLastName.IndexOf(name, StringComparison.OrdinalIgnoreCase) >= 0);
