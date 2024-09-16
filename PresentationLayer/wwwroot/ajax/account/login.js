@@ -322,7 +322,7 @@ function registerUser() {
     });
 
     var xhr = new XMLHttpRequest();
-    xhr.open('POST', 'https://localhost:7241/api/ApplicationUser/Register?role=Client', true);
+    xhr.open('POST', 'https://localhost:7241/api/ApplicationUser/Register?role=client', true);
     xhr.onload = function () {
         Swal.close(); 
 
