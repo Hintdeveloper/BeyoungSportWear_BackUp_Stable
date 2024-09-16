@@ -28,7 +28,8 @@
                 <tbody>
                     <tr>
                         <td style="font-weight: bold;">
-                            @Html.DisplayNameFor(model => model.FirstAndLastName)
+@*                             @Html.DisplayNameFor(model => model.FirstAndLastName)
+ *@                            Họ và tên
                         </td>
                         <td>
                             @Html.DisplayFor(model => model.FirstAndLastName)
@@ -36,7 +37,8 @@
                     </tr>
                     <tr>
                         <td style="font-weight: bold;">
-                            @Html.DisplayNameFor(model => model.Gender)
+@*                             @Html.DisplayNameFor(model => model.Gender)
+ *@                            Giới tính
                         </td>
                         @if (Model.Gender == 0)
                         {
@@ -49,7 +51,8 @@
                     </tr>
                     <tr>
                         <td style="font-weight: bold;">
-                            @Html.DisplayNameFor(model => model.DateOfBirth.Date)
+@*                             @Html.DisplayNameFor(model => model.DateOfBirth.Date)
+ *@                            Ngày sinh
                         </td>
                         <td>
                             @Html.DisplayFor(model => model.DateOfBirth.Date)
@@ -65,7 +68,8 @@
                     </tr>
                     <tr>
                         <td style="font-weight: bold;">
-                            @Html.DisplayNameFor(model => model.PhoneNumber)
+@*                             @Html.DisplayNameFor(model => model.PhoneNumber)
+ *@                            Số điện thoại
                         </td>
                         <td>
                             @Html.DisplayFor(model => model.PhoneNumber)
@@ -73,7 +77,8 @@
                     </tr>
                     <tr>
                         <td style="font-weight: bold;">
-                            @Html.DisplayNameFor(model => model.Status)
+@*                             @Html.DisplayNameFor(model => model.Status)
+ *@                            Trạng thái
                         </td>
                         @if (Model.Status == 1)
                         {

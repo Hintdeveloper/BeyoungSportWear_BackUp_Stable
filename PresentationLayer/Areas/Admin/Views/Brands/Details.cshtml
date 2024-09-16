@@ -26,7 +26,8 @@
         <tbody>
             <tr>
                 <td style="font-weight: bold;">
-                    @Html.DisplayNameFor(model => model.Name)
+                    @* @Html.DisplayNameFor(model => model.Name) *@
+                    Tên thương hiệu
                 </td>
                 <td>
                     @Html.DisplayFor(model => model.Name)
@@ -34,7 +35,8 @@
             </tr>
             <tr>
                 <td style="font-weight: bold;">
-                    @Html.DisplayNameFor(model => model.Description)
+@*                     @Html.DisplayNameFor(model => model.Description)
+ *@                    Mô tả
                 </td>
                 <td>
                     @Html.DisplayFor(model => model.Description)
@@ -50,7 +52,8 @@
             </tr>
             <tr>
                 <td style="font-weight: bold;">
-                    @Html.DisplayNameFor(model => model.Address)
+@*                     @Html.DisplayNameFor(model => model.Address)
+ *@                    Địa chỉ
                 </td>
                 <td>
                     @Html.DisplayFor(model => model.Address)
@@ -66,15 +69,8 @@
             </tr>
             <tr>
                 <td style="font-weight: bold;">
-                    @Html.DisplayNameFor(model => model.Phone)
-                </td>
-                <td>
-                    @Html.DisplayFor(model => model.Phone)
-                </td>
-            </tr>
-            <tr>
-                <td style="font-weight: bold;">
-                    @Html.DisplayNameFor(model => model.Phone)
+@*                     @Html.DisplayNameFor(model => model.Phone)
+ *@                    Số điện thoại
                 </td>
                 <td>
                     @Html.DisplayFor(model => model.Phone)
@@ -82,7 +78,8 @@
             </tr>
             <tr>
                 <td style="font-weight: bold">
-                    @Html.DisplayNameFor(model => model.Status)
+@*                     @Html.DisplayNameFor(model => model.Status)
+ *@                    Trạng thái
                 </td>
                 @if (Model.Status == 1)
                 {

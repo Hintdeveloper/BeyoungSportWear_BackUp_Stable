@@ -223,6 +223,7 @@ namespace BusinessLogicLayer.Services.Implements
             var userDataList = userRoles.Select(ur => new UserDataVM
             {
                 ID = ur.user.Id,
+                JoinDate = ur.user.JoinDate,
                 Username = ur.user.UserName,
                 Email = ur.user.Email,
                 Images = ur.user.Images,

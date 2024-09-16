@@ -7,19 +7,22 @@
 
 <h1>Danh sách màu</h1>
 
-<a asp-action="Create" class="btn btn-primary createbtn">Thêm mới</a>
+<a asp-action="Create" class="btn btn-primary createbtn">Tạo mới</a>
 
 <table id="table" class="table">
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Name)
+@*                 @Html.DisplayNameFor(model => model.Name)
+ *@                Tên
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Description)
+@*                 @Html.DisplayNameFor(model => model.Description)
+ *@                Mô tả
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Status)
+@*                 @Html.DisplayNameFor(model => model.Status)
+ *@                Trạng thái
             </th>
             <th></th>
         </tr>
