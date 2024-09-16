@@ -209,7 +209,7 @@ namespace BusinessLogicLayer.Services.Implements
                 PhoneNumber = u.PhoneNumber,
                 Images = u.Images,
                 Status = u.Status,
-            }).OrderByDescending(u=>u.JoinDate).ToList();
+            }).OrderByDescending(u => u.JoinDate).ToList();
 
             return userDataList;
         }
@@ -239,9 +239,9 @@ namespace BusinessLogicLayer.Services.Implements
         public async Task<UserDataVM> GetInformationByID(string ID)
         {
             var user = await _dbContext.ApplicationUser
-       .Include(u => u.Addresss) // Load địa chỉ
-       .Where(u => u.Id == ID)
-       .FirstOrDefaultAsync();
+               .Include(u => u.Addresss)
+               .Where(u => u.Id == ID)
+               .FirstOrDefaultAsync();
 
             if (user == null)
             {
@@ -294,7 +294,7 @@ namespace BusinessLogicLayer.Services.Implements
                     {
                         IsSuccess = false,
                         StatusCode = 400,
-                        Message = "This email is already in use."
+                        Message = "Email đã có người đăng ký"
                     };
                 }
 
@@ -305,7 +305,7 @@ namespace BusinessLogicLayer.Services.Implements
                     {
                         IsSuccess = false,
                         StatusCode = 400,
-                        Message = "This username is already taken."
+                        Message = "Tên tài khoản này đã có người đăng ký"
                     };
                 }
                 var existingUserByPhone = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == registerOnly.PhoneNumber);
@@ -315,7 +315,7 @@ namespace BusinessLogicLayer.Services.Implements
                     {
                         IsSuccess = false,
                         StatusCode = 400,
-                        Message = "This phone number is already in use."
+                        Message = "Số điện thoại này đã được sử dụng."
                     };
                 }
                 string password = GenerateRandomPassword(12);
@@ -576,10 +576,19 @@ namespace BusinessLogicLayer.Services.Implements
                     {
                         IsSuccess = false,
                         StatusCode = 400,
-                        Message = "Tài khoản này đã có người đăng ký"
+                        Message = "Tên tài khoản này đã có người đăng ký"
                     };
                 }
-
+                existingUser = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == registerUser.PhoneNumber);
+                if (existingUser != null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        StatusCode = 400,
+                        Message = "Số điện thoại này đã được sử dụng."
+                    };
+                }
                 if (registerUser.Password != registerUser.ConfirmPassword)
                 {
                     return new Response
@@ -629,7 +638,6 @@ namespace BusinessLogicLayer.Services.Implements
                 }
                 else
                 {
-                    // Lấy đường dẫn tới ảnh mặc định trong project khác
                     var defaultImagePath = Path.Combine("..", "ExternalInterfaceLayer", "wwwroot", "nonameAva.png");
 
                     using (var fileStream = new FileStream(defaultImagePath, FileMode.Open))
@@ -650,11 +658,16 @@ namespace BusinessLogicLayer.Services.Implements
                 if (!result.Succeeded)
                 {
                     await transaction.RollbackAsync();
+
+                    var errors = result.Errors.Select(e => TranslateErrorToVietnamese(e.Description)).ToList();
+
+                    string errorMessage = "Tạo người dùng thất bại. Chi tiết lỗi: " + string.Join(", ", errors);
+
                     return new Response
                     {
                         IsSuccess = false,
                         StatusCode = 500,
-                        Message = "User creation failed."
+                        Message = errorMessage
                     };
                 }
 
@@ -699,13 +712,12 @@ namespace BusinessLogicLayer.Services.Implements
                     var callbackUri = new Uri(callbackUrl);
                     await SendConfirmationEmailAsync(newUser.Email, newUser.FirstAndLastName, callbackUri, registerUser.Password);
 
-                    await transaction.CommitAsync();
-
+                    await transaction.RollbackAsync();
                     return new Response
                     {
-                        IsSuccess = true,
-                        StatusCode = 201,
-                        Message = "Register successfully! Please check your email for confirmation."
+                        IsSuccess = false,
+                        StatusCode = 500,
+                        Message = "Đăng ký thất bại, vai trò không tồn tại."
                     };
                 }
                 else
@@ -715,7 +727,7 @@ namespace BusinessLogicLayer.Services.Implements
                     {
                         IsSuccess = false,
                         StatusCode = 500,
-                        Message = "Register failed, something went wrong!"
+                        Message = "Có lỗi xảy ra trong quá trình lưu dữ liệu, vui lòng kiểm tra lại."
                     };
                 }
             }
@@ -726,10 +738,26 @@ namespace BusinessLogicLayer.Services.Implements
                 {
                     IsSuccess = false,
                     StatusCode = 500,
-                    Message = "An error occurred while saving the entity changes. See the inner exception for details.",
+                    Message = "Đã xảy ra lỗi khi lưu các thay đổi thực thể. Xem ngoại lệ bên trong để biết chi tiết.",
                 };
             }
         }
+        private string TranslateErrorToVietnamese(string error)
+        {
+            var errorDictionary = new Dictionary<string, string>
+                {
+                    { "Passwords must have at least one uppercase ('A'-'Z').", "Mật khẩu phải có ít nhất một chữ cái viết hoa ('A'-'Z')." },
+                    { "Passwords must have at least one lowercase ('a'-'z').", "Mật khẩu phải có ít nhất một chữ cái thường ('a'-'z')." },
+                    { "Passwords must have at least one digit ('0'-'9').", "Mật khẩu phải có ít nhất một chữ số ('0'-'9')." },
+                    { "Passwords must have at least one non-alphanumeric character.", "Mật khẩu phải có ít nhất một ký tự đặc biệt." },
+                    { "Password too short.", "Mật khẩu quá ngắn." },
+                    { "Email already taken.", "Email đã có người đăng ký." },
+                    { "User name already taken.", "Tên người dùng đã tồn tại." }
+                };
+
+            return errorDictionary.ContainsKey(error) ? errorDictionary[error] : error;
+        }
+
         public async Task<bool> SetStatus(Guid ID)
         {
             using (var transaction = _dbContext.Database.BeginTransaction())

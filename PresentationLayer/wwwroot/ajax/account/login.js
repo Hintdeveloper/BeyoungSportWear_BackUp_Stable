@@ -256,22 +256,53 @@ document.getElementById('btn_register').addEventListener('click', function () {
 });
 
 function registerUser() {
-    var formData = new FormData();
-
-    formData.append('Username', document.getElementById('username').value);
-    formData.append('FirstAndLastName', document.getElementById('firstandlastname').value);
-    formData.append('Email', document.getElementById('gmail').value);
-    formData.append('PhoneNumber', document.getElementById('phoneNumber').value);
+    var username = document.getElementById('username').value.trim();
+    var firstAndLastName = document.getElementById('firstandlastname').value.trim();
+    var email = document.getElementById('gmail').value.trim();
+    var phoneNumber = document.getElementById('phoneNumber').value.trim();
     var genderSelect = document.getElementById('gender');
     var selectedGender = genderSelect.options[genderSelect.selectedIndex].value;
+    var dateOfBirth = document.getElementById('dateorbirth').value.trim();
+    var password = document.getElementById('pass').value.trim();
+    var confirmPassword = document.getElementById('confirm_pass').value.trim();
+    var city = document.getElementById('city').value.trim();
+    var districtCounty = document.getElementById('district').value.trim();
+    var commune = document.getElementById('ward').value.trim();
+    var specificAddress = document.getElementById('specificAddress').value.trim();
+
+    if (!username || !firstAndLastName || !email || !phoneNumber || !dateOfBirth || !password || !confirmPassword || !city || !districtCounty || !commune || !specificAddress) {
+        Swal.fire({
+            title: 'Lỗi!',
+            text: 'Vui lòng điền đầy đủ thông tin trước khi gửi.',
+            icon: 'warning',
+            confirmButtonText: 'OK'
+        });
+        return; 
+    }
+
+    if (password !== confirmPassword) {
+        Swal.fire({
+            title: 'Lỗi!',
+            text: 'Mật khẩu xác nhận không khớp.',
+            icon: 'warning',
+            confirmButtonText: 'OK'
+        });
+        return; 
+    }
+
+    var formData = new FormData();
+    formData.append('Username', username);
+    formData.append('FirstAndLastName', firstAndLastName);
+    formData.append('Email', email);
+    formData.append('PhoneNumber', phoneNumber);
     formData.append('Gender', selectedGender);
-    formData.append('DateOfBirth', document.getElementById('dateorbirth').value);
-    formData.append('Password', document.getElementById('pass').value);
-    formData.append('ConfirmPassword', document.getElementById('confirm_pass').value);
-    formData.append('City', document.getElementById('city').value);
-    formData.append('DistrictCounty', document.getElementById('district').value);
-    formData.append('Commune', document.getElementById('ward').value);
-    formData.append('SpecificAddress', document.getElementById('specificAddress').value);
+    formData.append('DateOfBirth', dateOfBirth);
+    formData.append('Password', password);
+    formData.append('ConfirmPassword', confirmPassword);
+    formData.append('City', city);
+    formData.append('DistrictCounty', districtCounty);
+    formData.append('Commune', commune);
+    formData.append('SpecificAddress', specificAddress);
 
     var fileInput = document.getElementById('fileInput');
     if (fileInput.files.length > 0) {
@@ -291,7 +322,7 @@ function registerUser() {
     });
 
     var xhr = new XMLHttpRequest();
-    xhr.open('POST', 'https://localhost:7241/api/ApplicationUser/Register?role=client', true);
+    xhr.open('POST', 'https://localhost:7241/api/ApplicationUser/Register?role=Client', true);
     xhr.onload = function () {
         Swal.close(); 
 
