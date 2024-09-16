@@ -826,30 +826,74 @@ function setCookie(name, value, days) {
 }
 function sendOrderData() {
     const orderData = getFormData();
-    console.log('orderData', orderData)
+    console.log('orderData', orderData);
+    console.log('orderDetailsCreateVM', orderData.orderDetailsCreateVM);
+
     if (!orderData) {
         return;
     }
-    if (orderData.paymentMethods === 0) {
-        processOrder(orderData);
-        return;
-    }
-    const hasLargeQuantity = orderData.orderDetailsCreateVM.some(detail => detail.quantity > 100);
 
-    if (hasLargeQuantity) {
-        $('#notificationModal').modal('show');
-        $('body').addClass('modal-open');
+    checkStockAvailability(orderData.orderDetailsCreateVM)
+        .then(() => {
+            if (orderData.paymentMethods === 0) {
+                processOrder(orderData);
+                return;
+            }
+            const hasLargeQuantity = orderData.orderDetailsCreateVM.some(detail => detail.quantity > 100);
 
-        $('.modal-backdrop').hide();
+            if (hasLargeQuantity) {
+                $('#notificationModal').modal('show');
+                $('body').addClass('modal-open');
+                $('.modal-backdrop').hide();
 
-        $('#confirmButton').on('click', function () {
-            $('#notificationModal').modal('hide');
-            $('body').removeClass('modal-open');
-            processOrder(orderData);
+                $('#confirmButton').on('click', function () {
+                    $('#notificationModal').modal('hide');
+                    $('body').removeClass('modal-open');
+                    processOrder(orderData);
+                });
+            } else {
+                processOrder(orderData);
+            }
+        })
+        .catch(error => {
+            Swal.fire({
+                title: 'Hết hàng!',
+                text: error,
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
         });
-    } else {
-        processOrder(orderData);
-    }
+}
+function checkStockAvailability(orderDetails) {
+    return new Promise((resolve, reject) => {
+        const stockCheckRequests = orderDetails.map(detail => {
+            return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('GET', `https://localhost:7241/api/Options/GetByID/${detail.idOptions}`, true);
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === XMLHttpRequest.DONE) {
+                        if (xhr.status === 200) {
+                            const response = JSON.parse(xhr.responseText);
+                            console.log('response', response);
+
+                            if (response.stockQuantity >= detail.quantity) {
+                                resolve(true);
+                            } else {
+                                reject(`Ôi không! Bạn chậm tay qua sớm sản phẩm [${response.productName}]-[${response.keyCode}] đã hết hàng rồi!`);
+                            }
+                        } else {
+                            reject('Lỗi kiểm tra hàng tồn kho.');
+                        }
+                    }
+                };
+                xhr.send();
+            });
+        });
+
+        Promise.all(stockCheckRequests)
+            .then(() => resolve(true))
+            .catch(error => reject(error));
+    });
 }
 function processOrder(orderData) {
     Swal.fire({
@@ -861,6 +905,7 @@ function processOrder(orderData) {
         cancelButtonText: 'Hủy'
     }).then((result) => {
         if (result.isConfirmed) {
+
             Swal.fire({
                 title: 'Đang xử lý',
                 text: 'Vui lòng chờ trong khi gửi đơn hàng...',

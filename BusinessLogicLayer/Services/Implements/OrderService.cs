@@ -55,50 +55,52 @@ namespace BusinessLogicLayer.Services.Implements
                 order.ShippingMethods = request.ShippingMethods;
                 order.Cotsts = request.Cotsts ?? 0;
                 order.OrderType = request.OrderType;
+                order.Notes = request.Notes;
                 order.Status = 1;
                 var orderDetailsList = new List<OrderDetails>();
                 decimal totalAmount = 0;
                 foreach (var directItem in request.OrderDetailsCreateVM)
                 {
                     var option = await _dbcontext.Options.FirstOrDefaultAsync(c => c.ID == directItem.IDOptions);
-                    if (option != null)
-                    {
-                        if (option.StockQuantity < directItem.Quantity)
-                        {
-                            await transaction.RollbackAsync();
-                            return new Result
-                            {
-                                Success = false,
-                                ErrorMessage = $"Số lượng không đủ cho sản phẩm (Số lượng còn lại: {option.StockQuantity})"
-                            };
-                        }
-                        var ordervariant = new OrderDetails()
-                        {
-                            ID = Guid.NewGuid(),
-                            IDOrder = order.ID,
-                            IDOptions = option.ID,
-                            UnitPrice = option.RetailPrice,
-                            Quantity = directItem.Quantity,
-                            TotalAmount = (option.RetailPrice * directItem.Quantity) - ((option.Discount ?? 0) * directItem.Quantity),
-                            Status = 1,
-                            CreateBy = option.CreateBy,
-                            CreateDate = DateTime.Now
-                        };
-                        orderDetailsList.Add(ordervariant);
-                        totalAmount += (ordervariant.UnitPrice * ordervariant.Quantity) - ((option.Discount ?? 0) * ordervariant.Quantity);
-                    }
-                    else
+
+                    if (option == null)
                     {
                         await transaction.RollbackAsync();
                         return new Result
                         {
                             Success = false,
-                            ErrorMessage = "Phân loại không được rỗng"
+                            ErrorMessage = "Phân loại sản phẩm không tồn tại."
                         };
                     }
+
+                    if (directItem.Quantity <= 0)
+                    {
+                        await transaction.RollbackAsync();
+                        return new Result
+                        {
+                            Success = false,
+                            ErrorMessage = "Số lượng phải lớn hơn 0."
+                        };
+                    }
+
+                    var ordervariant = new OrderDetails()
+                    {
+                        ID = Guid.NewGuid(),
+                        IDOrder = order.ID,
+                        IDOptions = option.ID,
+                        UnitPrice = option.RetailPrice,
+                        Quantity = directItem.Quantity,
+                        TotalAmount = (option.RetailPrice * directItem.Quantity) - ((option.Discount ?? 0) * directItem.Quantity),
+                        Status = 1,
+                        CreateBy = option.CreateBy,
+                        CreateDate = DateTime.Now
+                    };
+                    orderDetailsList.Add(ordervariant);
+                    totalAmount += (ordervariant.UnitPrice * ordervariant.Quantity) - ((option.Discount ?? 0) * ordervariant.Quantity);
+
                     if (order.OrderType == OrderType.Online && order.PaymentStatus == PaymentStatus.Success)
                     {
-                        bool stockUpdated = await CheckAndReduceStock(option.ID, directItem.Quantity);
+                        bool stockUpdated = await ReduceStockAsync(option.ID, directItem.Quantity);
                         if (!stockUpdated)
                         {
                             await transaction.RollbackAsync();
@@ -233,6 +235,7 @@ namespace BusinessLogicLayer.Services.Implements
                     ChangeDate = DateTime.Now,
                     ChangeType = changeType,
                     EditingHistory = "Tạo đơn hàng mới",
+                    BillOfLadingCode = request.Notes,
                     Status = 1,
                     CreateBy = request.CreateBy,
                     CreateDate = DateTime.Now,
@@ -400,24 +403,8 @@ namespace BusinessLogicLayer.Services.Implements
             return discountAmount;
         }
 
-        private async Task<bool> CheckAndReduceStock(Guid IDOptions, int quantity)
-        {
-            if (IDOptions != Guid.Empty && IDOptions != null)
-            {
-                var variantItem = await _dbcontext.Options.FindAsync(IDOptions);
-                if (variantItem != null)
-                {
-                    if (variantItem.StockQuantity < quantity)
-                    {
-                        return false;
-                    }
-                    variantItem.StockQuantity -= quantity;
-                    await _dbcontext.SaveChangesAsync();
-                    return true;
-                }
-            }
-            return false;
-        }
+      
+        
         public async Task<List<OrderVM>> GetAllActiveAsync()
         {
             var objList = await _dbcontext.Order
@@ -571,18 +558,26 @@ namespace BusinessLogicLayer.Services.Implements
             }
             return false;
         }
-        private bool IsValidStatusTransition(OrderStatus currentStatus, OrderStatus newStatus)
+        private async Task<bool> ReduceStockAsync(Guid IDOptions, int quantity)
         {
-            var validTransitions = new Dictionary<OrderStatus, List<OrderStatus>>
+            if (IDOptions != Guid.Empty && IDOptions != null)
+            {
+                var variantItem = await _dbcontext.Options.FindAsync(IDOptions);
+                if (variantItem != null)
                 {
-                    { OrderStatus.Pending, new List<OrderStatus> { OrderStatus.Processed, OrderStatus.Cancelled } },
-                    { OrderStatus.Processed, new List<OrderStatus> { OrderStatus.Shipping, OrderStatus.Cancelled } },
-                    { OrderStatus.Shipping, new List<OrderStatus> { OrderStatus.Delivered } },
-                    { OrderStatus.Delivered, new List<OrderStatus>() },
-                    { OrderStatus.Cancelled, new List<OrderStatus>() }
-                };
-
-            return validTransitions.ContainsKey(currentStatus) && validTransitions[currentStatus].Contains(newStatus);
+                    if (variantItem.StockQuantity >= quantity)
+                    {
+                        variantItem.StockQuantity -= quantity;
+                        await _dbcontext.SaveChangesAsync();
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+            }
+            return false;
         }
         public async Task<List<OrderVM>> GetByStatusAsync(OrderStatus OrderStatus)
         {
@@ -907,6 +902,20 @@ namespace BusinessLogicLayer.Services.Implements
                 return false;
             }
         }
+        private bool IsValidStatusTransition(OrderStatus currentStatus, OrderStatus newStatus)
+        {
+            var validTransitions = new Dictionary<OrderStatus, List<OrderStatus>>
+                {
+                    { OrderStatus.Pending, new List<OrderStatus> { OrderStatus.Processed, OrderStatus.Cancelled } },
+                    { OrderStatus.Processed, new List<OrderStatus> { OrderStatus.Shipping, OrderStatus.Cancelled } },
+                    { OrderStatus.Shipping, new List<OrderStatus> { OrderStatus.Delivered } },
+                    { OrderStatus.Delivered, new List<OrderStatus>() },
+                    { OrderStatus.Cancelled, new List<OrderStatus>() }
+                };
+
+            return validTransitions.ContainsKey(currentStatus) && validTransitions[currentStatus].Contains(newStatus);
+        }
+
         public async Task<Result> UpdateOrderStatusAsync(Guid IDOrder, int status, string IDUserUpdate, string BillOfLadingCode)
         {
             var order = await _dbcontext.Order
@@ -926,14 +935,7 @@ namespace BusinessLogicLayer.Services.Implements
             var username = user != null ? user.UserName : "Người dùng không xác định";
 
             var newStatus = (OrderStatus)status;
-            if (order.PaymentStatus == PaymentStatus.Success && newStatus == OrderStatus.Cancelled)
-            {
-                return new Result
-                {
-                    Success = false,
-                    ErrorMessage = "Đơn hàng đã được thanh toán và không thể hủy."
-                };
-            }
+
             if (order.OrderStatus == newStatus)
             {
                 return new Result
@@ -964,12 +966,12 @@ namespace BusinessLogicLayer.Services.Implements
                 changeDetails = $"Trạng thái: Từ {oldStatusDescription} sang {newStatusDescription},<br> Người sửa: <a data-user-id='{IDUserUpdate}'>{username}</a>";
             }
 
-            if (order.OrderStatus == OrderStatus.Processed)
+            if (order.OrderStatus == OrderStatus.Pending && newStatus == OrderStatus.Processed)
             {
                 bool stockUpdated = true;
                 foreach (var orderItem in order.OrderDetails)
                 {
-                    var success = await CheckAndReduceStock(orderItem.IDOptions, orderItem.Quantity);
+                    var success = await ReduceStockAsync(orderItem.IDOptions, orderItem.Quantity);
                     if (!success)
                     {
                         stockUpdated = false;

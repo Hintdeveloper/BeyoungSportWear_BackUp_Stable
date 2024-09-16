@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', function () {
 function checkOptionsData() {
     const rows = document.getElementById('classificationBody').getElementsByTagName('tr');
     if (rows.length === 0) {
-        return false;  // Không có phân loại nào được thêm
+        return false;  
     }
 
     for (let i = 0; i < rows.length; i++) {
@@ -79,14 +79,14 @@ function checkOptionsData() {
             const soLuong = cells[4].querySelector('input').value;
 
             if (!color || !size || !giaBan || !soLuong) {
-                return false;  // Thiếu thông tin phân loại
+                return false; 
             }
         } else {
-            return false;  // Hàng không đúng định dạng
+            return false;
         }
     }
 
-    return true;  // Đã có phân loại hợp lệ
+    return true;  
 }
 document.addEventListener('DOMContentLoaded', function () {
     const productForm = document.getElementById('productForm');
@@ -140,7 +140,6 @@ document.addEventListener('DOMContentLoaded', function () {
             cancelButtonText: 'Không, hủy!',
             reverseButtons: true
         }).then(async (result) => {
-            const optionsData = await createOptionsData();
 
             if (result.isConfirmed) {
                 try {
@@ -152,6 +151,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             Swal.showLoading();
                         }
                     });
+                    const optionsData = await createOptionsData();
 
                     await saveProduct({
                         CreateBy: userId,

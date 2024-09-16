@@ -94,7 +94,6 @@ function getOptions() {
 document.getElementById('btn_reload').addEventListener('click', () => {
     getOptions();
 });
-
 function renderOptions(data) {
     const tableBody = document.getElementById('productTableBody');
     tableBody.innerHTML = '';
@@ -260,6 +259,20 @@ function calculateCustomersStillOwe() {
     let customersStillOwe = totalPay - moneyGiven;
     customersStillOweElement.textContent = customersStillOwe.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
 }
+document.getElementById('customerPhone').addEventListener('blur', function () {
+    const phoneRegex = /^(03|05|07|08|09)\d{8}$/;
+    const phone = this.value;
+    if (!phoneRegex.test(phone)) {
+        this.value = '';
+        Swal.fire({
+            icon: 'error',
+            title: 'Lỗi',
+            text: 'Số điện thoại không hợp lệ!',
+            confirmButtonText: 'OK'
+        });
+    }
+});
+
 function fillOrderData(users) {
     const note = document.getElementById('note_order').value;
     const paymentMethod = document.getElementById('paymentMethodSelect').value;
@@ -268,6 +281,7 @@ function fillOrderData(users) {
     const customerName_gui = document.getElementById('customerName').value.trim();
     const customerPhone_gui = document.getElementById('customerPhone').value.trim();
     const shippingAddress = document.getElementById('shippingAddress').value.trim();
+    const streetInput = document.getElementById('street').value.trim();
     const shippingFeeElement = document.getElementById('shippingFee');
     if (shippingFeeElement) {
         const textContent = shippingFeeElement.textContent.trim();
@@ -286,6 +300,7 @@ function fillOrderData(users) {
         customerPhone_gui: users ? users.phoneNumber : '',
         customerEmail: users ? users.email : '',
         shippingAddress: shippingAddress || 'Nhận tại cửa hàng',
+        shippingAddressLine2: streetInput || 'Nhận tại cửa hàng',
         voucherCode: voucherCode || null,
         costs: costs,
         note: note,
@@ -297,25 +312,13 @@ function fillOrderData(users) {
         proxyCustomerPhone: isProxyOrder ? customerPhone_gui : ''
     });
 }
-document.getElementById('customerPhone').addEventListener('blur', function () {
-    const phoneRegex = /^(03|05|07|08|09)\d{8}$/;
-    const phone = this.value;
-    if (!phoneRegex.test(phone)) {
-        this.value = '';
-        Swal.fire({
-            icon: 'error',
-            title: 'Lỗi',
-            text: 'Số điện thoại không hợp lệ!',
-            confirmButtonText: 'OK'
-        });
-    }
-});
 function createOrderData({
     idUser,
     customerName_gui,
     customerPhone_gui,
     customerEmail,
     shippingAddress,
+    shippingAddressLine2,
     costs,
     note,
     paymentMethod,
@@ -362,7 +365,7 @@ function createOrderData({
         customerPhone: customerPhone,
         customerEmail: finalCustomerEmail,
         shippingAddress: shippingAddress || 'Nhận tại cửa hàng',
-        shippingAddressLine2: "",
+        shippingAddressLine2: shippingAddressLine2 || 'Nhận tại cửa hàng',
         shipDate: new Date().toISOString(),
         cotsts: costs || 0,
         voucherCode: voucherCode || null,
@@ -377,7 +380,7 @@ function createOrderData({
         orderDetailsCreateVM: orderDetails || []
     };
 }
-function displaySearchResults(users) {
+async function displaySearchResults(users) {
     const resultsContainer = document.getElementById('customerSearchResults');
     resultsContainer.innerHTML = '';
 
@@ -431,6 +434,52 @@ function displaySearchResults(users) {
     resultsContainer.style.borderRadius = '5px';
     resultsContainer.style.marginTop = '20px';
     resultsContainer.style.backgroundColor = '#f9f9f9';
+    const shippingMethodSelect = document.getElementById('shippingMethod');
+
+    const selectedValue = shippingMethodSelect.value;
+
+    if (selectedValue === '1') {
+        if (users.length > 0) {
+            const defaultAddress = users[0].addressVMs.find(address => address.isDefault);
+
+            if (defaultAddress) {
+                document.getElementById('customerName').value = defaultAddress.firstAndLastName;
+                document.getElementById('customerPhone').value = defaultAddress.phoneNumber;
+                document.getElementById('street').value = defaultAddress.specificAddress;
+
+                try {
+                    const provinceID = await fetchProvinces(defaultAddress.city);
+
+                    if (!provinceID) return;
+
+                    const districtID = await fetchDistricts(provinceID, defaultAddress.districtCounty);
+
+                    if (!districtID) {
+                        console.log("Không tìm thấy mã huyện/quận.");
+                        return;
+                    }
+
+                    const wardID = await fetchWards(districtID, defaultAddress.commune);
+
+                    if (!wardID) {
+                        console.log("Không tìm thấy mã xã/phường.");
+                        return;
+                    }
+
+                    populateSelectElement('city', defaultAddress.city);
+                    populateSelectElement('district', defaultAddress.districtCounty);
+                    populateSelectElement('ward', defaultAddress.commune);
+                    updateShippingAddress();
+
+                    await getShippingFee(provinceID, districtID, wardID);
+                } catch (error) {
+                    console.error('Error fetching shipping fee:', error);
+                }
+            } else {
+                console.warn('Không tìm thấy địa chỉ mặc định cho số điện thoại này');
+            }
+        }
+    }
 }
 document.getElementById('customerPhoneNumber').addEventListener('blur', function () {
     const phoneNumber = this.value.trim();
@@ -450,8 +499,6 @@ function searchCustomerByPhoneNumber(phoneNumber) {
     const xhr = new XMLHttpRequest();
     xhr.open('GET', `https://localhost:7241/api/ApplicationUser/GetUsersByPhoneNumber?phoneNumber=${phoneNumber}`, true);
     xhr.setRequestHeader('Authorization', `Bearer ${getJwtFromCookie()}`);
-
-
     xhr.onreadystatechange = function () {
         if (xhr.readyState === 4) {
             if (xhr.status === 200) {
@@ -542,7 +589,11 @@ function increaseQuantity(button) {
                     quantityElement.textContent = currentQuantity;
 
                     const priceElement = row.querySelector('.product-total');
-                    const pricePerUnitElement = document.getElementById('retail_price_options');
+                    const pricePerUnitElement = document.getElementById(`retal_price_options_cart_${optionId}`);
+                    if (!pricePerUnitElement) {
+                        console.error('Không tìm thấy phần tử giá với id:', `retal_price_options_cart_${optionId}`);
+                        return;
+                    }
                     const pricePerUnit = parseFloat(pricePerUnitElement.value || pricePerUnitElement.textContent.trim().replace(/\D/g, ''));
 
                     if (!isNaN(pricePerUnit)) {
@@ -556,7 +607,6 @@ function increaseQuantity(button) {
                     stockQuantities[optionId] = stockQuantity + 1;
                     selectedQuantities[optionId] = currentQuantity;
 
-                    // Cập nhật số lượng sản phẩm chỉ khi API trả về mã 200
                     const xhrUpdate = new XMLHttpRequest();
                     xhrUpdate.open('POST', 'https://localhost:7241/api/Options/decrease-quantity', true);
                     xhrUpdate.setRequestHeader('Content-Type', 'application/json');
@@ -620,7 +670,11 @@ function decreaseQuantity(button) {
                     quantityElement.textContent = currentQuantity;
 
                     const priceElement = row.querySelector('.product-total');
-                    const pricePerUnitElement = document.getElementById('retail_price_options');
+                    const pricePerUnitElement = document.getElementById(`retal_price_options_cart_${optionId}`);
+                    if (!pricePerUnitElement) {
+                        console.error('Không tìm thấy phần tử giá với id:', `retal_price_options_cart_${optionId}`);
+                        return;
+                    }
                     const pricePerUnit = parseFloat(pricePerUnitElement.value || pricePerUnitElement.textContent.trim().replace(/\D/g, ''));
 
                     if (!isNaN(pricePerUnit)) {
@@ -850,7 +904,7 @@ function createProductRow(option, newQuantity, totalPrice, optionId) {
             <div class="product-keycode">(${option.keyCode})</div>
         </td>
         <td class="text-center">Size: ${option.sizesName}<br> Color: ${option.colorName}</td>
-        <td class="text-center product-price">${option.retailPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</td>
+        <td class="text-center product-price" id="retal_price_options_cart_${option.id}">${option.retailPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</td>
         <td class="text-center">
             <button id="btn_decreaseQuantity" onclick="decreaseQuantity(this)" 
                 style="padding: 3px 6px; background-color: #f44336; color: white; border: none; border-radius: 4px; margin-right: 5px;">-</button>
@@ -940,20 +994,10 @@ function saveDataToCookies() {
     const data = {
         selectedProducts,
         shippingMethod: shippingMethod,
-        customerName: document.getElementById('customerName').value,
-        customerPhone: document.getElementById('customerPhone').value,
         customerPhoneNumber: document.getElementById('customerPhoneNumber').value,
-        city: document.getElementById('city').value,
-        district: document.getElementById('district').value,
-        ward: document.getElementById('ward').value,
-        street: document.getElementById('street').value,
-        shippingFee: document.getElementById('shippingFee').innerText.trim(),
-        shippingFeeDisplay: document.getElementById('shippingFeeDisplay').innerText.trim(),
         noteOrder: document.getElementById('note_order').value,
         paymentMethodSelect: document.getElementById('paymentMethodSelect').value,
-        totalPay: document.getElementById('total_pay').innerText.trim(),
         moneyGivenByGuests: document.getElementById('money_given_by_guests').value,
-        customersStillOwe: document.getElementById('customers_still_owe').innerText.trim()
     };
 
     if (shippingMethod === '1') {
@@ -1010,8 +1054,6 @@ function loadDataFromCookies() {
         if (data.shippingMethod === '1') {
             document.getElementById('shippingAddress').value = data.shippingAddress || '';
         }
-
-        console.log('Data loaded from cookies:', data);
     }
 }
 document.addEventListener('DOMContentLoaded', function () {
@@ -1023,15 +1065,9 @@ function attachEventListeners() {
         '#customerPhone',
         '#customerName',
         '#customerPhoneNumber',
-        '#city',
-        '#district',
-        '#ward',
-        '#street',
         '#note_order',
         '#paymentMethodSelect',
-        '#coupound',
         '#money_given_by_guests',
-        '#shippingFee'
     ];
 
     elementsToWatch.forEach(selector => {
@@ -1081,6 +1117,75 @@ function getOrderDataFromCookies(invoiceNumber) {
 }
 function displayOrders(orders) {
     orders.forEach(order => updateFormData(order));
+}
+async function updateAddressFromUser(user) {
+    if (user && user.addressVMs) {
+        const defaultAddress = user.addressVMs.find(address => address.isDefault);
+
+        if (defaultAddress) {
+            document.getElementById('customerName').value = defaultAddress.firstAndLastName;
+            document.getElementById('customerPhone').value = defaultAddress.phoneNumber;
+            document.getElementById('street').value = defaultAddress.specificAddress;
+
+            try {
+                const provinceID = await fetchProvinces(defaultAddress.city);
+                const districtID = await fetchDistricts(provinceID, defaultAddress.districtCounty);
+                const wardID = await fetchWards(districtID, defaultAddress.commune);
+
+                populateSelectElement('city', defaultAddress.city);
+                populateSelectElement('district', defaultAddress.districtCounty);
+                populateSelectElement('ward', defaultAddress.commune);
+                await updateShippingAddress();
+                await getShippingFee(provinceID, districtID, wardID);
+            } catch (error) {
+                console.error('Error fetching address details:', error);
+            }
+        } else {
+            console.warn('Không tìm thấy địa chỉ mặc định cho số điện thoại này');
+        }
+    }
+}
+function setupShippingMethodEvents() {
+    const shippingMethodSelect = document.getElementById('shippingMethod');
+    const shippingDetails = document.getElementById('shippingDetails');
+    const citySelect = document.getElementById('city');
+    const districtSelect = document.getElementById('district');
+    const wardSelect = document.getElementById('ward');
+    const streetInput = document.getElementById('street');
+    const shippingAddressInput = document.getElementById('shippingAddress');
+
+    shippingMethodSelect.addEventListener('change', async function () {
+        if (this.value === "0") {
+            shippingDetails.style.display = 'none';
+            shippingAddressInput.value = "Nhận tại cửa hàng";
+            calculateTotalPay();
+        } else {
+            shippingDetails.style.display = 'flex';
+
+            if (selectedUser) {
+                await updateAddressFromUser(selectedUser);
+
+            } else {
+                updateShippingAddress();
+            }
+        }
+    });
+
+    citySelect.addEventListener('change', updateShippingAddress);
+    districtSelect.addEventListener('change', updateShippingAddress);
+    wardSelect.addEventListener('change', updateShippingAddress);
+    streetInput.addEventListener('input', updateShippingAddress);
+
+    if (shippingMethodSelect.value === "0") {
+        shippingDetails.style.display = 'none';
+    } else {
+        shippingDetails.style.display = 'flex';
+        if (selectedUser) {
+            updateAddressFromUser(selectedUser);
+        } else {
+            updateShippingAddress();
+        }
+    }
 }
 async function updateFormData(data) {
     if (data.customerPhoneNumber) {
@@ -1168,42 +1273,15 @@ async function updateFormData(data) {
 
     if (data.shippingMethod) {
         shippingMethodSelect.value = data.shippingMethod;
-        shippingDetails.style.display = data.shippingMethod === "1" ? 'flex' : 'none';
+        shippingDetails.style.display = (data.customerPhoneNumber && data.shippingMethod === "1") ? 'flex' : 'none';
     }
 
     shippingMethodSelect.addEventListener('change', function () {
-        shippingDetails.style.display = this.value === "1" ? 'flex' : 'none';
+        const shouldShowDetails = this.value === "1" && document.getElementById('customerPhoneNumber').value;
+        shippingDetails.style.display = shouldShowDetails ? 'flex' : 'none';
     });
 
-    const provinceID = await fetchProvinces(data.city);
 
-    if (!provinceID) {
-        console.log("Không tìm thấy mã tỉnh/thành phố.");
-        return;
-    }
-
-    const districtID = await fetchDistricts(provinceID, data.district);
-
-    if (!districtID) {
-        console.log("Không tìm thấy mã huyện/quận.");
-        return;
-    }
-
-    const wardID = await fetchWards(districtID, data.ward);
-
-    if (!wardID) {
-        console.log("Không tìm thấy mã xã/phường.");
-        return;
-    }
-    populateSelectElement('city', data.city);
-    populateSelectElement('district', data.district);
-    populateSelectElement('ward', data.ward);
-    updateShippingAddress();
-    try {
-        await getShippingFee(provinceID, districtID, wardID);
-    } catch (error) {
-        console.error('Error fetching shipping fee:', error);
-    }
 }
 document.addEventListener('DOMContentLoaded', function () {
     var shippingMethodSelect = document.getElementById("shippingMethod");
@@ -1215,8 +1293,6 @@ document.addEventListener('DOMContentLoaded', function () {
     var shippingDetails = document.getElementById("shippingDetails");
     var customerName = document.getElementById("customerName");
     var customerPhone = document.getElementById("customerPhone");
-    var shippingFee = document.getElementById("shippingFee");
-    var shippingFeeDisplay = document.getElementById("shippingFeeDisplay");
 
     document.getElementById('btnLuuDonHang').addEventListener('click', function (event) {
         if (validateShippingDetails()) {
@@ -1253,29 +1329,13 @@ document.addEventListener('DOMContentLoaded', function () {
             shippingDetails.style.display = 'none';
             shippingAddressInput.value = "Nhận tại cửa hàng";
 
-            data.customerName = null;
-            data.customerPhone = null;
-            data.city = null;
-            data.district = null;
-            data.ward = null;
-            data.street = null;
-            data.shippingFee = "0";
-            data.shippingFeeDisplay = "0 ₫";
-
             setCookie(cookieName, encodeURIComponent(JSON.stringify(data)), 1);
 
-            customerName.value = '';
-            customerPhone.value = '';
-            streetInput.value = '';
-            wardSelect.value = '';
-            districtSelect.value = '';
-            citySelect.value = '';
-
-            shippingFee.innerText = "0";
-            shippingFeeDisplay.innerText = "0 ₫";
             calculateTotalPay();
         } else {
             shippingDetails.style.display = 'flex';
+            setupShippingMethodEvents();
+
             updateShippingAddress();
         }
     });
@@ -1399,16 +1459,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     window.location.href = `/order_success`;
                 });
             } else {
-                try {
-                    var errorResponse = JSON.parse(xhr.responseText);
-                    var errorMessage = errorResponse.message || 'Đã xảy ra lỗi khi lưu đơn hàng.';
-                } catch (e) {
-                    var errorMessage = 'Đã xảy ra lỗi khi lưu đơn hàng.';
-                }
-
                 Swal.fire({
                     title: 'Lỗi!',
-                    text: errorMessage,
+                    text: xhr.responseText,
                     icon: 'error',
                     confirmButtonText: 'OK'
                 });
@@ -1853,13 +1906,11 @@ async function getShippingFee(provinceID, districtID, wardCode) {
 
         const responseData = await response.json();
 
-        console.log('API Response:', responseData);
         if (responseData.code === 200) {
             shippingFee = responseData.data.total;
             document.getElementById('shippingFee').innerText = shippingFee;
             document.getElementById('shippingFeeDisplay').innerText = shippingFee.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
             calculateTotalPay();
-            console.log('Giá:' + shippingFee)
         } else {
             console.error('Error:', data.message);
         }

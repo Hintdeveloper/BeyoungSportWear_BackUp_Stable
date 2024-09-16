@@ -221,6 +221,11 @@ function fetchProductDetails() {
                 };
 
                 optionXhr.send();
+            } else if (xhr.status === 404) {
+                toastr.error("Phân loại không tồn tại. Vui lòng chọn tùy chọn khác.", 'Lỗi');
+                clearActiveSize();
+                clearActiveColor();
+                console.log('Phân loại không tồn tại.');
             } else {
                 console.error('Có lỗi xảy ra khi gọi API.', xhr.responseText);
             }
@@ -235,7 +240,29 @@ function fetchProductDetails() {
         console.log('Vui lòng chọn cả size và màu.');
     }
 }
+// Hàm hủy chọn và xóa lớp active của size
+function clearActiveSize() {
+    const activeSizeLabel = document.querySelector('.product__details__option__size label.active');
+    if (activeSizeLabel) {
+        activeSizeLabel.classList.remove('active');
+    }
+    const selectedSizeRadio = document.querySelector('.product__details__option__size input[type="radio"]:checked');
+    if (selectedSizeRadio) {
+        selectedSizeRadio.checked = false;
+    }
+}
 
+// Hàm hủy chọn và xóa lớp active của color
+function clearActiveColor() {
+    const activeColorLabel = document.querySelector('.color-options label.active');
+    if (activeColorLabel) {
+        activeColorLabel.classList.remove('active');
+    }
+    const selectedColorRadio = document.querySelector('.color-options input[type="radio"]:checked');
+    if (selectedColorRadio) {
+        selectedColorRadio.checked = false;
+    }
+}
 document.getElementById('PayImmediately').addEventListener('click', function (event) {
     event.preventDefault();
 

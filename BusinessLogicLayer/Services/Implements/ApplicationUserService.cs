@@ -341,6 +341,7 @@ namespace BusinessLogicLayer.Services.Implements
                     Status = 1,
                 };
                 await _dbContext.Cart.AddAsync(cart);
+                await _dbContext.SaveChangesAsync();
 
                 if (result.Succeeded)
                 {
@@ -678,6 +679,7 @@ namespace BusinessLogicLayer.Services.Implements
                     Status = 1,
                 };
                 await _dbContext.Cart.AddAsync(cart);
+                await _dbContext.SaveChangesAsync();
 
                 var addresss = new Address
                 {
@@ -838,6 +840,24 @@ namespace BusinessLogicLayer.Services.Implements
                 var roles = await _userManager.GetRolesAsync(user);
                 var roleName = roles.FirstOrDefault();
 
+                var addresses = _dbContext.Address
+                .Where(a => a.IDUser == user.Id)
+                .Select(a => new AddressVM
+                {
+                    ID = a.ID,
+                    IDUser = a.IDUser,
+                    City = a.City,
+                    PhoneNumber = a.PhoneNumber,
+                    Gmail = a.Gmail,
+                    FirstAndLastName = a.FirstAndLastName,
+                    DistrictCounty = a.DistrictCounty,
+                    Commune = a.Commune,
+                    SpecificAddress = a.SpecificAddress,
+                    IsDefault = a.IsDefault,
+                    Status = a.Status
+                })
+                .ToList();
+
                 userDataList.Add(new UserDataVM
                 {
                     ID = user.Id,
@@ -849,6 +869,7 @@ namespace BusinessLogicLayer.Services.Implements
                     PhoneNumber = user.PhoneNumber,
                     RoleName = roleName,
                     Status = user.Status,
+                    AddressVMs = addresses
                 });
             }
 
