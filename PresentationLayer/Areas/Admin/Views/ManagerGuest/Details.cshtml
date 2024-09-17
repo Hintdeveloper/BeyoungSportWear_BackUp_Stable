@@ -505,7 +505,7 @@
         }
 
         function submitAddressForm(addressId) {
-            var iduser = document.getElementById('userId').value; // Thay bằng cách bạn lấy userId
+            var iduser = document.getElementById('userId').value;
 
             var isChecked = document.getElementById(`toggleSwitch-${addressId}`).checked;
 
@@ -588,7 +588,7 @@
                         confirmButtonText: 'OK'
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            window.location.reload() // Reload trang để hiển thị địa chỉ mới trong danh sách
+                            location.reload(true) // Reload trang để hiển thị địa chỉ mới trong danh sách
                         }
                     });
                 } else {

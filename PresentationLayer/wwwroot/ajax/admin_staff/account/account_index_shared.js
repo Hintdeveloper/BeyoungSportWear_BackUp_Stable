@@ -31,7 +31,6 @@ function checkAuthentication() {
     return true;
 }
 checkAuthentication();
-
 function fetchUserData() {
     const xhr = new XMLHttpRequest();
     xhr.open('GET', `https://localhost:7241/api/ApplicationUser/GetInformationUser/${userId}`, true);
@@ -101,7 +100,6 @@ function loadUserAddresses(userId) {
             var addressList = document.getElementById('address-list');
             addressList.innerHTML = '';
 
-            // Lưu danh sách địa chỉ vào biến toàn cục để có thể sử dụng lại sau này
             window.userAddresses = data;
             data.forEach(function (address) {
                 var addressItem = document.createElement('li');
@@ -205,7 +203,7 @@ document.getElementById('logoutButton').addEventListener('click', function (even
                 document.cookie = c.trim().split('=')[0] + '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;';
             });
 
-            window.location.href = '/login';
+            window.location.href = '/main';
         }
     });
 });
@@ -250,7 +248,7 @@ function updateUser() {
                 icon: 'success',
                 confirmButtonText: 'OK'
             }).then(() => {
-                window.location.href = '/login';
+                window.location.href = '/';
             });
         } else {
             Swal.fire({
@@ -396,12 +394,16 @@ function openCreateModal() {
             if (result.isConfirmed) {
                 saveAddress(); // Hàm tạo địa chỉ mới
                 $('#editAddressModal').modal('hide');
-                // location.reload(); // Refresh trang để hiển thị địa chỉ mới trong danh sách
             }
         });
     };
 }
 function submitAddressForm(addressId) {
+
+    var ischecked = document.getElementById(`toggleSwitch-${addressId}`).checked
+
+    console.log(ischecked)
+
     var updatedAddress = {
         firstAndLastName: document.getElementById('name_user_1').value,
         phoneNumber: document.getElementById('inputPhone').value,
@@ -410,7 +412,7 @@ function submitAddressForm(addressId) {
         districtCounty: document.getElementById('district').value,
         commune: document.getElementById('ward').value,
         specificAddress: document.getElementById('specificAddress').value,
-        isDefault: false,
+        isDefault: ischecked,
         IDUser: userId,
         ModifiedBy: userId
     };
@@ -468,7 +470,7 @@ function saveAddress() {
         city: city,
         districtCounty: districtCounty,
         commune: commune,
-        //isDefault: isDefault,
+        isDefault: false,
         specificAddress: specificAddress
     };
     console.log(addressData)
@@ -485,11 +487,12 @@ function saveAddress() {
                     text: 'Địa chỉ đã được thêm thành công.',
                     confirmButtonText: 'OK'
                 }).then(() => {
-                    document.getElementById('addAddressModal').classList.remove('show');
-                    document.getElementById('addAddressModal').style.display = 'none';
-                    document.body.classList.remove('modal-open');
-                    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+                    //document.getElementById('addAddressModal').classList.remove('show');
+                    //document.getElementById('addAddressModal').style.display = 'none';
+                    //document.body.classList.remove('modal-open');
+                    //document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
                     loadUserAddresses(userId);
+                    location.reload(true)
                 });
             }
         } else if (xhr.status === 400) {
@@ -513,16 +516,10 @@ function saveAddress() {
 }
 function updateNiceSelect(id) {
     var select = document.getElementById(id);
-    if (!select) return; // Kiểm tra xem select có tồn tại không
-
     var niceSelect = select.nextElementSibling;
-    if (!niceSelect) return; // Kiểm tra xem niceSelect có tồn tại không
-
     var options = select.querySelectorAll('option');
     var list = niceSelect.querySelector('.list');
     var current = niceSelect.querySelector('.current');
-
-    if (!list || !current) return; // Kiểm tra xem list và current có tồn tại không
 
     list.innerHTML = '';
     options.forEach(function (option) {
