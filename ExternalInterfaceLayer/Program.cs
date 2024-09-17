@@ -55,7 +55,7 @@ builder.Services.AddHttpClient<IVietQRService, VietQRService>();
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDBContext>()
     .AddDefaultTokenProviders();
-var cloudinaryAccount = new Account("dqcxurnpa", "335141472712284", "fMAGyNyS5uwTVvoWKqaDwThUxtE");
+var cloudinaryAccount = new Account("drv4cstnl", "818812395582614", "HvaCHQdfLUBn5pB90ayzUpCqqmk");
 var cloudinary = new Cloudinary(cloudinaryAccount);
 builder.Services.AddSingleton(cloudinary);
 
