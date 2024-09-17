@@ -211,12 +211,10 @@ function updateUser() {
 
     var formData = new FormData();
 
-    // Cập nhật các trường thông tin cá nhân
     formData.append('firstAndLastName', document.getElementById('name_user_1').value);
     formData.append('email', document.getElementById('gmail').value);
     formData.append('phoneNumber', document.getElementById('inputPhone').value);
 
-    // Cập nhật giới tính
     var genderInputs = document.getElementsByName('Gender');
     genderInputs.forEach(input => {
         if (input.checked == true) {
@@ -225,22 +223,29 @@ function updateUser() {
         }
     });
 
-    // Cập nhật ngày sinh
     formData.append('dateOfBirth', document.getElementById('inputBirthday').value);
 
-    // Cập nhật hình ảnh nếu có
     var fileInput = document.querySelector('input[name="imageFile"]');
     if (fileInput.files.length > 0) {
         formData.append('images', fileInput.files[0]);
     }
 
     console.log(formData.get('gender'))
-
+    Swal.fire({
+        title: 'Đang xử lý',
+        text: 'Vui lòng chờ trong khi cập nhật tài khoản...',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
     var xhr = new XMLHttpRequest();
     xhr.open('PUT', `https://localhost:7241/api/ApplicationUser/UpdateUser/${userId}`, true);
     xhr.setRequestHeader('Authorization', 'Bearer ' + jwt);
 
     xhr.onload = function () {
+        Swal.close();
+
         if (xhr.status >= 200 && xhr.status < 300) {
             Swal.fire({
                 title: 'Thành công!',
@@ -506,7 +511,7 @@ function saveAddress() {
             Swal.fire({
                 icon: 'error',
                 title: 'Lỗi!',
-                text: 'Đã xảy ra lỗi khi thêm địa chỉ. Vui lòng thử lại.',
+                text: 'Đã xảy ra lỗi khi thêm địa chỉ. Vui lòng thử lại.' + xhr.responseText,
                 confirmButtonText: 'OK'
             });
         }

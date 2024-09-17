@@ -127,33 +127,7 @@ namespace ExternalInterfaceLayer.Controllers
                 return BadRequest();
             }
         }
-        //[HttpGet("GetLoggedInUser")]
-        //public async Task<IActionResult> GetCurrentLoginUser(string token)
-        //{
-        //    if(token != null)
-        //    {
-        //        var userClaims = HttpContext.User.Claims;
-
-        //        var userId = userClaims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-        //        var userName = userClaims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
-        //        var userEmail = userClaims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
-        //        var userRoles = userClaims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value).ToList();
-
-        //        var result = new
-        //        {
-        //            UserId = userId,
-        //            UserName = userName,
-        //            Email = userEmail,
-        //            Roles = userRoles
-        //        };
-
-        //        return await Task.FromResult(Ok(result));
-        //    }
-        //    else
-        //    {
-        //        return BadRequest();
-        //    }
-        //}
+     
         [Authorize(Roles = "Admin,Staff")]
         [HttpGet("GetUsersByEmail")]
         public async Task<IActionResult> GetUsersByEmail([FromQuery] string email)
@@ -162,7 +136,6 @@ namespace ExternalInterfaceLayer.Controllers
             return Ok(users);
         }
 
-        [Authorize(Roles = "Admin,Staff")]
         [HttpGet("GetUsersByPhoneNumber")]
         public async Task<IActionResult> GetUsersByPhoneNumber([FromQuery] string phoneNumber)
         {

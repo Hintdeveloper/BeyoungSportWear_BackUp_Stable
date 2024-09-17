@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace ExternalInterfaceLayer.Controllers
 {
     [Route("api/[controller]")]
-    [Authorize(Roles = "Admin,Staff")]
     [ApiController]
     public class ManufacturerController : ControllerBase
     {
