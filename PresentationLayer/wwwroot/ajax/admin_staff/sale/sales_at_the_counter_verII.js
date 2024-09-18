@@ -1326,14 +1326,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 return false;
             }
 
-            if (customerPhoneNumber.value.trim() === '') {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Lỗi!',
-                    text: 'Phải có tài khoản mới có thể đặt giao hàng.',
-                });
-                return false;
-            }
         }
 
         return true;
