@@ -51,7 +51,23 @@ document.addEventListener('DOMContentLoaded', function () {
                         quantity: parseInt(quantity)
                     };
                 });
+                function formatCurrencyToDecimal(currencyString) {
+                    const cleanString = currencyString.replace(/[^\d,]/g, '');
 
+                    const decimalString = cleanString.replace(',', '.');
+
+                    const number = parseFloat(decimalString);
+
+                    return Math.round(number);
+                }
+
+                const costsElement = document.getElementById('modalcosts').innerHTML;
+                const cotsts = formatCurrencyToDecimal(costsElement);
+                console.log('cotsts', cotsts);
+
+                if (isNaN(cotsts)) {
+                    console.error("Giá trị cotsts không hợp lệ:", costsElement);
+                }
                 const orderData = {
                     modifiedBy: userId,
                     idUser: userId,
@@ -60,7 +76,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     customerEmail: document.getElementById('modalemail').value,
                     shippingAddress: document.getElementById('modalshipaddess').value,
                     shippingAddressLine2: document.getElementById('modalshipaddress2').value,
-                    cotsts: document.getElementById('modalcosts').innerText,
+                    cotsts: cotsts,
                     orderDetails: orderDetails
                 };
 
@@ -136,7 +152,13 @@ async function viewDetails(ID) {
         document.getElementById('modalshippingmethod').innerText = translateShippingMethod(data.shippingMethod);
         document.getElementById('modalorderstatus').innerText = translateOrderStatus(data.orderStatus);
         document.getElementById('modalordertype').innerText = translateOrderType(data.orderType);
-
+        const updateOrderButton = document.getElementById('btnUpdateOrder');
+        const hiddenStatuses = [2,3, 4]; // 2: Vận chuyển hoàn thành, 4: Hủy
+        if (hiddenStatuses.includes(data.orderStatus)) {
+            updateOrderButton.style.display = 'none';
+        } else {
+            updateOrderButton.style.display = 'inline-block'; // Hoặc 'block', tùy vào cách bạn muốn hiển thị nút
+        }
         const orderBody = document.getElementById('orderBody');
         if (orderBody) {
             orderBody.innerHTML = '';

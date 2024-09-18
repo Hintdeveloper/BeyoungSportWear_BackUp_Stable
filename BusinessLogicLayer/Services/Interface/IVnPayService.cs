@@ -8,6 +8,7 @@ namespace BusinessLogicLayer.Services.Interface
 	{
 		public string CreatePaymentUrl(OrderCreateVM model, HttpContext context);
 		public Task<PaymentResponseModel> PaymentExecute(IQueryCollection collections);
-	}
+		public Task<bool> RequestRefundAsync(string transactionId, decimal amount, string orderInfo, string ipAddress, string transactionNo);
+    }
 
 }

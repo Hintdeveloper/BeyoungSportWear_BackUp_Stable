@@ -31,20 +31,6 @@ namespace ExternalInterfaceLayer.Controllers
             }
         }
 
-        [HttpGet("monthly")]
-        public async Task<IActionResult> GetMonthlyStatistics([FromQuery] string month)
-        {
-            try
-            {
-                var statistics = await _statisticsService.CalculateStatistics(month);
-                return Ok(statistics);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "An error occurred while calculating statistics.", error = ex.Message });
-            }
-        }
-
         [HttpGet("bank-payment-orders")]
         public async Task<IActionResult> GetBankPaymentOrders([FromQuery] string month)
         {

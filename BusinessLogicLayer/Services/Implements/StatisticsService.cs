@@ -9,21 +9,16 @@ public class StatisticsService : IStatisticsService
 {
     private readonly ApplicationDBContext _dbcontext;
     private readonly IMapper _mapper;
-    private int totalOrders;
-    private int totalOrdersnosuccess;
-    private int totalOrderssuccess;
-    private int TotalQuantityOptions;
-    private int TotalProduct;
-    private int TotalUser;
 
-    public StatisticsService(ApplicationDBContext dbcontext, IMapper IMapper)
+    public StatisticsService(ApplicationDBContext dbcontext, IMapper mapper)
     {
-        _mapper = IMapper;
         _dbcontext = dbcontext;
+        _mapper = mapper;
     }
+
     public async Task<Dictionary<Guid, int>> CalculateBestSellingProducts(DateTime startDate, DateTime endDate)
     {
-        var productSalesCount = await _dbcontext.Order
+        return await _dbcontext.Order
             .Where(order => order.CreateDate >= startDate
                          && order.CreateDate <= endDate
                          && order.OrderStatus == OrderStatus.Delivered)
@@ -36,94 +31,12 @@ public class StatisticsService : IStatisticsService
             })
             .OrderByDescending(result => result.QuantitySold)
             .ToDictionaryAsync(result => result.ProductId, result => result.QuantitySold);
-
-        return productSalesCount;
-    }
-
-
-    public async Task<MonthlyStatistic> CalculateStatistics(string month)
-    {
-        DateTime selectedMonth = string.IsNullOrEmpty(month) ? DateTime.Now : DateTime.Parse(month);
-
-        var startDate = new DateTime(selectedMonth.Year, selectedMonth.Month, 1);
-        var endDate = startDate.AddMonths(1).AddDays(-1);
-
-        var bankPaymentOrders = await GetBankPaymentOrders(selectedMonth);
-        var totalStockQuantity = await _dbcontext.Options
-            .SumAsync(option => option.StockQuantity);
-        decimal totalBankPayments = bankPaymentOrders.Sum(order => order.TotalAmount);
-
-        var orders = _dbcontext.Order.Where(o => o.CreateDate >= startDate && o.CreateDate <= endDate && o.OrderStatus == OrderStatus.Delivered);
-
-        //decimal totalRevenue = 0;
-        //if (await orders.AnyAsync())
-        //{
-        //    totalRevenue = await orders.SumAsync(o => o.TotalAmount);
-        //}
-        //totalRevenue = Math.Max(0, totalRevenue);
-
-        int totalOrders = await _dbcontext.Order
-            .Where(order => order.CreateDate >= startDate && order.CreateDate <= endDate)
-            .CountAsync();
-
-        int totalProduct = await _dbcontext.ProductDetails
-            .Where(order => order.CreateDate >= startDate && order.CreateDate <= endDate)
-            .CountAsync();
-
-        int totalQuantityOptions = await _dbcontext.Options
-            .Where(order => order.CreateDate >= startDate && order.CreateDate <= endDate)
-            .SumAsync(c => c.StockQuantity);
-
-        int totalOrdersnosuccess = await _dbcontext.Order
-            .Where(order => order.CreateDate >= startDate && order.CreateDate <= endDate && order.OrderStatus == OrderStatus.Cancelled)
-            .CountAsync();
-
-        int totalOrderssuccess = await _dbcontext.Order
-            .Where(order => order.CreateDate >= startDate && order.CreateDate <= endDate && order.OrderStatus == OrderStatus.Delivered)
-            .CountAsync();
-
-        int totalUser = await _dbcontext.ApplicationUser
-            .Where(user => user.JoinDate >= startDate && user.JoinDate <= endDate)
-            .CountAsync();
-
-        const int threshold = 10;
-        int productsAlmostOutOfStock = await _dbcontext.ProductDetails
-            .Select(pd => new
-            {
-                ProductId = pd.ID,
-                TotalQuantity = pd.Options.Sum(o => o.StockQuantity)
-            })
-            .Where(p => p.TotalQuantity <= threshold)
-            .CountAsync();
-
-        var bestSellingProducts = await CalculateBestSellingProducts(startDate, endDate);
-
-        return new MonthlyStatistic
-        {
-            TotalOrder = totalOrders,
-            Month = startDate,
-            //TotalRevenue = totalRevenue,
-            TotalQuantityOptions = totalQuantityOptions,
-            TotalProduct = totalProduct,
-            BestSellingProducts = bestSellingProducts,
-            TotalUser = totalUser,
-            ProductsAlmostOutOfStock = productsAlmostOutOfStock,
-            TotalOrdersnosuccess = totalOrdersnosuccess,
-            TotalOrderssuccess = totalOrderssuccess
-        };
     }
 
     public async Task<MonthlyStatistic> CalculateStatistics(DateTime startDate, DateTime endDate)
     {
-        var bankPaymentOrders = await _dbcontext.Order
-               .Where(order => order.PaymentMethods == PaymentMethod.ChuyenKhoanNganHang
-                               && order.CreateDate >= startDate
-                               && order.CreateDate <= endDate)
-               .ToListAsync();
-
-        var totalStockQuantity = await _dbcontext.Options
-            .SumAsync(option => option.StockQuantity);
-
+        var bankPaymentOrders = await GetBankPaymentOrders(new DateTime(startDate.Year, startDate.Month, 1));
+        var totalStockQuantity = await _dbcontext.Options.SumAsync(option => option.StockQuantity);
         decimal totalBankPayments = bankPaymentOrders.Sum(order => order.TotalAmount);
 
         int totalOrders = await _dbcontext.Order
@@ -195,12 +108,9 @@ public class StatisticsService : IStatisticsService
             var orders = _dbcontext.Order
                 .Where(o => o.CreateDate >= startDate && o.CreateDate <= endDate && o.OrderStatus == OrderStatus.Delivered);
 
-            decimal monthlyRevenue = 0;
-            if (await orders.AnyAsync())
-            {
-                monthlyRevenue = await orders.SumAsync(o => o.TotalAmount);
-            }
-            monthlyRevenue = Math.Max(0, monthlyRevenue);
+            decimal monthlyRevenue = await orders.AnyAsync()
+                ? await orders.SumAsync(o => o.TotalAmount)
+                : 0;
 
             yearlyStatistics.MonthlyRevenues.Add(monthlyRevenue);
         }
@@ -210,12 +120,10 @@ public class StatisticsService : IStatisticsService
 
     public async Task<List<Order>> GetBankPaymentOrders(DateTime selectedMonth)
     {
-        var bankPaymentOrders = await _dbcontext.Order
-                    .Where(order => order.PaymentMethods == PaymentMethod.ChuyenKhoanNganHang
-                                 && order.CreateDate.Year == selectedMonth.Year
-                                 && order.CreateDate.Month == selectedMonth.Month)
-                    .ToListAsync();
-
-        return bankPaymentOrders;
+        return await _dbcontext.Order
+            .Where(order => order.PaymentMethods == PaymentMethod.ChuyenKhoanNganHang
+                         && order.CreateDate.Year == selectedMonth.Year
+                         && order.CreateDate.Month == selectedMonth.Month)
+            .ToListAsync();
     }
 }

@@ -50,7 +50,7 @@ function OrderList(orders) {
                 <button class="btn btn-danger btn-sm trash" onclick="updateOrderStatus('4', '${order.id}', '${order.hexCode}')" type="button" data-id="${order.id}" id="cancelOrderButton" ${isCancelled ? "disabled" : ""}>
                     <i class="fa fa-ban"></i>
                 </button>
-                <button class="btn btn-primary btn-sm edit" type="button" title="Sửa" onclick="navigateToUpdatePageEdit('${order.id}')">
+                <button class="btn btn-primary btn-sm edit" type="button" title="Sửa" onclick="navigateToUpdatePageEdit('${order.id}')" ${isCancelled ? "disabled" : ""}>
                     <i class="fas fa-edit"></i>
                 </button>
                     <button class="btn btn-warning btn-sm edit" onclick="viewDetails('${order.id}')" type="button" title="Sửa">
@@ -299,13 +299,13 @@ function translateOrderType(type) {
 function translateOrderStatus(status) {
     switch (status) {
         case 0:
-            return 'Chờ xác nhận';
+            return 'Đặt hàng thành công';
         case 1:
             return 'Đã xác nhận';
         case 2:
             return 'Đang vận chuyển';
         case 3:
-            return 'Đã giao hàng';
+            return 'Hoàn thành';
         case 4:
             return 'Đã hủy';
         case 5:

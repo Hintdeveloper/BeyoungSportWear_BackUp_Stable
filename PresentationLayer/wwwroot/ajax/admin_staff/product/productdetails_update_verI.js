@@ -238,18 +238,13 @@ function updateTable() {
                     <button class="remove-button btn btn-danger" onclick="removeRow(this)">Xóa</button>
                 `}
             </td>
-
-
             `;
             tableBody.appendChild(row);
 
             document.getElementById(`${imagePreviewId}_button`).addEventListener('click', function () {
                 document.getElementById(`${imagePreviewId}_fileInput`).click();
             });
-            const fileInput = document.getElementById(imagePreviewId);
-            fileInput.addEventListener('change', function (event) {
-                handleImageUpload(event, imagePreviewId);
-            });
+
             const retal_priceInput = document.getElementById('retal_price');
             retal_priceInput.addEventListener('blur', function () {
                 validatePrice(retal_priceInput);
@@ -269,7 +264,9 @@ function updateTable() {
                         document.getElementById(`${imagePreviewId}_button`).style.display = 'none';
 
                         if (match) {
-                            match.imageURL = e.target.result; 
+                            match.imageURL = e.target.result;
+                            match.isImageChanged = true;
+                            console.log(`Hình ảnh của phân loại ${color} - ${size} đã thay đổi`, match.isImageChanged); 
                         }
                     };
                     reader.readAsDataURL(input.files[0]);
@@ -277,28 +274,6 @@ function updateTable() {
             });
         });
     });
-}
-function handleImageUpload(event, imagePreviewId) {
-    const input = event.target;
-    const imgElement = document.getElementById(`${imagePreviewId}_img`);
-    const file = input.files[0];
-
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            const newImageURL = e.target.result;
-
-            if (imgElement.src !== newImageURL) {
-                imgElement.src = newImageURL;
-                imgElement.style.display = 'block';
-                document.getElementById(`${imagePreviewId}_button`).style.display = 'none';
-
-                // Assuming you need to keep track of the image URLs
-                previousImageURLs[imagePreviewId] = newImageURL;
-            }
-        };
-        reader.readAsDataURL(file);
-    }
 }
 function removeRow(button) {
     const row = button.parentElement.parentElement;
@@ -768,7 +743,8 @@ async function uploadImageSingle(imageSrc) {
         };
         xhr.send(formData);
     });
-} async function gatherOptionsData(ID) {
+}
+async function gatherOptionsData(ID) {
     var options = [];
 
     var newTableBody = document.getElementById('classificationBody');

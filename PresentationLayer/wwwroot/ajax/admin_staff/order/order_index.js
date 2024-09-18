@@ -65,13 +65,14 @@ async function viewDetails(IDOrder) {
         document.getElementById('modalhexcode').innerText = data.hexCode;
         document.getElementById('modalcusname').innerText = data.customerName;
         document.getElementById('modalcusphone').innerText = data.customerPhone;
+        document.getElementById('notes').innerText = data.notes;
         document.getElementById('modalemail').innerText = data.customerEmail;
         document.getElementById('modalshipaddess').innerText = data.shippingAddress;
         document.getElementById('modalshipaddress2').innerText = data.shippingAddressLine2 || "Không có";
         document.getElementById('modalcosts').innerText = data.cotsts.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
         document.getElementById('modaltotal').innerText = data.totalAmount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
         document.getElementById('modalpaymentmethod').innerText = translatePaymentMethod(data.paymentMethod);
-        document.getElementById('modalpaymentstatus').innerText = translatePaymentStatus(data.paymentStatus);
+        document.getElementById('modalpaymentstatus').innerHTML = translatePaymentStatus(data.paymentStatus);
         document.getElementById('modalshippingmethod').innerText = translateShippingMethod(data.shippingMethod);
         document.getElementById('modalorderstatus').innerHTML =
             `<span class="badge ${translateOrderStatus(data.orderStatus).class}">
@@ -154,9 +155,9 @@ function translateShippingMethod(method) {
 function translatePaymentStatus(status) {
     switch (status) {
         case 0:
-            return 'Chưa thanh toán';
+            return '<span style="background-color: red; color: yellow; padding: 5px; border-radius: 4px;">Chưa thanh toán</span>';
         case 1:
-            return 'Đã thanh toán';
+            return '<span style="background-color: green; color: white; padding: 5px; border-radius: 4px;">Đã thanh toán</span>';
         default:
             return status;
     }
@@ -268,6 +269,7 @@ function getUserInfoByID(userID) {
 function orderList(order) {
     const orderListBody = document.getElementById('orderListBody');
     orderListBody.innerHTML = '';
+    console.log('order', order);
 
     if (Array.isArray(order)) {
         order.forEach(item => {
@@ -279,7 +281,11 @@ function orderList(order) {
                 <td>${formatDateTime(item.createDate)}</td>
                 <td>${translatePaymentMethod(item.paymentMethod)}</td>
                 <td>${item.totalAmount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</td>
-                <td><span class="badge bg-success">${translateOrderType(item.orderType)}</span></td>
+                <td>
+                <span class="badge bg-success">${translateOrderType(item.orderType)}</span>                    
+                <br>
+                <small style="color: #6c757d; font-size: 12px;">${translatePaymentStatus(item.paymentStatus)}</small>
+                </td>
                 <td>
                     <span class="badge ${translateOrderStatus(item.orderStatus).class}">
                     ${translateOrderStatus(item.orderStatus).text}
@@ -328,10 +334,10 @@ function orderList(order) {
                 <td>${translatePaymentMethod(item.paymentMethod)}</td>
                 <td>${item.totalAmount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</td>
                 <td><span class="badge bg-success">${translateOrderType(item.orderType)}</span></td>
-                 <td>
-                    <span class="badge ${translateOrderStatus(item.orderStatus).class}">
-                    ${translateOrderStatus(item.orderStatus).text}
-                    </span>
+                <td>
+                <span class="badge bg-success">${translateOrderType(item.orderType)}</span>                    
+                <br>
+                <small style="color: #6c757d; font-size: 12px;">${translatePaymentStatus(item.paymentStatus)}</small>
                 </td>
                 <td>
                 <!-- Hiển thị nút và icon dựa trên trạng thái đơn hàng -->

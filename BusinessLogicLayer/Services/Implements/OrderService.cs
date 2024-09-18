@@ -969,11 +969,21 @@ namespace BusinessLogicLayer.Services.Implements
             if (order.OrderStatus == OrderStatus.Pending && newStatus == OrderStatus.Processed)
             {
                 bool stockUpdated = true;
+                string productName = string.Empty;
+                string keycode = string.Empty;
                 foreach (var orderItem in order.OrderDetails)
                 {
                     var success = await ReduceStockAsync(orderItem.IDOptions, orderItem.Quantity);
                     if (!success)
                     {
+                        productName = await _dbcontext.Options
+                                          .Where(o => o.ID == orderItem.IDOptions)
+                                          .Select(o => o.ProductDetails.Products.Name)
+                                          .FirstOrDefaultAsync();
+                        keycode = await _dbcontext.Options
+                                    .Where(c => c.ID == orderItem.IDOptions)
+                                    .Select(c => c.ProductDetails.KeyCode)
+                                    .FirstOrDefaultAsync();
                         stockUpdated = false;
                         break;
                     }
@@ -984,7 +994,7 @@ namespace BusinessLogicLayer.Services.Implements
                     return new Result
                     {
                         Success = false,
-                        ErrorMessage = $"Không đủ tồn kho cho một hoặc nhiều mặt hàng của đơn hàng với ID: {IDOrder}."
+                        ErrorMessage = $"Không đủ tồn kho cho sản phẩm: {productName} - Mã sản phẩm: {keycode}"
                     };
                 }
 

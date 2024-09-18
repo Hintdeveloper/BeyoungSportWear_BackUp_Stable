@@ -170,7 +170,6 @@ function renderOptions(data) {
             .then(response => response.json())
             .then(data => {
                 if (data) {
-                    console.log('data', data);
 
                     document.getElementById('imageURL').src = data.imageURL;
                     document.getElementById('productDetails').value = data.productName;
@@ -180,7 +179,6 @@ function renderOptions(data) {
                     document.getElementById('retailPrice').value = data.retailPrice.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
                     document.getElementById('isActive').value = data.isActive ? 'Đang bán' : 'Ngừng bán';
 
-                    // Hiển thị modal
                     const optionsModal = new bootstrap.Modal(document.getElementById('optionsModal'));
                     optionsModal.show();
                 }
@@ -272,7 +270,6 @@ document.getElementById('customerPhone').addEventListener('blur', function () {
         });
     }
 });
-
 function fillOrderData(users) {
     const note = document.getElementById('note_order').value;
     const paymentMethod = document.getElementById('paymentMethodSelect').value;
@@ -796,6 +793,8 @@ function removeProduct(button) {
 
             } else {
                 console.error('Error fetching option:', xhrGet.statusText);
+                toastr.error(xhrGet.responseText, 'Lỗi');
+
             }
         }
     };
@@ -873,7 +872,8 @@ window.addToSelectedProducts = function (optionId) {
                             calculateSubtotal();
 
                         } else {
-                            console.error('Error updating stock quantity:', xhrUpdate.statusText);
+                            console.error('Error updating stock quantity:', xhrUpdate.responseText);
+                            toastr.error(xhrUpdate.responseText, 'Lỗi');
                         }
                     }
                 };
@@ -1293,6 +1293,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var shippingDetails = document.getElementById("shippingDetails");
     var customerName = document.getElementById("customerName");
     var customerPhone = document.getElementById("customerPhone");
+    var customerPhoneNumber = document.getElementById("customerPhoneNumber");
 
     document.getElementById('btnLuuDonHang').addEventListener('click', function (event) {
         if (validateShippingDetails()) {
@@ -1310,7 +1311,13 @@ document.addEventListener('DOMContentLoaded', function () {
     });
     function validateShippingDetails() {
         if (shippingMethodSelect.value === "1") {
-            if (customerName.value.trim() === "" || customerPhone.value.trim() === "" || citySelect.value === "" || districtSelect.value === "" || wardSelect.value === "" || streetInput.value.trim() === "") {
+            if (customerName.value.trim() === "" ||
+                customerPhone.value.trim() === "" ||
+                citySelect.value === "" ||
+                districtSelect.value === "" ||
+                wardSelect.value === "" ||
+                streetInput.value.trim() === "") {
+
                 Swal.fire({
                     icon: 'error',
                     title: 'Lỗi!',
@@ -1318,7 +1325,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
                 return false;
             }
+
+            if (customerPhoneNumber.value.trim() === '') {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi!',
+                    text: 'Phải có tài khoản mới có thể đặt giao hàng.',
+                });
+                return false;
+            }
         }
+
         return true;
     }
     const cookieName = `HoaDon${tabCount}`;

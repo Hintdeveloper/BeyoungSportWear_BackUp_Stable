@@ -230,6 +230,13 @@ function viewOrderDetails(orderData) {
     document.getElementById('btn_view_orderhistory').addEventListener('click', function () {
         fetchOrderHistory(orderData.id);
     });
+    const updateOrderButton = document.getElementById('btn_update_order');
+    const hiddenStatuses = [2,3, 4]; // 2: Vận chuyển hoàn thành, 4: Hủy
+    if (hiddenStatuses.includes(orderData.orderStatus)) {
+        updateOrderButton.style.display = 'none';
+    } else {
+        updateOrderButton.style.display = 'inline-block'; // Hoặc 'block', tùy vào cách bạn muốn hiển thị nút
+    }
 }
 document.getElementById('btn_printf_order_pdf').addEventListener('click', function () {
     printf_order_pdf(hexCode);
@@ -291,7 +298,6 @@ function formatCurrency(value) {
 function formatPercentage(value) {
     return value.toFixed(0) + ' %';
 }
-
 function formatDate_ver1(date) {
     const dateObj = new Date(date);
 
@@ -309,8 +315,6 @@ function formatDate_ver1(date) {
 
     return `${datePart} ${timePart}`;
 }
-
-
 function calculateTimeLeft(endDate) {
     var end = new Date(endDate).getTime();
     var now = new Date().getTime();
@@ -530,7 +534,23 @@ document.getElementById('btn_update_order').addEventListener('click', function (
                     quantity: parseInt(quantity)
                 };
             });
+            function formatCurrencyToDecimal(currencyString) {
+                const cleanString = currencyString.replace(/[^\d,]/g, '');
 
+                const decimalString = cleanString.replace(',', '.');
+
+                const number = parseFloat(decimalString);
+
+                return Math.round(number);
+            }
+
+            const costsElement = document.getElementById('costs_display_1').innerHTML;
+            const cotsts = formatCurrencyToDecimal(costsElement);
+            console.log('cotsts', cotsts);
+
+            if (isNaN(cotsts)) {
+                console.error("Giá trị cotsts không hợp lệ:", costsElement);
+            }
             const orderData = {
                 modifiedBy: userId,
                 idUser: userId,
@@ -539,7 +559,7 @@ document.getElementById('btn_update_order').addEventListener('click', function (
                 customerEmail: customerEmail,
                 shippingAddress: document.getElementById('shippingadress').value,
                 shippingAddressLine2: document.getElementById('shippingadress2').value,
-                cotsts: document.getElementById('costs_1').innerHTML,
+                cotsts: cotsts,
                 orderDetails: orderDetails
             };
             var xhr = new XMLHttpRequest();
