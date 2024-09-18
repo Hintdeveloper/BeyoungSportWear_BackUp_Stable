@@ -23,7 +23,7 @@ using static DataAccessLayer.Entity.Base.EnumBase;
 
 namespace BusinessLogicLayer.Services.Implements
 {
-    public class VoucherMServiece :IVoucherMServiece
+    public class VoucherMServiece : IVoucherMServiece
     {
         private readonly IHubContext<VoucherHub> _hubContext;
         private readonly ApplicationDBContext _dbcontext;
@@ -63,7 +63,7 @@ namespace BusinessLogicLayer.Services.Implements
                 _dbcontext.Voucher.Add(newVoucher);
                 if (!request.ApplyToAllUsers)
                 {
-                    
+
                     foreach (var userId in request.SelectedUser)
                     {
                         var voucherUser = new VoucherUser
@@ -85,16 +85,16 @@ namespace BusinessLogicLayer.Services.Implements
                         var user = await _dbcontext.Users.FindAsync(userId);
                         if (user != null)
                         {
-                            
+
                             var emailResponse = await SendConfirmationEmailAsync(
-                                user.Email,  
-                                newVoucher.Code,  
+                                user.Email,
+                                newVoucher.Code,
                                 user.UserName,
                                 newVoucher.Name);
 
                             if (!emailResponse.IsSuccess)
                             {
-                               
+
                             }
                         }
                     }
@@ -208,30 +208,30 @@ namespace BusinessLogicLayer.Services.Implements
             return clientList;
         }
         public async Task<bool> RemoveAsync(Guid ID, string IDUserdelete)
-        {         
-                try
-                {
-                    var obj = await _dbcontext.Voucher.FirstOrDefaultAsync(c => c.ID == ID);
+        {
+            try
+            {
+                var obj = await _dbcontext.Voucher.FirstOrDefaultAsync(c => c.ID == ID);
 
-                    if (obj != null)
-                    {                      
-                        obj.IsActive = StatusVoucher.Finished;
-                        obj.DeleteDate = DateTime.Now;
-                        obj.DeleteBy = IDUserdelete;
-                        _dbcontext.Voucher.Attach(obj);
-                        await _dbcontext.SaveChangesAsync();      
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                }
-                catch (Exception)
+                if (obj != null)
                 {
-                   
+                    obj.IsActive = StatusVoucher.Finished;
+                    obj.DeleteDate = DateTime.Now;
+                    obj.DeleteBy = IDUserdelete;
+                    _dbcontext.Voucher.Attach(obj);
+                    await _dbcontext.SaveChangesAsync();
+                    return true;
+                }
+                else
+                {
                     return false;
-                }     
+                }
+            }
+            catch (Exception)
+            {
+
+                return false;
+            }
         }
         public async Task<IEnumerable<GetAllVoucherVM>> SearchVouchersAsync(string input)
         {
@@ -282,14 +282,14 @@ namespace BusinessLogicLayer.Services.Implements
             voucher.MinimumAmount = request.MinimumAmount;
             voucher.MaximumAmount = request.MaximumAmount;
             voucher.ReducedValue = request.ReducedValue;
-            voucher.IsActive = request.IsActive;     
-            _dbcontext.Voucher.Update(voucher); 
+            voucher.IsActive = request.IsActive;
+            _dbcontext.Voucher.Update(voucher);
             await _dbcontext.SaveChangesAsync();
             return true;
         }
         public async Task UpdateVoucherStatusesAsync()
-            {
-            var today = DateTime.Now; 
+        {
+            var today = DateTime.Now;
 
             // Lấy tất cả voucher từ cơ sở dữ liệu
             var vouchers = await _dbcontext.Voucher.ToListAsync();
@@ -323,7 +323,7 @@ namespace BusinessLogicLayer.Services.Implements
             }
 
             // Lưu các thay đổi vào cơ sở dữ liệu
-            
+
             await _dbcontext.SaveChangesAsync();
         }
         public async Task<bool> UpdateVoucherUser(Guid id, UpdateVC request)
@@ -348,7 +348,7 @@ namespace BusinessLogicLayer.Services.Implements
             voucher.MaximumAmount = request.MaximumAmount;
             voucher.ReducedValue = request.ReducedValue;
             voucher.IsActive = request.IsActive;
-            
+
 
             if (request.ApplyToAllUsers)
             {
@@ -358,7 +358,7 @@ namespace BusinessLogicLayer.Services.Implements
                     _dbcontext.VoucherUser.Remove(voucherUser);
                 }
                 voucher.Status = 0;
-                
+
                 // Lấy danh sách tất cả khách hàng
                 //var allUsers = await _dbcontext.Users.ToListAsync();
 
@@ -396,7 +396,7 @@ namespace BusinessLogicLayer.Services.Implements
                 {
                     if (!request.SelectedUser.Contains(voucherUser.IDUser))
                     {
-                        
+
                         _dbcontext.VoucherUser.Remove(voucherUser);
                     }
                 }
@@ -540,7 +540,7 @@ namespace BusinessLogicLayer.Services.Implements
                                                 })
                                                 .ToListAsync();
 
-                
+
                 var unconnectedVouchers = await _dbcontext.Voucher
                                                           .Where(v => v.Status == 0
                                                                     && v.IsActive == StatusVoucher.IsBeginning
@@ -570,7 +570,7 @@ namespace BusinessLogicLayer.Services.Implements
 
 
         public async Task<List<GetAllVoucherVM>> FilterVouchersByDateRangeAsync(DateTime startDate, DateTime endDate)
-        {         
+        {
             var vouchers = await _dbcontext.Voucher
                                            .Include(c => c.VoucherUser)
                                            .Where(v => v.StartDate >= startDate && v.EndDate <= endDate) // Điều kiện lọc theo ngày
@@ -623,7 +623,7 @@ namespace BusinessLogicLayer.Services.Implements
 
             return vouchers;
         }
-        private async Task<Response> SendConfirmationEmailAsync(string email, string keycode, string name,string Namecode)
+        private async Task<Response> SendConfirmationEmailAsync(string email, string keycode, string name, string Namecode)
         {
             string body = $@"
                     <html>
@@ -691,8 +691,10 @@ namespace BusinessLogicLayer.Services.Implements
                                 <h2>Chào mừng bạn đến với trang web bán quần áo thể thao Beyoung Sport Wear!</h2>
                             </div>
                             <div class='content'>
-                                <p>Chào {name},</p>
-                                <p>Bạn được tặng mã voucher {Namecode} với mã voucher là : {keycode}</p>
+                                <p>Kính gửi quý khách hàng {name},</p>
+                                <p><strong>Shop Beyoung Sport Wear</strong> xin chân thành cảm ơn quý khách đã luôn đồng hành cùng chúng tôi. Nhân dịp này, chúng tôi xin gửi tặng quý khách voucher <strong>{Namecode}</strong> với mã voucher <strong>{keycode}</strong> như một lời tri ân.</p>
+                                <p>Cảm ơn quý khách và rất mong quý khách tiếp tục sử dụng dịch vụ của shop chúng tôi trong tương lai</p>
+                                <p>Trân trọng!</p>
                                 ";
 
             try

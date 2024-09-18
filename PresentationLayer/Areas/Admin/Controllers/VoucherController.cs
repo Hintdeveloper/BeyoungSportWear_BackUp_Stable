@@ -9,7 +9,7 @@ using static VoucherStatusUpdateService;
 
 namespace PresentationLayer.Areas.Admin.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,Staff")]
     [Area("admin")]
     [Route("home")]
     public class VoucherController : Controller

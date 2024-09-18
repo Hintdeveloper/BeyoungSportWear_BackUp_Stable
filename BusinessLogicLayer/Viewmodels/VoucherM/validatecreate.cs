@@ -219,9 +219,9 @@ namespace BusinessLogicLayer.Viewmodels.VoucherM
 
             var maximumAmount = (decimal)maximumAmountProperty.GetValue(validationContext.ObjectInstance);
 
-            if (value is decimal minimumAmount && minimumAmount <= maximumAmount)
+            if (value is decimal minimumAmount && minimumAmount < maximumAmount)
             {
-                return new ValidationResult(ErrorMessage ?? "Số tiền giảm tối thiểu phải lớn hơn số tiền giảm tối đa");
+                return new ValidationResult(ErrorMessage ?? "Số tiền giảm tối thiểu phải lớn hơn hoặc bằng số tiền giảm tối đa");
             }
 
             return ValidationResult.Success;

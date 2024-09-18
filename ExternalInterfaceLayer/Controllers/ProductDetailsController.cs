@@ -36,7 +36,7 @@ namespace ExternalInterfaceLayer.Controllers
         [AllowAnonymous]
         [HttpGet]
         [Route("GetAll")]
-        public async Task<IActionResult> GetAll(int pageIndex = 0, int pageSize = 10)
+        public async Task<IActionResult> GetAll(int pageIndex = 0, int pageSize = 999)
         {
             var obj = await _IProductDetailsService.GetAllAsync(pageIndex, pageSize);
             return Ok(obj);
@@ -64,7 +64,7 @@ namespace ExternalInterfaceLayer.Controllers
         [AllowAnonymous]
         [HttpGet]
         [Route("GetAllActive")]
-        public async Task<IActionResult> GetAllActive(int pageIndex = 0, int pageSize = 10)
+        public async Task<IActionResult> GetAllActive(int pageIndex = 0, int pageSize = 999)
         {
             var obj = await _IProductDetailsService.GetAllActiveAsync(pageIndex, pageSize);
             return Ok(obj);
