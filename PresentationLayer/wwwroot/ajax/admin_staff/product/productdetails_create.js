@@ -88,6 +88,8 @@ function checkOptionsData() {
 
     return true;  
 }
+var allfiles = [];
+
 document.addEventListener('DOMContentLoaded', function () {
     const productForm = document.getElementById('productForm');
     productForm.addEventListener('submit', function (event) {
@@ -105,7 +107,8 @@ document.addEventListener('DOMContentLoaded', function () {
         var product_style = document.getElementById("product_style").value;
         var product_origin = document.getElementById("product_origin").value;
         var product_description = document.getElementById("product_description").value;
-        var product_images = document.getElementById("image-upload").files;
+        //var product_images = document.getElementById("image-upload").files;
+        var product_images = allfiles;
         var productId = guid();
 
         if (!product_product || !product_category || !product_manufacture || !product_material || !select_brand || !product_style || !product_origin || !product_description) {
@@ -642,35 +645,55 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         for (var i = 0; i < files.length; i++) {
+            var file = files[i];
+            allfiles.push(file);
+
+            console.log(allfiles)
+
             var reader = new FileReader();
-            reader.onload = function (e) {
-                var imagePreview = document.createElement('label');
-                imagePreview.className = 'image-preview-item';
+            reader.onload = (function (file, index) {
+                return function (e) {
+                    var imagePreview = document.createElement('label');
+                    imagePreview.className = 'image-preview-item';
+                    imagePreview.dataset.index = index; // Gán chỉ số cho phần tử
 
-                var image = document.createElement('img');
-                image.src = e.target.result;
-                image.alt = 'Preview';
-                imagePreview.appendChild(image);
+                    var image = document.createElement('img');
+                    image.src = e.target.result;
+                    image.alt = 'Preview';
+                    imagePreview.appendChild(image);
 
-                var removeBtn = document.createElement('span');
-                removeBtn.className = 'remove-image';
-                removeBtn.innerHTML = '&times;';
-                removeBtn.style.position = 'absolute';
-                removeBtn.style.top = '5px';
-                removeBtn.style.right = '5px';
-                removeBtn.style.cursor = 'pointer';
-                removeBtn.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
-                removeBtn.style.borderRadius = '50%';
-                removeBtn.style.padding = '5px';
-                removeBtn.addEventListener('click', function () {
-                    this.parentElement.remove();
-                });
-                imagePreview.appendChild(removeBtn);
+                    var removeBtn = document.createElement('span');
+                    removeBtn.className = 'remove-image';
+                    removeBtn.innerHTML = '&times;';
+                    removeBtn.style.position = 'absolute';
+                    removeBtn.style.top = '5px';
+                    removeBtn.style.right = '5px';
+                    removeBtn.style.cursor = 'pointer';
+                    removeBtn.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+                    removeBtn.style.borderRadius = '50%';
+                    removeBtn.style.padding = '5px';
 
-                var imageContainer = document.querySelector('.image-preview');
-                imageContainer.appendChild(imagePreview);
-            };
-            reader.readAsDataURL(files[i]);
+                    // Xóa hình ảnh khỏi bản xem trước và mảng allFiles
+                    removeBtn.addEventListener('click', function () {
+                        var fileIndex = imagePreview.dataset.index; // Lấy chỉ số của file từ dataset
+                        allfiles.splice(fileIndex, 1); // Xóa file khỏi mảng
+                        this.parentElement.remove();
+
+                        // Cập nhật lại chỉ số dataset cho các phần tử còn lại
+                        document.querySelectorAll('.image-preview-item').forEach((item, newIndex) => {
+                            item.dataset.index = newIndex;
+                        });
+
+                        console.log("After delete:", allfiles);
+                    });
+
+                    imagePreview.appendChild(removeBtn);
+
+                    var imageContainer = document.querySelector('.image-preview');
+                    imageContainer.appendChild(imagePreview);
+                };
+            })(file, allfiles.length - 1);
+            reader.readAsDataURL(file);
         }
     });
 });
