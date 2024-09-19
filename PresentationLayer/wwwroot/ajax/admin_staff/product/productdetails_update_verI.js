@@ -861,7 +861,7 @@ function validateQuantity(input) {
     const value = input.value.trim();
     const isValid = /^[0-9]*$/.test(value);
 
-    if (!isValid || parseInt(value) < 0) {
+    if (!isValid || parseInt(value) < 1) {
         input.style.borderColor = 'red';
         Swal.fire({
             icon: 'error',
@@ -876,7 +876,7 @@ function validateQuantity(input) {
 }
 function validatePrice(input) {
     const value = input.value.trim();
-    if (!/^\d+(\.\d{1,2})?$/.test(value) || parseFloat(value) < 0) {
+    if (!/^\d+(\.\d{1,2})?$/.test(value) || parseFloat(value) < 1000) {
         input.style.borderColor = 'red';
         Swal.fire({
             icon: 'error',
